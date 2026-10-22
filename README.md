@@ -10,7 +10,7 @@ TP2 de Programación IV.
 - Agustín Friadenrich
 - Natalia Diez
 
-![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)
+![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)
 ![NestJS](https://img.shields.io/badge/NestJS-12-E0234E?logo=nestjs&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-8-47A248?logo=mongodb&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)
@@ -23,6 +23,7 @@ TP2 de Programación IV.
 
 - [Características técnicas](#características-técnicas)
 - [Cómo correr el proyecto](#cómo-correr-el-proyecto)
+- [Hooks de git](#hooks-de-git)
 - [Variables de entorno](#variables-de-entorno)
 - [Estructura de carpetas](#estructura-de-carpetas)
 
@@ -32,7 +33,7 @@ TP2 de Programación IV.
 
 | Pieza     | Versión                       |
 | --------- | ----------------------------- |
-| Angular   | 21.2.x                        |
+| Angular   | 22.2.x                        |
 | NestJS    | 12.x                          |
 | MongoDB   | 8 (Docker)                    |
 | Mongoose  | 9.x                           |
@@ -40,13 +41,21 @@ TP2 de Programación IV.
 | Tailwind  | 4.1.x                         |
 | Vitest    | 4.x                           |
 | Oxlint    | backend                       |
+| ESLint    | frontend, con `angular-eslint` 22 |
 | Prettier  | 3.x                           |
 
 ---
 
 ## Cómo correr el proyecto
 
-Base de datos, desde la raíz:
+Desde la raíz, una sola vez (usa Node 24 e instala los hooks de git y el commitlint):
+
+```bash
+nvm use
+npm ci
+```
+
+Base de datos:
 
 ```bash
 docker compose up -d mongo
@@ -89,6 +98,17 @@ docker compose up --build
 | `npm start`        | Levantar desarrollo           |
 | `npm run build`    | Build de producción a `dist/` |
 | `npm test`         | Tests en modo watch           |
+| `npm run lint`     | ESLint sobre TypeScript y templates |
+
+---
+
+## Hooks de git
+
+| Hook         | Qué hace                                                                         |
+| ------------ | -------------------------------------------------------------------------------- |
+| `pre-commit` | `lint-staged`: Oxlint y Prettier en `backend/`, ESLint y Prettier en `frontend/` |
+| `commit-msg` | `commitlint`: tipos `feat`, `fix`, `docs`, `refactor`, `test`, `chore`           |
+| `pre-push`   | Bloquea el push directo a `main`                                                 |
 
 ---
 
@@ -119,5 +139,9 @@ La URL de la API que usa el frontend está en `frontend/src/environments/`.
 │   └── src/
 │       ├── app/
 │       └── environments/
+├── .husky/                   Hooks de git
+├── .nvmrc
+├── commitlint.config.js
+├── package.json              Solo herramientas del repo
 └── docker-compose.yml        Mongo y backend
 ```

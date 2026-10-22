@@ -1,3 +1,48 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Open Sans', sans-serif;
+  --color-tinta: #111111;
+  --color-cielo: #bdeaf5;
+  --color-menta: #e3f7ef;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(160deg, var(--color-cielo), var(--color-menta)) fixed;
+  color: var(--color-tinta);
+}
+
+@layer components {
+  .tarjeta {
+    @apply rounded-[1.75rem] border border-white/60 bg-white/70 shadow-sm backdrop-blur-md;
+  }
+
+  .titulo {
+    @apply text-3xl font-semibold italic;
+  }
+
+  .etiqueta {
+    @apply text-sm font-medium text-slate-700;
+  }
+
+  .campo {
+    @apply mt-1 min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-sky-400 focus:outline-none;
+  }
+
+  .campo.ng-invalid.ng-touched {
+    @apply ring-2 ring-red-400;
+  }
+
+  .mensaje-error {
+    @apply mt-1 block text-sm text-red-600;
+  }
+
+  .boton-principal {
+    @apply min-h-11 w-full rounded-full bg-tinta px-6 py-2.5 font-medium text-white hover:bg-black focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:outline-none disabled:opacity-50;
+  }
+
+  .boton-secundario {
+    @apply min-h-11 rounded-full bg-white/80 px-6 py-2.5 font-medium hover:bg-white focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:outline-none;
+  }
+}
