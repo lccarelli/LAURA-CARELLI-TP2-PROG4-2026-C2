@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from './auth/auth.module.js';
+import { ImagenesModule } from './imagenes/imagenes.module.js';
+import { UsuariosModule } from './usuarios/usuarios.module.js';
 
 @Module({
   imports: [
@@ -11,6 +14,9 @@ import { MongooseModule } from '@nestjs/mongoose';
         uri: config.getOrThrow<string>('MONGO_URI'),
       }),
     }),
+    UsuariosModule,
+    ImagenesModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

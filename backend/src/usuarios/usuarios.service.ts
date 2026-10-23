@@ -1,0 +1,25 @@
+import { ConflictException, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Usuario } from './schemas/usuario.schema.js';
+
+@Injectable()
+export class UsuariosService {
+  constructor(
+    @InjectModel(Usuario.name) private readonly usuarioModel: Model<Usuario>,
+  ) {}
+
+  async crear(datos: Partial<Usuario>) {
+    try {
+      const creado = await this.usuarioModel.create(datos);
+      return await this.usuarioModel.findById(creado._id).lean();
+    } catch (error: any) {
+      if (error.code === 11000) {
+        const campo = Object.keys(error.keyPattern)[0];
+        const nombre = campo === 'correo' ? 'correo' : 'nombre de usuario';
+        throw new ConflictException(`El ${nombre} ya está registrado`);
+      }
+      throw error;
+    }
+  }
+}
