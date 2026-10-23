@@ -1,4 +1,25 @@
-<section class="mx-auto max-w-2xl p-4">
-  <h1 class="text-2xl font-bold">Publicaciones</h1>
-  <p class="mt-2">Hola, {{ auth.usuario()?.nombreUsuario }}</p>
+<section class="mx-auto flex max-w-2xl flex-col gap-4 p-4">
+  <h1 class="titulo">Publicaciones</h1>
+
+  @for (publicacion of publicaciones(); track publicacion._id) {
+    <app-tarjeta-publicacion [publicacion]="publicacion" />
+  } @empty {
+    @if (!cargando()) {
+      <p class="tarjeta p-6 text-center text-slate-600">Todavía no hay publicaciones</p>
+    }
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-slate-600">Cargando…</p>
+  }
+
+  @if (hayMas() && !cargando()) {
+    <button type="button" class="boton-secundario w-full" (click)="cargarMas()">Ver más</button>
+  }
 </section>
+
+@if (mensajeModal(); as mensaje) {
+  <app-modal titulo="No se pudieron cargar las publicaciones" (cerrar)="mensajeModal.set(null)">{{
+    mensaje
+  }}</app-modal>
+}
