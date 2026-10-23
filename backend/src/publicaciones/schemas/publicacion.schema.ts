@@ -1,10 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import { Usuario } from '../../usuarios/schemas/usuario.schema.js';
 
 @Schema({ collection: 'publicaciones', versionKey: false })
 export class Publicacion {
-  @Prop({ type: Types.ObjectId, ref: Usuario.name, required: true })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: Usuario.name,
+    required: true,
+  })
   usuario: Types.ObjectId;
 
   @Prop({ required: true })
