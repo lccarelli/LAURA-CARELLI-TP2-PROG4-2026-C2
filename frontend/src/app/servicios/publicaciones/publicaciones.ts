@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { PaginaPublicaciones } from '../../interfaces/publicacion';
+import { PaginaPublicaciones, Publicacion } from '../../interfaces/publicacion';
 
 @Service()
 export class PublicacionesApi {
@@ -11,5 +11,9 @@ export class PublicacionesApi {
     return this.http.get<PaginaPublicaciones>(`${environment.API_URL}/publicaciones`, {
       params: { offset, limit },
     });
+  }
+
+  crear(datos: FormData) {
+    return this.http.post<Publicacion>(`${environment.API_URL}/publicaciones`, datos);
   }
 }

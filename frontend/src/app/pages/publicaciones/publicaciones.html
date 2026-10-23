@@ -1,6 +1,47 @@
 <section class="mx-auto flex max-w-2xl flex-col gap-4 p-4">
   <h1 class="titulo">Publicaciones</h1>
 
+  <form
+    class="tarjeta flex flex-col gap-3 p-4 md:p-5"
+    [formGroup]="formulario"
+    (ngSubmit)="publicar()"
+    novalidate
+  >
+    <label class="block">
+      <span class="etiqueta">Título</span>
+      <input class="campo" formControlName="titulo" />
+      @if (mensajeDeError('titulo'); as mensaje) {
+        <span class="mensaje-error">{{ mensaje }}</span>
+      }
+    </label>
+
+    <label class="block">
+      <span class="etiqueta">Mensaje</span>
+      <textarea class="campo" rows="3" formControlName="mensaje"></textarea>
+      @if (mensajeDeError('mensaje'); as mensaje) {
+        <span class="mensaje-error">{{ mensaje }}</span>
+      }
+    </label>
+
+    <label class="block">
+      <span class="etiqueta">Imagen (opcional)</span>
+      <input
+        #archivo
+        class="mt-1 w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-white/80 file:px-4 file:py-2 file:font-medium"
+        type="file"
+        accept="image/*"
+        (change)="elegirImagen($event)"
+      />
+      @if (errorImagen(); as mensaje) {
+        <span class="mensaje-error">{{ mensaje }}</span>
+      }
+    </label>
+
+    <button type="submit" class="boton-principal" [disabled]="publicando()">
+      {{ publicando() ? 'Publicando…' : 'Publicar' }}
+    </button>
+  </form>
+
   @for (publicacion of publicaciones(); track publicacion._id) {
     <app-tarjeta-publicacion [publicacion]="publicacion" />
   } @empty {
@@ -18,8 +59,6 @@
   }
 </section>
 
-@if (mensajeModal(); as mensaje) {
-  <app-modal titulo="No se pudieron cargar las publicaciones" (cerrar)="mensajeModal.set(null)">{{
-    mensaje
-  }}</app-modal>
+@if (aviso(); as datos) {
+  <app-modal [titulo]="datos.titulo" (cerrar)="aviso.set(null)">{{ datos.mensaje }}</app-modal>
 }
