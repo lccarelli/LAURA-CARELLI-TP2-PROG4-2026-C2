@@ -18,6 +18,19 @@ export class Auth {
       .pipe(tap((sesion) => this.guardarSesion(sesion)));
   }
 
+  ingresar(identificador: string, clave: string) {
+    return this.http
+      .post<Sesion>(`${environment.API_URL}/auth/ingresar`, { identificador, clave })
+      .pipe(tap((sesion) => this.guardarSesion(sesion)));
+  }
+
+  salir() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    this.token.set(null);
+    this.usuario.set(null);
+  }
+
   private guardarSesion(sesion: Sesion) {
     localStorage.setItem('token', sesion.token);
     localStorage.setItem('usuario', JSON.stringify(sesion.usuario));

@@ -22,4 +22,13 @@ export class UsuariosService {
       throw error;
     }
   }
+
+  buscarPorIdentificador(identificador: string) {
+    return this.usuarioModel
+      .findOne({
+        $or: [{ correo: identificador }, { nombreUsuario: identificador }],
+      })
+      .select('+clave')
+      .lean();
+  }
 }

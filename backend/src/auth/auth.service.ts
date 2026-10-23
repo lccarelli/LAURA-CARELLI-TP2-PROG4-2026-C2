@@ -1,9 +1,15 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { ImagenesService } from '../imagenes/imagenes.service.js';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
+import { IngresarDto } from './dto/ingresar.dto.js';
 import { RegistroDto } from './dto/registro.dto.js';
 
 @Injectable()
@@ -50,6 +56,36 @@ export class AuthService {
         await this.imagenesService.borrar(imagenGuardada.id);
       }
       throw error;
+    }
+  }
+
+  async ingresar(dto: IngresarDto) {
+    const encontrado = await this.usuariosService.buscarPorIdentificador(
+      dto.identificador,
+    );
+    const coincide =
+      encontrado && (await bcrypt.compare(dto.clave, encontrado.clave));
+    if (!encontrado || !coincide) {
+      this.logger.warn('Ingreso fallido: credenciales inválidas');
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    this.logger.log(`Ingreso correcto: ${encontrado._id}`);
+
+    const { clave: _clave, ...usuario } = encontrado;
+    return { token: this.generarToken(usuario), usuario };
+  }
+
+  verificarToken(token: string) {
+    try {
+      const payload = jwt.verify(
+        token,
+        this.config.getOrThrow<string>('JWT_SECRET'),
+      ) as jwt.JwtPayload;
+      return { id: payload.sub as string, perfil: payload.perfil as string };
+    } catch (error) {
+      this.logger.warn(`Token rechazado: ${(error as Error).message}`);
+      throw new UnauthorizedException('Token inválido o vencido');
     }
   }
 

@@ -1,0 +1,18 @@
+<header class="mx-4 mt-4 md:mx-auto md:max-w-3xl">
+  <nav
+    class="flex items-center justify-between rounded-full border border-white/60 bg-white/70 px-5 py-2 shadow-sm backdrop-blur-md"
+  >
+    <a class="text-lg font-semibold whitespace-nowrap italic" routerLink="/">Red social</a>
+
+    <div class="flex items-center gap-4 text-sm">
+      @if (auth.usuario(); as usuario) {
+        <a class="hover:underline" routerLink="/publicaciones">Publicaciones</a>
+        <span class="hidden text-slate-500 sm:inline">&#64;{{ usuario.nombreUsuario }}</span>
+        <button type="button" class="boton-secundario px-4" (click)="salir()">Salir</button>
+      } @else {
+        <a class="hover:underline" routerLink="/login">Ingresar</a>
+        <a class="boton-secundario px-4" routerLink="/registro">Registrarme</a>
+      }
+    </div>
+  </nav>
+</header>
