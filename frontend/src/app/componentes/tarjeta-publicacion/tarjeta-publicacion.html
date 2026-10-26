@@ -1,29 +1,59 @@
-<article class="tarjeta p-4 md:p-5">
-  <header class="mb-3 flex items-center gap-3">
-    <img
-      class="size-11 rounded-full object-cover"
-      [src]="urlImagen(publicacion().usuario.imagenPerfil)"
-      [alt]="'Foto de ' + publicacion().usuario.nombreUsuario"
-    />
-    <div>
-      <p class="font-medium">
-        {{ publicacion().usuario.nombre }} {{ publicacion().usuario.apellido }}
-        <span class="text-sm font-normal text-slate-500"
-          >&#64;{{ publicacion().usuario.nombreUsuario }}</span
-        >
-      </p>
-      <p class="text-xs text-slate-500">{{ publicacion().fecha | date: 'dd/MM/yyyy HH:mm' }}</p>
-    </div>
-  </header>
-
-  <h2 class="text-xl font-semibold italic">{{ publicacion().titulo }}</h2>
-  <p class="mt-1 whitespace-pre-line text-slate-700">{{ publicacion().mensaje }}</p>
-
+<button type="button" class="pin" (click)="abrir.emit()">
   @if (publicacion().imagen; as imagen) {
-    <img
-      class="mt-3 max-h-96 w-full rounded-2xl object-cover"
-      [src]="urlImagen(imagen)"
-      [alt]="publicacion().titulo"
-    />
+    <img class="pin-imagen" [src]="urlImagen(imagen)" alt="" />
+  } @else {
+    <span class="pin-texto">{{ publicacion().mensaje }}</span>
   }
-</article>
+  <span class="pin-pie">
+    <span class="pin-tipo">{{ 'tipos.' + publicacion().tipo | translate }}</span>
+    <span class="pin-titulo">{{ publicacion().titulo }}</span>
+    <span class="pin-autor">
+      <img
+        class="avatar-chico"
+        [src]="urlImagen(publicacion().usuario.imagenPerfil)"
+        [alt]="'comun.foto_de' | translate: { nombre: publicacion().usuario.nombreUsuario }"
+      />
+      &#64;{{ publicacion().usuario.nombreUsuario }}
+    </span>
+    <span class="metricas">
+      <span
+        class="metrica"
+        [attr.aria-label]="
+          'publicaciones.me_gusta' | translate: { n: publicacion().cantidadMeGusta }
+        "
+      >
+        <svg
+          class="icono-chico"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+        </svg>
+        <span aria-hidden="true">{{ publicacion().cantidadMeGusta }}</span>
+      </span>
+      <span
+        class="metrica"
+        [attr.aria-label]="
+          'publicaciones.comentarios' | translate: { n: publicacion().cantidadComentarios }
+        "
+      >
+        <svg
+          class="icono-chico"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 5h16v11H9l-5 4V5z" />
+        </svg>
+        <span aria-hidden="true">{{ publicacion().cantidadComentarios }}</span>
+      </span>
+    </span>
+  </span>
+</button>
