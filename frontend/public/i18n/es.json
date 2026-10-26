@@ -1,0 +1,142 @@
+{
+  "comun": {
+    "aviso": "Aviso",
+    "aceptar": "Aceptar",
+    "cargando": "Cargando…",
+    "obligatorio": "Este campo es obligatorio",
+    "foto_de": "Foto de {{nombre}}",
+    "ver_clave": "Mostrar clave",
+    "ocultar_clave": "Ocultar clave",
+    "cerrar": "Cerrar"
+  },
+  "formatos": {
+    "fecha": "dd/MM/yyyy",
+    "fecha_hora": "dd/MM/yyyy HH:mm"
+  },
+  "barra": {
+    "marca": "Banquete",
+    "lema": "Comunidad Culinaria",
+    "publicaciones": "Publicaciones",
+    "mi_perfil": "Mi perfil",
+    "salir": "Salir",
+    "ingresar": "Ingresar",
+    "registrarme": "Registrarme",
+    "idioma": "Idioma",
+    "modo_oscuro": "Activar modo oscuro",
+    "modo_claro": "Activar modo claro"
+  },
+  "inicio": {
+    "titulo": "Un lugar para compartir tu mundo culinario",
+    "saludo": "Escribí acerca de tus experiencias o prácticas de preparación, compartí tips culinarios súper secretos, o simplemente compartí tu amor por la comida.",
+    "vista_previa": "Te esperamos dentro de la comunidad",
+    "ejemplo_1_titulo": "Galletitas con chips de chocolate",
+    "ejemplo_1_mensaje": "Crocantes por fuera y blandas por dentro. Se comen tibias, con un vaso de leche.",
+    "ejemplo_2_titulo": "Mi primera tarde de cookies",
+    "ejemplo_2_mensaje": "Salieron irregulares y adictivas. La próxima prometo medir mejor.",
+    "ejemplo_3_titulo": "Milanesas más crocantes",
+    "ejemplo_3_mensaje": "Pasalas dos veces por el pan rallado y dejalas reposar 10 minutos antes de hornearlas.",
+    "ejemplo_4_titulo": "Domingos de salsa",
+    "ejemplo_4_mensaje": "Tomates, ajo, albahaca y mucha paciencia. Así empezaban los domingos en lo de la abuela.",
+    "invitacion_titulo": "Sumate para ver más",
+    "invitacion_texto": "Ingresá o creá tu cuenta para publicar y ver lo que comparten los demás.",
+    "crear_cuenta": "Crear cuenta",
+    "ingresar": "Ingresar"
+  },
+  "login": {
+    "titulo": "Ingresar",
+    "saludo": "Qué bueno verte de nuevo.",
+    "identificador": "Correo o nombre de usuario",
+    "clave": "Clave",
+    "boton": "Ingresar",
+    "boton_enviando": "Ingresando…",
+    "sin_cuenta": "¿No tenés cuenta?",
+    "registrarme": "Registrarme",
+    "error_titulo": "No se pudo ingresar"
+  },
+  "registro": {
+    "titulo": "Crear cuenta",
+    "saludo": "Unite y empezá a compartir tus experiencias culinarias.",
+    "nombre": "Nombre",
+    "apellido": "Apellido",
+    "correo": "Correo",
+    "nombre_usuario": "Nombre de usuario",
+    "clave": "Clave",
+    "repetir_clave": "Repetir clave",
+    "fecha_nacimiento": "Fecha de nacimiento",
+    "descripcion": "Descripción breve",
+    "imagen": "Imagen de perfil (opcional)",
+    "boton": "Registrarme",
+    "boton_enviando": "Creando cuenta…",
+    "con_cuenta": "¿Ya tenés cuenta?",
+    "ingresar": "Ingresar",
+    "error_titulo": "No se pudo crear la cuenta"
+  },
+  "publicaciones": {
+    "titulo": "Publicaciones",
+    "campo_titulo": "Título",
+    "campo_imagen": "Foto (opcional)",
+    "publicar": "Publicar",
+    "publicando": "Publicando…",
+    "vacio": "Todavía no hay publicaciones",
+    "ver_mas": "Ver más",
+    "error_cargar": "No se pudieron cargar las publicaciones",
+    "error_publicar": "No se pudo publicar",
+    "crear": "Crear publicación",
+    "ventana_titulo": "Nueva publicación",
+    "campo_ingredientes": "Ingredientes (uno por línea)",
+    "campo_pasos": "Pasos (uno por línea)",
+    "tipo_pregunta": "¿Qué querés compartir?",
+    "ingredientes": "Ingredientes",
+    "pasos": "Pasos",
+    "mensaje_receta": "Contanos sobre tu receta",
+    "mensaje_tip": "Tu tip",
+    "mensaje_experiencia": "Tu experiencia",
+    "mensaje_completa": "Contanos todo",
+    "me_gusta": "{{n}} me gusta",
+    "comentarios": "{{n}} comentarios",
+    "invitacion": "¿Qué querés compartir hoy?"
+  },
+  "perfil": {
+    "correo": "Correo",
+    "fecha_nacimiento": "Fecha de nacimiento",
+    "descripcion": "Descripción"
+  },
+  "roles": {
+    "usuario": "usuario",
+    "administrador": "administrador"
+  },
+  "validacion": {
+    "minimo": "Debe tener al menos {{n}} caracteres",
+    "maximo": "Debe tener como máximo {{n}} caracteres",
+    "correo": "Ingresá un correo válido",
+    "fecha_futura": "La fecha no puede ser futura",
+    "clave": "Entre 8 y 12 caracteres, con una mayúscula y un número",
+    "nombre_usuario": "Entre 3 y 20 caracteres: letras, números o guion bajo",
+    "claves_distintas": "Las claves no coinciden"
+  },
+  "imagen": {
+    "tipo": "La imagen debe ser JPG, PNG, WEBP o GIF",
+    "pesada": "La imagen no puede pesar más de 2 MB"
+  },
+  "errores": {
+    "sin_conexion": "No se pudo conectar con el servidor. Intentá de nuevo en unos segundos.",
+    "inesperado": "Ocurrió un error inesperado. Intentá de nuevo."
+  },
+  "api": {
+    "DATOS_INVALIDOS": "Revisá los datos ingresados.",
+    "FECHA_FUTURA": "La fecha de nacimiento no puede ser futura.",
+    "CORREO_REPETIDO": "El correo ya está registrado.",
+    "USUARIO_REPETIDO": "El nombre de usuario ya está registrado.",
+    "IMAGEN_TIPO_INVALIDO": "La imagen debe ser JPG, PNG, WEBP o GIF.",
+    "IMAGEN_NO_ENCONTRADA": "No se encontró la imagen.",
+    "CREDENCIALES_INVALIDAS": "El usuario o la clave son incorrectos.",
+    "TOKEN_AUSENTE": "Tenés que ingresar para hacer esto.",
+    "TOKEN_INVALIDO": "Tu sesión no es válida o venció. Ingresá de nuevo."
+  },
+  "tipos": {
+    "receta": "Receta",
+    "tip": "Tip culinario",
+    "experiencia": "Experiencia",
+    "completa": "Publicación completa"
+  }
+}
