@@ -13,18 +13,18 @@ export class RegistroDto {
   @SacarEspacios()
   @IsString()
   @MinLength(2)
-  @MaxLength(50)
+  @MaxLength(30)
   nombre: string;
 
   @SacarEspacios()
   @IsString()
   @MinLength(2)
-  @MaxLength(50)
+  @MaxLength(30)
   apellido: string;
 
   @SacarEspacios()
   @IsEmail()
-  @MaxLength(100)
+  @MaxLength(30)
   correo: string;
 
   @Matches(/^[a-zA-Z0-9_]{3,20}$/, {

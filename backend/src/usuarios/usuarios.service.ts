@@ -16,8 +16,11 @@ export class UsuariosService {
     } catch (error: any) {
       if (error.code === 11000) {
         const campo = Object.keys(error.keyPattern)[0];
-        const nombre = campo === 'correo' ? 'correo' : 'nombre de usuario';
-        throw new ConflictException(`El ${nombre} ya está registrado`);
+        const esCorreo = campo === 'correo';
+        throw new ConflictException({
+          message: `El ${esCorreo ? 'correo' : 'nombre de usuario'} ya está registrado`,
+          codigo: esCorreo ? 'CORREO_REPETIDO' : 'USUARIO_REPETIDO',
+        });
       }
       throw error;
     }

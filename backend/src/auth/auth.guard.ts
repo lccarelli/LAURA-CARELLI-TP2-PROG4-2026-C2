@@ -19,7 +19,10 @@ export class AuthGuard implements CanActivate {
     const solicitud = context.switchToHttp().getRequest<SolicitudAutenticada>();
     const [tipo, token] = (solicitud.headers.authorization ?? '').split(' ');
     if (tipo !== 'Bearer' || !token) {
-      throw new UnauthorizedException('Falta el token');
+      throw new UnauthorizedException({
+        message: 'Falta el token',
+        codigo: 'TOKEN_AUSENTE',
+      });
     }
     solicitud.usuario = this.authService.verificarToken(token);
     return true;

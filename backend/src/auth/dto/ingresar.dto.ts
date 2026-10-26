@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 export class IngresarDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(100)
+  @MaxLength(30)
   identificador: string;
 
   @IsString()
