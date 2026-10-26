@@ -1,0 +1,24 @@
+<section class="pagina-ancha">
+  <div class="text-center">
+    <h1 class="titulo">{{ 'inicio.titulo' | translate }}</h1>
+    <p class="texto-suave mt-1">{{ 'inicio.saludo' | translate }}</p>
+  </div>
+
+  <p class="etiqueta-seccion text-center">{{ 'inicio.vista_previa' | translate }}</p>
+  <div class="vista-previa" inert aria-hidden="true">
+    <div class="muro">
+      @for (publicacion of publicaciones(); track publicacion._id) {
+        <app-tarjeta-publicacion [publicacion]="publicacion" />
+      }
+    </div>
+  </div>
+
+  <div class="tarjeta mx-auto w-full max-w-2xl text-center">
+    <h2 class="titulo-tarjeta">{{ 'inicio.invitacion_titulo' | translate }}</h2>
+    <p class="texto-suave mt-1 mb-4">{{ 'inicio.invitacion_texto' | translate }}</p>
+    <div class="acciones justify-center">
+      <a class="boton-principal" routerLink="/registro">{{ 'inicio.crear_cuenta' | translate }}</a>
+      <a class="boton-secundario" routerLink="/login">{{ 'inicio.ingresar' | translate }}</a>
+    </div>
+  </div>
+</section>

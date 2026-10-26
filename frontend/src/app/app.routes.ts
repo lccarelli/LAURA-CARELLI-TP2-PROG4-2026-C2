@@ -3,7 +3,12 @@ import { invitadoGuard } from './guards/invitado-guard';
 import { sesionGuard } from './guards/sesion-guard';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'publicaciones' },
+  {
+    path: '',
+    pathMatch: 'full',
+    canActivate: [invitadoGuard],
+    loadComponent: () => import('./pages/inicio/inicio').then((m) => m.Inicio),
+  },
   {
     path: 'registro',
     canActivate: [invitadoGuard],
@@ -19,5 +24,10 @@ export const routes: Routes = [
     canActivate: [sesionGuard],
     loadComponent: () => import('./pages/publicaciones/publicaciones').then((m) => m.Publicaciones),
   },
-  { path: '**', redirectTo: 'publicaciones' },
+  {
+    path: 'perfil',
+    canActivate: [sesionGuard],
+    loadComponent: () => import('./pages/perfil/perfil').then((m) => m.Perfil),
+  },
+  { path: '**', redirectTo: '' },
 ];

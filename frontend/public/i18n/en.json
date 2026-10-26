@@ -1,0 +1,142 @@
+{
+  "comun": {
+    "aviso": "Notice",
+    "aceptar": "OK",
+    "cargando": "Loading…",
+    "obligatorio": "This field is required",
+    "foto_de": "Photo of {{nombre}}",
+    "ver_clave": "Show password",
+    "ocultar_clave": "Hide password",
+    "cerrar": "Close"
+  },
+  "formatos": {
+    "fecha": "MM/dd/yyyy",
+    "fecha_hora": "MM/dd/yyyy hh:mm a"
+  },
+  "barra": {
+    "marca": "Banquete",
+    "lema": "Everyday recipes",
+    "publicaciones": "Recipes",
+    "mi_perfil": "My profile",
+    "salir": "Log out",
+    "ingresar": "Log in",
+    "registrarme": "Sign up",
+    "idioma": "Language",
+    "modo_oscuro": "Switch to dark mode",
+    "modo_claro": "Switch to light mode"
+  },
+  "inicio": {
+    "titulo": "A place to share your culinary world",
+    "saludo": "Write about your cooking experiences and practices, share super secret culinary tips, or simply share your love of food.",
+    "vista_previa": "We are waiting for you inside the community",
+    "ejemplo_1_titulo": "Chocolate chip cookies",
+    "ejemplo_1_mensaje": "Crisp outside and soft inside. Best eaten warm, with a glass of milk.",
+    "ejemplo_2_titulo": "My first cookie afternoon",
+    "ejemplo_2_mensaje": "They came out uneven and addictive. Next time I promise to measure better.",
+    "ejemplo_3_titulo": "Crispier milanesas",
+    "ejemplo_3_mensaje": "Coat them twice in breadcrumbs and let them rest for 10 minutes before baking.",
+    "ejemplo_4_titulo": "Sauce Sundays",
+    "ejemplo_4_mensaje": "Tomatoes, garlic, basil and a lot of patience. That's how Sundays started at Grandma's.",
+    "invitacion_titulo": "Join to see more",
+    "invitacion_texto": "Log in or create your account to post and see what everyone else shares.",
+    "crear_cuenta": "Create account",
+    "ingresar": "Log in"
+  },
+  "login": {
+    "titulo": "Log in",
+    "saludo": "Good to see you again.",
+    "identificador": "Email or username",
+    "clave": "Password",
+    "boton": "Log in",
+    "boton_enviando": "Logging in…",
+    "sin_cuenta": "Don't have an account?",
+    "registrarme": "Sign up",
+    "error_titulo": "Could not log in"
+  },
+  "registro": {
+    "titulo": "Create account",
+    "saludo": "Join and start sharing your culinary experiences.",
+    "nombre": "First name",
+    "apellido": "Last name",
+    "correo": "Email",
+    "nombre_usuario": "Username",
+    "clave": "Password",
+    "repetir_clave": "Repeat password",
+    "fecha_nacimiento": "Date of birth",
+    "descripcion": "Short bio",
+    "imagen": "Profile picture (optional)",
+    "boton": "Sign up",
+    "boton_enviando": "Creating account…",
+    "con_cuenta": "Already have an account?",
+    "ingresar": "Log in",
+    "error_titulo": "Could not create the account"
+  },
+  "publicaciones": {
+    "titulo": "Recipes",
+    "campo_titulo": "Title",
+    "campo_imagen": "Photo (optional)",
+    "publicar": "Post",
+    "publicando": "Posting…",
+    "vacio": "There are no posts yet",
+    "ver_mas": "Show more",
+    "error_cargar": "The posts could not be loaded",
+    "error_publicar": "The post could not be published",
+    "crear": "Create post",
+    "ventana_titulo": "New post",
+    "campo_ingredientes": "Ingredients (one per line)",
+    "campo_pasos": "Steps (one per line)",
+    "tipo_pregunta": "What do you want to share?",
+    "ingredientes": "Ingredients",
+    "pasos": "Steps",
+    "mensaje_receta": "Tell us about your recipe",
+    "mensaje_tip": "Your tip",
+    "mensaje_experiencia": "Your experience",
+    "mensaje_completa": "Tell us everything",
+    "me_gusta": "{{n}} likes",
+    "comentarios": "{{n}} comments",
+    "invitacion": "What do you want to share today?"
+  },
+  "perfil": {
+    "correo": "Email",
+    "fecha_nacimiento": "Date of birth",
+    "descripcion": "Bio"
+  },
+  "roles": {
+    "usuario": "user",
+    "administrador": "administrator"
+  },
+  "validacion": {
+    "minimo": "Must have at least {{n}} characters",
+    "maximo": "Must have at most {{n}} characters",
+    "correo": "Enter a valid email",
+    "fecha_futura": "The date cannot be in the future",
+    "clave": "8 to 12 characters, with an uppercase letter and a number",
+    "nombre_usuario": "3 to 20 characters: letters, numbers or underscore",
+    "claves_distintas": "The passwords do not match"
+  },
+  "imagen": {
+    "tipo": "The image must be JPG, PNG, WEBP or GIF",
+    "pesada": "The image cannot be larger than 2 MB"
+  },
+  "errores": {
+    "sin_conexion": "Could not connect to the server. Try again in a few seconds.",
+    "inesperado": "An unexpected error occurred. Try again."
+  },
+  "api": {
+    "DATOS_INVALIDOS": "Check the data you entered.",
+    "FECHA_FUTURA": "The date of birth cannot be in the future.",
+    "CORREO_REPETIDO": "That email is already registered.",
+    "USUARIO_REPETIDO": "That username is already registered.",
+    "IMAGEN_TIPO_INVALIDO": "The image must be JPG, PNG, WEBP or GIF.",
+    "IMAGEN_NO_ENCONTRADA": "The image was not found.",
+    "CREDENCIALES_INVALIDAS": "The username or password is incorrect.",
+    "TOKEN_AUSENTE": "You need to log in to do this.",
+    "TOKEN_INVALIDO": "Your session is not valid or has expired. Log in again."
+  },
+  "tipos": {
+    "receta": "Recipe",
+    "tip": "Culinary tip",
+    "experiencia": "Experience",
+    "completa": "Full post"
+  }
+}

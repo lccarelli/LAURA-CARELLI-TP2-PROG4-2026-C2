@@ -2,18 +2,15 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 export function mensajeDeApi(error: HttpErrorResponse): string {
   if (error.status === 0) {
-    return 'No se pudo conectar con el servidor. Intentá de nuevo en unos segundos.';
+    return 'errores.sin_conexion';
   }
   if (error.status === 413) {
-    return 'La imagen no puede pesar más de 2 MB';
+    return 'imagen.pesada';
   }
 
-  const mensaje = error.error?.message;
-  if (Array.isArray(mensaje)) {
-    return mensaje.join('\n');
+  const codigo = error.error?.codigo;
+  if (typeof codigo === 'string') {
+    return `api.${codigo}`;
   }
-  if (typeof mensaje === 'string') {
-    return mensaje;
-  }
-  return 'Ocurrió un error inesperado. Intentá de nuevo.';
+  return 'errores.inesperado';
 }

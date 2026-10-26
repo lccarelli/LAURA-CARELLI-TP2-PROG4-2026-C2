@@ -1,19 +1,22 @@
-<section class="mx-auto flex min-h-[85vh] max-w-lg items-center p-4">
-  <div class="tarjeta w-full p-6 md:p-8">
-    <h1 class="titulo">Crear cuenta</h1>
-    <p class="mt-1 mb-6 text-slate-600">Unite y empezá a compartir tus momentos.</p>
+<div inert>
+  <app-inicio />
+</div>
 
-    <form class="space-y-4" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
-      <div class="grid grid-cols-2 gap-4">
+<app-ventana titulo="registro.titulo" [escape]="!mensajeModal()" (cerrar)="cerrar()">
+  <div>
+    <p class="texto-suave mb-6">{{ 'registro.saludo' | translate }}</p>
+
+    <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+      <div class="fila-campos">
         <label class="block">
-          <span class="etiqueta">Nombre</span>
+          <span class="etiqueta">{{ 'registro.nombre' | translate }}</span>
           <input class="campo" formControlName="nombre" autocomplete="given-name" />
           @if (mensajeDeError('nombre'); as mensaje) {
             <span class="mensaje-error">{{ mensaje }}</span>
           }
         </label>
         <label class="block">
-          <span class="etiqueta">Apellido</span>
+          <span class="etiqueta">{{ 'registro.apellido' | translate }}</span>
           <input class="campo" formControlName="apellido" autocomplete="family-name" />
           @if (mensajeDeError('apellido'); as mensaje) {
             <span class="mensaje-error">{{ mensaje }}</span>
@@ -22,7 +25,7 @@
       </div>
 
       <label class="block">
-        <span class="etiqueta">Correo</span>
+        <span class="etiqueta">{{ 'registro.correo' | translate }}</span>
         <input class="campo" type="email" formControlName="correo" autocomplete="email" />
         @if (mensajeDeError('correo'); as mensaje) {
           <span class="mensaje-error">{{ mensaje }}</span>
@@ -30,34 +33,38 @@
       </label>
 
       <label class="block">
-        <span class="etiqueta">Nombre de usuario</span>
+        <span class="etiqueta">{{ 'registro.nombre_usuario' | translate }}</span>
         <input class="campo" formControlName="nombreUsuario" autocomplete="username" />
         @if (mensajeDeError('nombreUsuario'); as mensaje) {
           <span class="mensaje-error">{{ mensaje }}</span>
         }
       </label>
 
-      <div class="grid grid-cols-2 gap-4">
+      <div class="fila-campos">
         <label class="block">
-          <span class="etiqueta">Clave</span>
-          <input
-            class="campo"
-            type="password"
-            formControlName="clave"
-            autocomplete="new-password"
-          />
+          <span class="etiqueta">{{ 'registro.clave' | translate }}</span>
+          <app-campo-clave>
+            <input
+              class="campo"
+              type="password"
+              formControlName="clave"
+              autocomplete="new-password"
+            />
+          </app-campo-clave>
           @if (mensajeDeError('clave'); as mensaje) {
             <span class="mensaje-error">{{ mensaje }}</span>
           }
         </label>
         <label class="block">
-          <span class="etiqueta">Repetir clave</span>
-          <input
-            class="campo"
-            type="password"
-            formControlName="repetirClave"
-            autocomplete="new-password"
-          />
+          <span class="etiqueta">{{ 'registro.repetir_clave' | translate }}</span>
+          <app-campo-clave>
+            <input
+              class="campo"
+              type="password"
+              formControlName="repetirClave"
+              autocomplete="new-password"
+            />
+          </app-campo-clave>
           @if (mensajeDeError('repetirClave'); as mensaje) {
             <span class="mensaje-error">{{ mensaje }}</span>
           }
@@ -65,7 +72,7 @@
       </div>
 
       <label class="block">
-        <span class="etiqueta">Fecha de nacimiento</span>
+        <span class="etiqueta">{{ 'registro.fecha_nacimiento' | translate }}</span>
         <input class="campo" type="date" formControlName="fechaNacimiento" [max]="hoy" />
         @if (mensajeDeError('fechaNacimiento'); as mensaje) {
           <span class="mensaje-error">{{ mensaje }}</span>
@@ -73,7 +80,7 @@
       </label>
 
       <label class="block">
-        <span class="etiqueta">Descripción breve</span>
+        <span class="etiqueta">{{ 'registro.descripcion' | translate }}</span>
         <textarea class="campo" rows="3" formControlName="descripcion"></textarea>
         @if (mensajeDeError('descripcion'); as mensaje) {
           <span class="mensaje-error">{{ mensaje }}</span>
@@ -81,31 +88,27 @@
       </label>
 
       <label class="block">
-        <span class="etiqueta">Imagen de perfil (opcional)</span>
-        <input
-          class="mt-1 w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-white/80 file:px-4 file:py-2 file:font-medium"
-          type="file"
-          accept="image/*"
-          (change)="elegirImagen($event)"
-        />
+        <span class="etiqueta">{{ 'registro.imagen' | translate }}</span>
+        <input class="campo-archivo" type="file" accept="image/*" (change)="elegirImagen($event)" />
         @if (errorImagen(); as mensaje) {
-          <span class="mensaje-error">{{ mensaje }}</span>
+          <span class="mensaje-error">{{ mensaje | translate }}</span>
         }
       </label>
 
-      <button type="submit" class="boton-principal" [disabled]="enviando()">
-        {{ enviando() ? 'Creando cuenta…' : 'Registrarme' }}
+      <button type="submit" class="boton-principal w-full" [disabled]="enviando()">
+        {{ (enviando() ? 'registro.boton_enviando' : 'registro.boton') | translate }}
       </button>
     </form>
 
-    <p class="mt-4 text-center text-sm">
-      ¿Ya tenés cuenta? <a class="font-medium underline" routerLink="/login">Ingresar</a>
+    <p class="pie-formulario">
+      {{ 'registro.con_cuenta' | translate }}
+      <a class="enlace" routerLink="/login">{{ 'registro.ingresar' | translate }}</a>
     </p>
   </div>
-</section>
+</app-ventana>
 
 @if (mensajeModal(); as mensaje) {
-  <app-modal titulo="No se pudo crear la cuenta" (cerrar)="mensajeModal.set(null)">{{
-    mensaje
+  <app-modal titulo="registro.error_titulo" (cerrar)="mensajeModal.set(null)">{{
+    mensaje | translate
   }}</app-modal>
 }

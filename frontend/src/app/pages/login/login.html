@@ -1,11 +1,14 @@
-<section class="mx-auto flex min-h-[80vh] max-w-md items-center p-4">
-  <div class="tarjeta w-full p-6 md:p-8">
-    <h1 class="titulo">Ingresar</h1>
-    <p class="mt-1 mb-6 text-slate-600">Qué bueno verte de nuevo.</p>
+<div inert>
+  <app-inicio />
+</div>
 
-    <form class="space-y-4" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+<app-ventana titulo="login.titulo" [escape]="!mensajeModal()" (cerrar)="cerrar()">
+  <div>
+    <p class="texto-suave mb-6">{{ 'login.saludo' | translate }}</p>
+
+    <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
       <label class="block">
-        <span class="etiqueta">Correo o nombre de usuario</span>
+        <span class="etiqueta">{{ 'login.identificador' | translate }}</span>
         <input class="campo" formControlName="identificador" autocomplete="username" />
         @if (mensajeDeError('identificador'); as mensaje) {
           <span class="mensaje-error">{{ mensaje }}</span>
@@ -13,31 +16,34 @@
       </label>
 
       <label class="block">
-        <span class="etiqueta">Clave</span>
-        <input
-          class="campo"
-          type="password"
-          formControlName="clave"
-          autocomplete="current-password"
-        />
+        <span class="etiqueta">{{ 'login.clave' | translate }}</span>
+        <app-campo-clave>
+          <input
+            class="campo"
+            type="password"
+            formControlName="clave"
+            autocomplete="current-password"
+          />
+        </app-campo-clave>
         @if (mensajeDeError('clave'); as mensaje) {
           <span class="mensaje-error">{{ mensaje }}</span>
         }
       </label>
 
-      <button type="submit" class="boton-principal" [disabled]="enviando()">
-        {{ enviando() ? 'Ingresando…' : 'Ingresar' }}
+      <button type="submit" class="boton-principal w-full" [disabled]="enviando()">
+        {{ (enviando() ? 'login.boton_enviando' : 'login.boton') | translate }}
       </button>
     </form>
 
-    <p class="mt-4 text-center text-sm">
-      ¿No tenés cuenta? <a class="font-medium underline" routerLink="/registro">Registrarme</a>
+    <p class="pie-formulario">
+      {{ 'login.sin_cuenta' | translate }}
+      <a class="enlace" routerLink="/registro">{{ 'login.registrarme' | translate }}</a>
     </p>
   </div>
-</section>
+</app-ventana>
 
 @if (mensajeModal(); as mensaje) {
-  <app-modal titulo="No se pudo ingresar" (cerrar)="mensajeModal.set(null)">{{
-    mensaje
+  <app-modal titulo="login.error_titulo" (cerrar)="mensajeModal.set(null)">{{
+    mensaje | translate
   }}</app-modal>
 }

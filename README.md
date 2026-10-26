@@ -1,6 +1,6 @@
 # Trabajo Practico Red Social
 
-**Red social**
+**Banquete**: red social culinaria para compartir experiencias, tips y todo lo que pasa en la cocina.
 
 TP2 de Programación IV.
 **UTN FRA | División 341 | 2026 C2**
