@@ -29,8 +29,11 @@ export class PublicacionesService {
     try {
       const creada = await this.publicacionModel.create({
         usuario: usuarioId,
+        tipo: dto.tipo,
         titulo: dto.titulo,
         mensaje: dto.mensaje,
+        ingredientes: dto.ingredientes || undefined,
+        pasos: dto.pasos || undefined,
         imagen: imagenGuardada?.url,
       });
       await creada.populate('usuario', CAMPOS_AUTOR);
