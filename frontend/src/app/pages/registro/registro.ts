@@ -2,7 +2,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { CampoClave } from '../../componentes/campo-clave/campo-clave';
 import { Modal } from '../../componentes/modal/modal';
+import { Ventana } from '../../componentes/ventana/ventana';
+import { Inicio } from '../inicio/inicio';
 import { Auth } from '../../servicios/auth/auth';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { validarImagen } from '../../utilidades/imagen';
@@ -14,7 +18,7 @@ import {
 } from '../../utilidades/validadores';
 
 @Component({
-  imports: [ReactiveFormsModule, RouterLink, Modal],
+  imports: [ReactiveFormsModule, RouterLink, Modal, Ventana, Inicio, TranslatePipe, CampoClave],
   selector: 'app-registro',
   templateUrl: './registro.html',
 })
@@ -22,6 +26,7 @@ export class Registro {
   private formBuilder = inject(FormBuilder);
   private auth = inject(Auth);
   private router = inject(Router);
+  private traductor = inject(TranslateService);
 
   readonly hoy = new Date().toISOString().slice(0, 10);
   readonly imagen = signal<File | null>(null);
@@ -31,9 +36,9 @@ export class Registro {
 
   readonly formulario = this.formBuilder.nonNullable.group(
     {
-      nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-      apellido: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-      correo: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+      nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(30)]],
+      apellido: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(30)]],
+      correo: ['', [Validators.required, Validators.email, Validators.maxLength(30)]],
       nombreUsuario: ['', [Validators.required, Validators.pattern(PATRON_NOMBRE_USUARIO)]],
       clave: ['', [Validators.required, Validators.pattern(PATRON_CLAVE)]],
       repetirClave: ['', [Validators.required]],
@@ -43,6 +48,10 @@ export class Registro {
     { validators: clavesIguales },
   );
 
+  cerrar() {
+    this.router.navigate(['/']);
+  }
+
   mensajeDeError(campo: string): string | null {
     const control = this.formulario.get(campo);
     if (!control?.touched) {
@@ -51,28 +60,32 @@ export class Registro {
 
     const errores = control.errors;
     if (errores?.['required']) {
-      return 'Este campo es obligatorio';
+      return this.traductor.instant('comun.obligatorio');
     }
     if (errores?.['minlength']) {
-      return `Debe tener al menos ${errores['minlength'].requiredLength} caracteres`;
+      return this.traductor.instant('validacion.minimo', {
+        n: errores['minlength'].requiredLength,
+      });
     }
     if (errores?.['maxlength']) {
-      return `Debe tener como máximo ${errores['maxlength'].requiredLength} caracteres`;
+      return this.traductor.instant('validacion.maximo', {
+        n: errores['maxlength'].requiredLength,
+      });
     }
     if (errores?.['email']) {
-      return 'Ingresá un correo válido';
+      return this.traductor.instant('validacion.correo');
     }
     if (errores?.['fechaFutura']) {
-      return 'La fecha no puede ser futura';
+      return this.traductor.instant('validacion.fecha_futura');
     }
     if (errores?.['pattern'] && campo === 'clave') {
-      return 'Entre 8 y 12 caracteres, con una mayúscula y un número';
+      return this.traductor.instant('validacion.clave');
     }
     if (errores?.['pattern']) {
-      return 'Entre 3 y 20 caracteres: letras, números o guion bajo';
+      return this.traductor.instant('validacion.nombre_usuario');
     }
     if (campo === 'repetirClave' && this.formulario.errors?.['clavesDistintas']) {
-      return 'Las claves no coinciden';
+      return this.traductor.instant('validacion.claves_distintas');
     }
     return null;
   }

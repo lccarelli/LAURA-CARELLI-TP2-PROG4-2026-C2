@@ -2,12 +2,16 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { CampoClave } from '../../componentes/campo-clave/campo-clave';
 import { Modal } from '../../componentes/modal/modal';
+import { Ventana } from '../../componentes/ventana/ventana';
+import { Inicio } from '../inicio/inicio';
 import { Auth } from '../../servicios/auth/auth';
 import { mensajeDeApi } from '../../utilidades/errores';
 
 @Component({
-  imports: [ReactiveFormsModule, RouterLink, Modal],
+  imports: [ReactiveFormsModule, RouterLink, Modal, Ventana, Inicio, TranslatePipe, CampoClave],
   selector: 'app-login',
   templateUrl: './login.html',
 })
@@ -15,14 +19,19 @@ export class Login {
   private formBuilder = inject(FormBuilder);
   private auth = inject(Auth);
   private router = inject(Router);
+  private traductor = inject(TranslateService);
 
   readonly enviando = signal(false);
   readonly mensajeModal = signal<string | null>(null);
 
   readonly formulario = this.formBuilder.nonNullable.group({
-    identificador: ['', [Validators.required, Validators.maxLength(100)]],
+    identificador: ['', [Validators.required, Validators.maxLength(30)]],
     clave: ['', [Validators.required, Validators.maxLength(12)]],
   });
+
+  cerrar() {
+    this.router.navigate(['/']);
+  }
 
   mensajeDeError(campo: string): string | null {
     const control = this.formulario.get(campo);
@@ -30,10 +39,12 @@ export class Login {
       return null;
     }
     if (control.errors?.['required']) {
-      return 'Este campo es obligatorio';
+      return this.traductor.instant('comun.obligatorio');
     }
     if (control.errors?.['maxlength']) {
-      return `Debe tener como máximo ${control.errors['maxlength'].requiredLength} caracteres`;
+      return this.traductor.instant('validacion.maximo', {
+        n: control.errors['maxlength'].requiredLength,
+      });
     }
     return null;
   }
