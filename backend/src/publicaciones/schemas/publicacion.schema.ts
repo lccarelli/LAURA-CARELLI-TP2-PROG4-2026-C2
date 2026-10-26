@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema, Types } from 'mongoose';
+import { TIPOS_PUBLICACION } from '../dto/crear-publicacion.dto.js';
 import { Usuario } from '../../usuarios/schemas/usuario.schema.js';
 
 @Schema({ collection: 'publicaciones', versionKey: false })
@@ -11,6 +12,9 @@ export class Publicacion {
   })
   usuario: Types.ObjectId;
 
+  @Prop({ required: true, enum: TIPOS_PUBLICACION })
+  tipo: string;
+
   @Prop({ required: true })
   titulo: string;
 
@@ -18,7 +22,19 @@ export class Publicacion {
   mensaje: string;
 
   @Prop()
+  ingredientes?: string;
+
+  @Prop()
+  pasos?: string;
+
+  @Prop()
   imagen?: string;
+
+  @Prop({ default: 0 })
+  cantidadMeGusta: number;
+
+  @Prop({ default: 0 })
+  cantidadComentarios: number;
 
   @Prop({ default: Date.now })
   fecha: Date;
