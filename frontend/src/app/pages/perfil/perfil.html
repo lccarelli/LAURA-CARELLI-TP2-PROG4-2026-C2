@@ -1,0 +1,35 @@
+<section class="pagina-angosta">
+  @if (auth.usuario(); as usuario) {
+    <div class="tarjeta">
+      <div class="flex items-center gap-5">
+        <img
+          class="avatar-grande"
+          [src]="urlImagen(usuario.imagenPerfil)"
+          [alt]="'comun.foto_de' | translate: { nombre: usuario.nombreUsuario }"
+        />
+        <div class="min-w-0">
+          <h1 class="titulo">{{ usuario.nombre }} {{ usuario.apellido }}</h1>
+          <p class="texto-suave">&#64;{{ usuario.nombreUsuario }}</p>
+          <span class="chip mt-2">{{ 'roles.' + usuario.perfil | translate }}</span>
+        </div>
+      </div>
+
+      <dl class="mt-6">
+        <div class="dato">
+          <dt class="etiqueta-seccion">{{ 'perfil.correo' | translate }}</dt>
+          <dd class="mt-1 break-words">{{ usuario.correo }}</dd>
+        </div>
+        <div class="dato">
+          <dt class="etiqueta-seccion">{{ 'perfil.fecha_nacimiento' | translate }}</dt>
+          <dd class="mt-1">
+            {{ usuario.fechaNacimiento | date: ('formatos.fecha' | translate) : 'UTC' }}
+          </dd>
+        </div>
+        <div class="dato">
+          <dt class="etiqueta-seccion">{{ 'perfil.descripcion' | translate }}</dt>
+          <dd class="nota mt-1 whitespace-pre-line">{{ usuario.descripcion }}</dd>
+        </div>
+      </dl>
+    </div>
+  }
+</section>

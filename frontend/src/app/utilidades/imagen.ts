@@ -8,14 +8,17 @@ export function validarImagen(archivo: File | null): string | null {
     return null;
   }
   if (!TIPOS_PERMITIDOS.includes(archivo.type)) {
-    return 'La imagen debe ser JPG, PNG, WEBP o GIF';
+    return 'imagen.tipo';
   }
   if (archivo.size > TAMANO_MAXIMO_IMAGEN) {
-    return 'La imagen no puede pesar más de 2 MB';
+    return 'imagen.pesada';
   }
   return null;
 }
 
 export function urlImagen(ruta?: string): string {
-  return ruta ? `${environment.API_URL}${ruta}` : '/sin-foto.svg';
+  if (!ruta) {
+    return '/sin-foto.svg';
+  }
+  return ruta.startsWith('/imagenes/') ? `${environment.API_URL}${ruta}` : ruta;
 }
