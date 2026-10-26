@@ -25,9 +25,10 @@ export class AuthService {
   async registro(dto: RegistroDto, imagen?: Express.Multer.File) {
     const fechaNacimiento = new Date(dto.fechaNacimiento);
     if (fechaNacimiento > new Date()) {
-      throw new BadRequestException(
-        'fechaNacimiento no puede ser una fecha futura',
-      );
+      throw new BadRequestException({
+        message: 'fechaNacimiento no puede ser una fecha futura',
+        codigo: 'FECHA_FUTURA',
+      });
     }
 
     const adminEmail = this.config.get<string>('ADMIN_EMAIL')?.toLowerCase();
@@ -67,7 +68,10 @@ export class AuthService {
       encontrado && (await bcrypt.compare(dto.clave, encontrado.clave));
     if (!encontrado || !coincide) {
       this.logger.warn('Ingreso fallido: credenciales inválidas');
-      throw new UnauthorizedException('Credenciales inválidas');
+      throw new UnauthorizedException({
+        message: 'Credenciales inválidas',
+        codigo: 'CREDENCIALES_INVALIDAS',
+      });
     }
 
     this.logger.log(`Ingreso correcto: ${encontrado._id}`);
@@ -85,7 +89,10 @@ export class AuthService {
       return { id: payload.sub as string, perfil: payload.perfil as string };
     } catch (error) {
       this.logger.warn(`Token rechazado: ${(error as Error).message}`);
-      throw new UnauthorizedException('Token inválido o vencido');
+      throw new UnauthorizedException({
+        message: 'Token inválido o vencido',
+        codigo: 'TOKEN_INVALIDO',
+      });
     }
   }
 

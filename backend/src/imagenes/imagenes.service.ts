@@ -26,7 +26,10 @@ export class ImagenesService {
   async obtener(id: string) {
     const imagen = await this.imagenModel.findById(id);
     if (!imagen) {
-      throw new NotFoundException('Imagen no encontrada');
+      throw new NotFoundException({
+        message: 'Imagen no encontrada',
+        codigo: 'IMAGEN_NO_ENCONTRADA',
+      });
     }
     return imagen;
   }
