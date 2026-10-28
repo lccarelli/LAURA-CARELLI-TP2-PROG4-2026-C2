@@ -1,0 +1,160 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { environment } from '../../../environments/environment';
+import { Sesion } from '../../interfaces/sesion';
+import { Auth } from './auth';
+
+const sesion: Sesion = {
+  token: 'token-de-prueba',
+  usuario: {
+    _id: '1',
+    nombre: 'Laura',
+    apellido: 'Carelli',
+    correo: 'laura@correo.com',
+    nombreUsuario: 'laura_c',
+    fechaNacimiento: '1990-05-20T00:00:00.000Z',
+    descripcion: 'Hola',
+    perfil: 'usuario',
+    habilitado: true,
+  },
+};
+
+function crearAuth() {
+  TestBed.configureTestingModule({
+    providers: [provideHttpClient(), provideHttpClientTesting()],
+  });
+  return {
+    auth: TestBed.inject(Auth),
+    http: TestBed.inject(HttpTestingController),
+  };
+}
+
+describe('Auth', () => {
+  beforeEach(() => localStorage.clear());
+
+  describe('registro', () => {
+    it('[Z] sin sesión guardada no hay token ni usuario', () => {
+      const { auth } = crearAuth();
+
+      expect(auth.token()).toBeNull();
+      expect(auth.usuario()).toBeNull();
+    });
+
+    it('[O] registrar guarda el token y el usuario', () => {
+      const { auth, http } = crearAuth();
+
+      auth.registro(new FormData()).subscribe();
+      http.expectOne(`${environment.API_URL}/auth/registro`).flush(sesion);
+
+      expect(auth.token()).toBe('token-de-prueba');
+      expect(auth.usuario()?.nombreUsuario).toBe('laura_c');
+      expect(localStorage.getItem('token')).toBe('token-de-prueba');
+    });
+
+    it('[I] envía un POST con los datos del formulario', () => {
+      const { auth, http } = crearAuth();
+      const datos = new FormData();
+      datos.append('nombre', 'Laura');
+
+      auth.registro(datos).subscribe();
+      const pedido = http.expectOne(`${environment.API_URL}/auth/registro`);
+
+      expect(pedido.request.method).toBe('POST');
+      expect(pedido.request.body).toBe(datos);
+      pedido.flush(sesion);
+    });
+
+    it('[E] si la API responde con error no guarda nada', () => {
+      const { auth, http } = crearAuth();
+
+      auth.registro(new FormData()).subscribe({ error: () => undefined });
+      http
+        .expectOne(`${environment.API_URL}/auth/registro`)
+        .flush({ message: 'x' }, { status: 409, statusText: 'Conflict' });
+
+      expect(auth.token()).toBeNull();
+      expect(localStorage.getItem('token')).toBeNull();
+    });
+  });
+
+  describe('ingresar', () => {
+    it('[O] ingresar guarda el token y el usuario', () => {
+      const { auth, http } = crearAuth();
+
+      auth.ingresar('laura_c', 'Clave1234').subscribe();
+      http.expectOne(`${environment.API_URL}/auth/ingresar`).flush(sesion);
+
+      expect(auth.token()).toBe('token-de-prueba');
+      expect(auth.usuario()?.nombreUsuario).toBe('laura_c');
+    });
+
+    it('[I] envía un POST con el identificador y la clave', () => {
+      const { auth, http } = crearAuth();
+
+      auth.ingresar('laura_c', 'Clave1234').subscribe();
+      const pedido = http.expectOne(`${environment.API_URL}/auth/ingresar`);
+
+      expect(pedido.request.method).toBe('POST');
+      expect(pedido.request.body).toEqual({
+        identificador: 'laura_c',
+        clave: 'Clave1234',
+      });
+      pedido.flush(sesion);
+    });
+
+    it('[E] con credenciales incorrectas no guarda nada', () => {
+      const { auth, http } = crearAuth();
+
+      auth.ingresar('laura_c', 'mala').subscribe({ error: () => undefined });
+      http
+        .expectOne(`${environment.API_URL}/auth/ingresar`)
+        .flush({ message: 'Credenciales inválidas' }, { status: 401, statusText: 'Unauthorized' });
+
+      expect(auth.token()).toBeNull();
+      expect(localStorage.getItem('token')).toBeNull();
+    });
+  });
+
+  describe('salir', () => {
+    it('[Z] salir sin sesión no falla', () => {
+      const { auth } = crearAuth();
+
+      expect(() => auth.salir()).not.toThrow();
+      expect(auth.token()).toBeNull();
+    });
+
+    it('[O] salir borra la sesión de la memoria y del almacenamiento', () => {
+      localStorage.setItem('token', sesion.token);
+      localStorage.setItem('usuario', JSON.stringify(sesion.usuario));
+      const { auth } = crearAuth();
+
+      auth.salir();
+
+      expect(auth.token()).toBeNull();
+      expect(auth.usuario()).toBeNull();
+      expect(localStorage.getItem('token')).toBeNull();
+      expect(localStorage.getItem('usuario')).toBeNull();
+    });
+  });
+
+  describe('sesión guardada', () => {
+    it('[S] recupera la sesión del almacenamiento al iniciar', () => {
+      localStorage.setItem('token', sesion.token);
+      localStorage.setItem('usuario', JSON.stringify(sesion.usuario));
+
+      const { auth } = crearAuth();
+
+      expect(auth.token()).toBe('token-de-prueba');
+      expect(auth.usuario()?.correo).toBe('laura@correo.com');
+    });
+
+    it('[E] un usuario guardado con formato roto se ignora', () => {
+      localStorage.setItem('usuario', '{roto');
+
+      const { auth } = crearAuth();
+
+      expect(auth.usuario()).toBeNull();
+    });
+  });
+});
