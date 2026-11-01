@@ -128,7 +128,6 @@
     "CORREO_REPETIDO": "That email is already registered.",
     "USUARIO_REPETIDO": "That username is already registered.",
     "IMAGEN_TIPO_INVALIDO": "The image must be JPG, PNG, WEBP or GIF.",
-    "IMAGEN_NO_ENCONTRADA": "The image was not found.",
     "CREDENCIALES_INVALIDAS": "The username or password is incorrect.",
     "TOKEN_AUSENTE": "You need to log in to do this.",
     "TOKEN_INVALIDO": "Your session is not valid or has expired. Log in again."

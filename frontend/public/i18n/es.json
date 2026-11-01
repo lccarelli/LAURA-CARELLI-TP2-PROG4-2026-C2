@@ -128,7 +128,6 @@
     "CORREO_REPETIDO": "El correo ya está registrado.",
     "USUARIO_REPETIDO": "El nombre de usuario ya está registrado.",
     "IMAGEN_TIPO_INVALIDO": "La imagen debe ser JPG, PNG, WEBP o GIF.",
-    "IMAGEN_NO_ENCONTRADA": "No se encontró la imagen.",
     "CREDENCIALES_INVALIDAS": "El usuario o la clave son incorrectos.",
     "TOKEN_AUSENTE": "Tenés que ingresar para hacer esto.",
     "TOKEN_INVALIDO": "Tu sesión no es válida o venció. Ingresá de nuevo."

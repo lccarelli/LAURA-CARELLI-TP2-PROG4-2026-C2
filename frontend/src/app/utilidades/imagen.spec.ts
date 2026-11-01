@@ -1,4 +1,3 @@
-import { environment } from '../../environments/environment';
 import { TAMANO_MAXIMO_IMAGEN, urlImagen, validarImagen } from './imagen';
 
 const archivo = (tipo: string, bytes: number) =>
@@ -35,8 +34,9 @@ describe('urlImagen', () => {
     expect(urlImagen()).toBe('/sin-foto.svg');
   });
 
-  it('[O] con ruta devuelve la dirección completa en la API', () => {
-    expect(urlImagen('/imagenes/abc')).toBe(`${environment.API_URL}/imagenes/abc`);
+  it('[O] con una URL de Cloudinary la devuelve tal cual', () => {
+    const url = 'https://res.cloudinary.com/nube/image/upload/banquete/abc.png';
+    expect(urlImagen(url)).toBe(url);
   });
 
   it('[B] una imagen de la carpeta pública de la aplicación no pasa por la API', () => {

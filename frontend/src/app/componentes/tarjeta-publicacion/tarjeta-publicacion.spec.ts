@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { environment } from '../../../environments/environment';
 import { Publicacion } from '../../interfaces/publicacion';
 import { TarjetaPublicacion } from './tarjeta-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
@@ -66,16 +65,19 @@ describe('TarjetaPublicacion', () => {
   it('[M] con imagen la muestra en lugar del mensaje, junto a la foto del autor', async () => {
     const elemento = await crear({
       ...base,
-      imagen: '/imagenes/aaa',
-      usuario: { ...base.usuario, imagenPerfil: '/imagenes/bbb' },
+      imagen: 'https://res.cloudinary.com/nube/image/upload/banquete/aaa.png',
+      usuario: {
+        ...base.usuario,
+        imagenPerfil: 'https://res.cloudinary.com/nube/image/upload/banquete/bbb.png',
+      },
     });
     const fuentes = Array.from(elemento.querySelectorAll('img')).map((img) =>
       img.getAttribute('src'),
     );
 
     expect(fuentes).toEqual([
-      `${environment.API_URL}/imagenes/aaa`,
-      `${environment.API_URL}/imagenes/bbb`,
+      'https://res.cloudinary.com/nube/image/upload/banquete/aaa.png',
+      'https://res.cloudinary.com/nube/image/upload/banquete/bbb.png',
     ]);
     expect(elemento.querySelector('.pin-texto')).toBeNull();
   });

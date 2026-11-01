@@ -6,6 +6,11 @@ export const PNG = Buffer.from(
   'base64',
 );
 
+export const URL_IMAGEN_SUBIDA =
+  'https://res.cloudinary.com/prueba/image/upload/banquete/imagen.png';
+
+export const PUBLIC_ID_IMAGEN_SUBIDA = 'banquete/imagen';
+
 export function pngDeTamano(bytes: number) {
   return Buffer.concat([PNG, Buffer.alloc(bytes - PNG.length)]);
 }

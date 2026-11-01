@@ -1,8 +1,9 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
 import jwt from 'jsonwebtoken';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
 import { ImagenesService } from '../imagenes/imagenes.service.js';
+import { authConfig } from './auth.config.js';
 import { AuthGuard } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
 
@@ -17,7 +18,7 @@ function contexto(authorization?: string) {
 }
 
 describe('AuthGuard', () => {
-  const config = { getOrThrow: () => SECRETO } as unknown as ConfigService;
+  const config = { secretoJwt: SECRETO } as ConfigType<typeof authConfig>;
   const authService = new AuthService(
     config,
     {} as UsuariosService,

@@ -3,20 +3,24 @@ import { getModelToken } from '@nestjs/mongoose';
 import bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import request from 'supertest';
-import { Imagen } from '../src/imagenes/schemas/imagen.schema.js';
+import { Destino } from '../src/imagenes/destinos.js';
 import { Usuario } from '../src/usuarios/schemas/usuario.schema.js';
-import { crearApp, limpiarBase } from './ayudas/app.js';
-import { PNG, pngDeTamano, registrar, usuarioValido } from './ayudas/datos.js';
+import { crearApp, cloudinaryFalso, limpiarBase } from './ayudas/app.js';
+import {
+  PNG,
+  URL_IMAGEN_SUBIDA,
+  pngDeTamano,
+  registrar,
+  usuarioValido,
+} from './ayudas/datos.js';
 
 describe('POST /auth/registro', () => {
   let app: INestApplication;
   let usuarios: Model<Usuario>;
-  let imagenes: Model<Imagen>;
 
   beforeAll(async () => {
     app = await crearApp();
     usuarios = app.get(getModelToken(Usuario.name));
-    imagenes = app.get(getModelToken(Imagen.name));
   });
 
   beforeEach(async () => {
@@ -170,7 +174,7 @@ describe('POST /auth/registro', () => {
       }).expect(413);
 
       expect(await usuarios.countDocuments()).toBe(0);
-      expect(await imagenes.countDocuments()).toBe(0);
+      expect(cloudinaryFalso.subir).not.toHaveBeenCalled();
     });
   });
 
@@ -213,14 +217,6 @@ describe('POST /auth/registro', () => {
         tipo: 'image/png',
       }).expect(400);
     });
-
-    it('[E] si el usuario no se puede crear, la imagen subida se borra', async () => {
-      await registrar(app).expect(201);
-
-      await registrar(app, usuarioValido(), imagenPng).expect(409);
-
-      expect(await imagenes.countDocuments()).toBe(0);
-    });
   });
 
   describe('escenarios simples', () => {
@@ -233,23 +229,37 @@ describe('POST /auth/registro', () => {
       expect(respuesta.body.usuario.perfil).toBe('administrador');
     });
 
-    it('[S] con imagen, la URL del usuario devuelve esa imagen', async () => {
+    it('[S] con imagen, el usuario guarda la URL que devuelve el almacenamiento', async () => {
       const registro = await registrar(app, usuarioValido(), imagenPng).expect(
         201,
       );
 
-      const url: string = registro.body.usuario.imagenPerfil;
-      expect(url).toMatch(/^\/imagenes\/[0-9a-f]{24}$/);
-
-      const imagen = await request(app.getHttpServer()).get(url).expect(200);
-      expect(imagen.headers['content-type']).toBe('image/png');
-      expect(imagen.body).toEqual(PNG);
+      expect(registro.body.usuario.imagenPerfil).toBe(URL_IMAGEN_SUBIDA);
+      expect(cloudinaryFalso.subir).toHaveBeenCalledTimes(1);
+      const [archivo, destino, nombre] = cloudinaryFalso.subir.mock.calls[0];
+      expect(destino).toBe(Destino.PERFILES);
+      expect(nombre).toMatch(
+        new RegExp(`^${registro.body.usuario._id}-perfiles-\\d+$`),
+      );
+      expect(archivo.mimetype).toBe('image/png');
+      expect(archivo.buffer).toEqual(PNG);
     });
 
     it('[S] sin imagen, el usuario no tiene imagenPerfil', async () => {
       const respuesta = await registrar(app).expect(201);
 
       expect(respuesta.body.usuario.imagenPerfil).toBeUndefined();
+      expect(cloudinaryFalso.subir).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('almacenamiento caído', () => {
+    it('[E] si Cloudinary falla responde 500 y no crea el usuario', async () => {
+      cloudinaryFalso.subir.mockRejectedValueOnce(new Error('caído'));
+
+      await registrar(app, usuarioValido(), imagenPng).expect(500);
+
+      expect(await usuarios.countDocuments()).toBe(0);
     });
   });
 });

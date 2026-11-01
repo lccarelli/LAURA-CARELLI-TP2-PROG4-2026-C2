@@ -105,12 +105,4 @@ describe('códigos de error de la API', () => {
 
     expect(body.codigo).toBe('TOKEN_INVALIDO');
   });
-
-  it('[I] una imagen inexistente responde IMAGEN_NO_ENCONTRADA', async () => {
-    const { body } = await request(app.getHttpServer())
-      .get('/imagenes/507f1f77bcf86cd799439011')
-      .expect(404);
-
-    expect(body.codigo).toBe('IMAGEN_NO_ENCONTRADA');
-  });
 });

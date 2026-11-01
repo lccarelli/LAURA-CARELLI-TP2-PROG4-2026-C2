@@ -1,7 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { environment } from '../../../environments/environment';
 import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
 import { Idioma } from '../../servicios/idioma/idioma';
@@ -61,11 +60,14 @@ describe('Perfil', () => {
     expect(pagina.querySelector('img')!.getAttribute('src')).toBe('/sin-foto.svg');
   });
 
-  it('[B] con foto muestra la imagen de la API', async () => {
-    const pagina = await mostrar({ ...usuario, imagenPerfil: '/imagenes/abc' });
+  it('[B] con foto muestra la imagen guardada en Cloudinary', async () => {
+    const pagina = await mostrar({
+      ...usuario,
+      imagenPerfil: 'https://res.cloudinary.com/nube/image/upload/banquete/abc.png',
+    });
 
     expect(pagina.querySelector('img')!.getAttribute('src')).toBe(
-      `${environment.API_URL}/imagenes/abc`,
+      'https://res.cloudinary.com/nube/image/upload/banquete/abc.png',
     );
   });
 
