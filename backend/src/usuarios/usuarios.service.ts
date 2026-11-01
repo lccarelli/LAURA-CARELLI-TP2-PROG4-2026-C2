@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Usuario } from './schemas/usuario.schema.js';
 
 @Injectable()
@@ -9,7 +9,7 @@ export class UsuariosService {
     @InjectModel(Usuario.name) private readonly usuarioModel: Model<Usuario>,
   ) {}
 
-  async crear(datos: Partial<Usuario>) {
+  async crear(datos: Partial<Usuario> & { _id?: Types.ObjectId }) {
     try {
       const creado = await this.usuarioModel.create(datos);
       return await this.usuarioModel.findById(creado._id).lean();

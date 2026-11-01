@@ -121,6 +121,10 @@ Se definen en `backend/.env` (hay un ejemplo en `backend/.env.example`). El `.en
 | `MONGO_URI`    | Conexión a MongoDB                                    |
 | `PORT`         | Puerto del backend (3001 en local)                    |
 | `FRONTEND_URL` | Origen permitido por CORS (por defecto `http://localhost:4200`) |
+| `JWT_SECRET`   | Clave con la que se firma el token                    |
+| `ADMIN_EMAIL`  | Correo que queda como administrador al registrarse    |
+| `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_CLOUD_NAME` | Cuenta de Cloudinary donde se guardan las imágenes |
+| `CLOUDINARY_CARPETA` | Carpeta raíz en Cloudinary (opcional, por defecto `banquete`). En desarrollo conviene otra, como `banquete-dev`, para no mezclar las fotos de prueba |
 
 La URL de la API que usa el frontend está en `frontend/src/environments/`.
 

@@ -1,14 +1,18 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { Types } from 'mongoose';
+import { Destino } from '../imagenes/destinos.js';
 import { ImagenesService } from '../imagenes/imagenes.service.js';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
+import { authConfig } from './auth.config.js';
 import { IngresarDto } from './dto/ingresar.dto.js';
 import { RegistroDto } from './dto/registro.dto.js';
 
@@ -17,7 +21,8 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    private readonly config: ConfigService,
+    @Inject(authConfig.KEY)
+    private readonly config: ConfigType<typeof authConfig>,
     private readonly usuariosService: UsuariosService,
     private readonly imagenesService: ImagenesService,
   ) {}
@@ -31,33 +36,32 @@ export class AuthService {
       });
     }
 
-    const adminEmail = this.config.get<string>('ADMIN_EMAIL')?.toLowerCase();
     const perfil =
-      dto.correo.toLowerCase() === adminEmail ? 'administrador' : 'usuario';
-    const clave = await bcrypt.hash(dto.clave, 10);
-    const imagenGuardada = imagen
-      ? await this.imagenesService.guardar(imagen)
+      dto.correo.toLowerCase() === this.config.correoAdmin
+        ? 'administrador'
+        : 'usuario';
+    const clave = await bcrypt.hash(dto.clave, this.config.rondasBcrypt);
+    const usuarioId = new Types.ObjectId();
+    const imagenPerfil = imagen
+      ? (
+          await this.imagenesService.guardar(
+            imagen,
+            Destino.PERFILES,
+            String(usuarioId),
+          )
+        ).url
       : undefined;
 
-    try {
-      const usuario = await this.usuariosService.crear({
-        ...dto,
-        clave,
-        fechaNacimiento,
-        perfil,
-        imagenPerfil: imagenGuardada?.url,
-      });
-      this.logger.log(`Usuario registrado: ${usuario!._id} (${perfil})`);
-      return { token: this.generarToken(usuario!), usuario };
-    } catch (error) {
-      if (imagenGuardada) {
-        this.logger.warn(
-          `Registro fallido: se borra la imagen ${imagenGuardada.id}`,
-        );
-        await this.imagenesService.borrar(imagenGuardada.id);
-      }
-      throw error;
-    }
+    const usuario = await this.usuariosService.crear({
+      ...dto,
+      _id: usuarioId,
+      clave,
+      fechaNacimiento,
+      perfil,
+      imagenPerfil,
+    });
+    this.logger.log(`Usuario registrado: ${usuario!._id} (${perfil})`);
+    return { token: this.generarToken(usuario!), usuario };
   }
 
   async ingresar(dto: IngresarDto) {
@@ -84,7 +88,7 @@ export class AuthService {
     try {
       const payload = jwt.verify(
         token,
-        this.config.getOrThrow<string>('JWT_SECRET'),
+        this.config.secretoJwt,
       ) as jwt.JwtPayload;
       return { id: payload.sub as string, perfil: payload.perfil as string };
     } catch (error) {
@@ -99,8 +103,8 @@ export class AuthService {
   private generarToken(usuario: { _id: unknown; perfil: string }) {
     return jwt.sign(
       { sub: String(usuario._id), perfil: usuario.perfil },
-      this.config.getOrThrow<string>('JWT_SECRET'),
-      { expiresIn: '15m' },
+      this.config.secretoJwt,
+      { expiresIn: this.config.expiraJwt },
     );
   }
 }

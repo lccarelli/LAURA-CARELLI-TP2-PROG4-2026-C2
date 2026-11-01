@@ -2,15 +2,19 @@ import { INestApplication } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import request from 'supertest';
-import { Imagen } from '../src/imagenes/schemas/imagen.schema.js';
+import { Destino } from '../src/imagenes/destinos.js';
 import { Publicacion } from '../src/publicaciones/schemas/publicacion.schema.js';
-import { crearApp, limpiarBase } from './ayudas/app.js';
-import { PNG, pngDeTamano, registrarYObtenerSesion } from './ayudas/datos.js';
+import { crearApp, cloudinaryFalso, limpiarBase } from './ayudas/app.js';
+import {
+  PNG,
+  URL_IMAGEN_SUBIDA,
+  pngDeTamano,
+  registrarYObtenerSesion,
+} from './ayudas/datos.js';
 
 describe('POST /publicaciones', () => {
   let app: INestApplication;
   let publicaciones: Model<Publicacion>;
-  let imagenes: Model<Imagen>;
   let token: string;
   let usuarioId: string;
 
@@ -44,7 +48,6 @@ describe('POST /publicaciones', () => {
   beforeAll(async () => {
     app = await crearApp();
     publicaciones = app.get(getModelToken(Publicacion.name));
-    imagenes = app.get(getModelToken(Imagen.name));
   });
 
   beforeEach(async () => {
@@ -102,7 +105,7 @@ describe('POST /publicaciones', () => {
       ).expect(201);
 
       expect(await publicaciones.countDocuments()).toBe(2);
-      expect(await imagenes.countDocuments()).toBe(1);
+      expect(cloudinaryFalso.subir).toHaveBeenCalledTimes(1);
     });
 
     it('[M] dos usuarios publican, cada una con su autor', async () => {
@@ -153,7 +156,7 @@ describe('POST /publicaciones', () => {
       ).expect(413);
 
       expect(await publicaciones.countDocuments()).toBe(0);
-      expect(await imagenes.countDocuments()).toBe(0);
+      expect(cloudinaryFalso.subir).not.toHaveBeenCalled();
     });
   });
 
@@ -276,16 +279,20 @@ describe('POST /publicaciones', () => {
       expect(body.datos[0].titulo).toBe('Nueva');
     });
 
-    it('[S] con imagen, la URL de la publicación devuelve esa imagen', async () => {
+    it('[S] con imagen, la publicación guarda la URL que devuelve el almacenamiento', async () => {
       const { body } = await publicar(
         { titulo: 'Con foto', mensaje: 'Mirá' },
         imagenPng,
       ).expect(201);
 
-      const imagen = await request(app.getHttpServer())
-        .get(body.imagen)
-        .expect(200);
-      expect(imagen.body).toEqual(PNG);
+      expect(body.imagen).toBe(URL_IMAGEN_SUBIDA);
+      const [archivo, destino, nombre] = cloudinaryFalso.subir.mock.calls[0];
+      expect(destino).toBe(Destino.PUBLICACIONES);
+      expect(nombre).toMatch(
+        new RegExp(`^${body.usuario._id}-experiencia-\\d+$`),
+      );
+      expect(archivo.mimetype).toBe('image/png');
+      expect(archivo.buffer).toEqual(PNG);
     });
   });
 });
