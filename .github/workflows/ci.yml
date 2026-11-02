@@ -1,0 +1,114 @@
+name: CI y deploy
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-24.04
+    env:
+      MONGO_URI: mongodb://localhost:27017/redsocial_test
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1}).ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test:cov
+      - run: npm run test:e2e:cov
+      - run: node ../.github/resumen-cobertura.mjs "Unidad=coverage/unidad/coverage-summary.json" "API (e2e)=coverage/e2e/coverage-summary.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-backend
+          path: backend/coverage
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test:cov
+      - run: node ../.github/resumen-cobertura.mjs "Frontend=coverage/frontend/coverage-summary.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-frontend
+          path: frontend/coverage
+
+  commits:
+    name: Mensajes de commit
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed
+
+  deploy-backend:
+    name: Deploy del backend en Render
+    needs: [backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - run: curl --fail --silent --show-error -X POST "$RENDER_DEPLOY_HOOK_URL"
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+  deploy-frontend:
+    name: Deploy del frontend en Vercel
+    needs: [backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: npx --yes vercel@65.9.0 pull --yes --environment=production --token="${{ secrets.VERCEL_TOKEN }}"
+      - run: npx --yes vercel@65.9.0 build --prod --token="${{ secrets.VERCEL_TOKEN }}"
+      - run: npx --yes vercel@65.9.0 deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}"

@@ -7,5 +7,12 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.spec.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.spec.ts', 'src/main.ts'],
+      reporter: ['text-summary', 'json-summary', 'lcov'],
+      reportsDirectory: './coverage/unidad',
+    },
   },
 });
