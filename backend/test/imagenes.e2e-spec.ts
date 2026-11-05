@@ -18,8 +18,8 @@ describe('/imagenes', () => {
   let token: string;
   let usuarios: Model<Usuario>;
 
-  const con = (pedido: request.Test, credencial = token) =>
-    pedido.set('Authorization', `Bearer ${credencial}`);
+  const con = (solicitud: request.Test, credencial = token) =>
+    solicitud.set('Authorization', `Bearer ${credencial}`);
 
   const subir = (
     contenido: Buffer = PNG,

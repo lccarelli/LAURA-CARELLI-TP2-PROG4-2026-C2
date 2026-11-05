@@ -26,23 +26,23 @@ describe('POST /publicaciones', () => {
     archivo?: { contenido: Buffer; nombre: string; tipo: string },
     tokenUsado: string | undefined = token,
   ) => {
-    const pedido = request(app.getHttpServer()).post('/publicaciones');
+    const solicitud = request(app.getHttpServer()).post('/publicaciones');
     if (tokenUsado) {
-      pedido.set('Authorization', `Bearer ${tokenUsado}`);
+      solicitud.set('Authorization', `Bearer ${tokenUsado}`);
     }
     for (const [campo, valor] of Object.entries({
       tipo: 'experiencia',
       ...campos,
     })) {
-      pedido.field(campo, valor);
+      solicitud.field(campo, valor);
     }
     if (archivo) {
-      pedido.attach('imagen', archivo.contenido, {
+      solicitud.attach('imagen', archivo.contenido, {
         filename: archivo.nombre,
         contentType: archivo.tipo,
       });
     }
-    return pedido;
+    return solicitud;
   };
 
   beforeAll(async () => {

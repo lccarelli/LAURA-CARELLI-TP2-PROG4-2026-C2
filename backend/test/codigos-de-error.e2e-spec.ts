@@ -89,7 +89,7 @@ describe('códigos de error de la API', () => {
     expect(body.codigo).toBe('CREDENCIALES_INVALIDAS');
   });
 
-  it('[I] un pedido sin token responde TOKEN_AUSENTE', async () => {
+  it('[I] una solicitud sin token responde TOKEN_AUSENTE', async () => {
     const { body } = await request(app.getHttpServer())
       .get('/publicaciones')
       .expect(401);

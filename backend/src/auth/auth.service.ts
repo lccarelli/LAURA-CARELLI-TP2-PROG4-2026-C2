@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
@@ -10,6 +9,11 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
 import { Destino } from '../imagenes/destinos.js';
+import {
+  EVENTOS_DE_LOG,
+  LoggerFactory,
+  ContextLogger,
+} from '../logs/logs.factory.js';
 import { ImagenesService } from '../imagenes/imagenes.service.js';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
 import { authConfig } from './auth.config.js';
@@ -18,14 +22,17 @@ import { RegistroDto } from './dto/registro.dto.js';
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
+  private readonly logger: ContextLogger;
 
   constructor(
     @Inject(authConfig.KEY)
     private readonly config: ConfigType<typeof authConfig>,
     private readonly usuariosService: UsuariosService,
     private readonly imagenesService: ImagenesService,
-  ) {}
+    loggerFactory: LoggerFactory,
+  ) {
+    this.logger = loggerFactory.crear(AuthService.name);
+  }
 
   async registro(dto: RegistroDto, imagen?: Express.Multer.File) {
     const fechaNacimiento = new Date(dto.fechaNacimiento);
@@ -60,7 +67,10 @@ export class AuthService {
       perfil,
       imagenPerfil,
     });
-    this.logger.log(`Usuario registrado: ${usuario!._id} (${perfil})`);
+    this.logger.info(EVENTOS_DE_LOG.USUARIO_REGISTRADO, 'Usuario registrado', {
+      id_usuario: String(usuario!._id),
+      perfil,
+    });
     return { token: this.generarToken(usuario!), usuario };
   }
 
@@ -71,14 +81,19 @@ export class AuthService {
     const coincide =
       encontrado && (await bcrypt.compare(dto.clave, encontrado.clave));
     if (!encontrado || !coincide) {
-      this.logger.warn('Ingreso fallido: credenciales inválidas');
+      this.logger.advertir(
+        EVENTOS_DE_LOG.INGRESO_FALLIDO,
+        'Ingreso fallido: credenciales inválidas',
+      );
       throw new UnauthorizedException({
         message: 'Credenciales inválidas',
         codigo: 'CREDENCIALES_INVALIDAS',
       });
     }
 
-    this.logger.log(`Ingreso correcto: ${encontrado._id}`);
+    this.logger.info(EVENTOS_DE_LOG.INGRESO_CORRECTO, 'Ingreso correcto', {
+      id_usuario: String(encontrado._id),
+    });
 
     const { clave: _clave, ...usuario } = encontrado;
     return { token: this.generarToken(usuario), usuario };
@@ -92,7 +107,9 @@ export class AuthService {
       ) as jwt.JwtPayload;
       return { id: payload.sub as string, perfil: payload.perfil as string };
     } catch (error) {
-      this.logger.warn(`Token rechazado: ${(error as Error).message}`);
+      this.logger.advertir(EVENTOS_DE_LOG.TOKEN_RECHAZADO, 'Token rechazado', {
+        motivo: (error as Error).message,
+      });
       throw new UnauthorizedException({
         message: 'Token inválido o vencido',
         codigo: 'TOKEN_INVALIDO',

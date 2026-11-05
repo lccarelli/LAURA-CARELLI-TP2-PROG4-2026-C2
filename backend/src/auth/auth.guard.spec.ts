@@ -1,6 +1,7 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import jwt from 'jsonwebtoken';
+import { LoggerFactory } from '../logs/logs.factory.js';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
 import { ImagenesService } from '../imagenes/imagenes.service.js';
 import { authConfig } from './auth.config.js';
@@ -10,7 +11,11 @@ import { AuthService } from './auth.service.js';
 const SECRETO = 'secreto-de-pruebas';
 
 function contexto(authorization?: string) {
-  const solicitud: Record<string, any> = { headers: { authorization } };
+  const solicitud: Record<string, any> = {
+    headers: { authorization },
+    method: 'GET',
+    originalUrl: '/publicaciones',
+  };
   const ejecucion = {
     switchToHttp: () => ({ getRequest: () => solicitud }),
   } as ExecutionContext;
@@ -19,17 +24,35 @@ function contexto(authorization?: string) {
 
 describe('AuthGuard', () => {
   const config = { secretoJwt: SECRETO } as ConfigType<typeof authConfig>;
+  const loggerFactory = new LoggerFactory();
   const authService = new AuthService(
     config,
     {} as UsuariosService,
     {} as ImagenesService,
+    loggerFactory,
   );
-  const guard = new AuthGuard(authService);
+  const guard = new AuthGuard(authService, loggerFactory);
 
   it('[Z] sin header Authorization responde 401', () => {
     const { ejecucion } = contexto();
 
     expect(() => guard.canActivate(ejecucion)).toThrow(UnauthorizedException);
+  });
+
+  it('[Z] sin token registra la solicitud que se rechazó', () => {
+    const salida = vi.spyOn(process.stdout, 'write').mockReturnValue(true);
+    const { ejecucion } = contexto();
+
+    expect(() => guard.canActivate(ejecucion)).toThrow(UnauthorizedException);
+    const linea = JSON.parse(String(salida.mock.calls[0][0]));
+    salida.mockRestore();
+    expect(linea).toMatchObject({
+      nivel: 'warn',
+      modulo: 'AuthGuard',
+      evento: 'token_ausente',
+      metodo: 'GET',
+      url: '/publicaciones',
+    });
   });
 
   it('[O] con un token válido deja pasar y guarda quién es el usuario', () => {
