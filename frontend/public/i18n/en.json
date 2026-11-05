@@ -130,7 +130,8 @@
     "IMAGEN_TIPO_INVALIDO": "The image must be JPG, PNG, WEBP or GIF.",
     "CREDENCIALES_INVALIDAS": "The username or password is incorrect.",
     "TOKEN_AUSENTE": "You need to log in to do this.",
-    "TOKEN_INVALIDO": "Your session is not valid or has expired. Log in again."
+    "TOKEN_INVALIDO": "Your session is not valid or has expired. Log in again.",
+    "DEMASIADAS_SOLICITUDES": "You made too many requests in a row. Wait a moment and try again."
   },
   "tipos": {
     "receta": "Recipe",
