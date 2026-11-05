@@ -40,7 +40,7 @@ describe('reintentoInterceptor', () => {
     vi.restoreAllMocks();
   });
 
-  it('[Z] si el primer intento funciona hace un solo pedido', () => {
+  it('[Z] si el primer intento funciona hace una sola solicitud', () => {
     pedir();
 
     controlador.expectOne(URL).flush({ ok: true });
@@ -87,7 +87,7 @@ describe('reintentoInterceptor', () => {
     controlador.expectOne(URL).flush({ ok: true });
   });
 
-  it('[I] un pedido que no es GET no se reintenta', () => {
+  it('[I] una solicitud que no es GET no se reintenta', () => {
     pedir('post');
 
     fallar(503);
