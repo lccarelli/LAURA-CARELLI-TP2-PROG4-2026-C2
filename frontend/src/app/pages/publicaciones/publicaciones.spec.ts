@@ -32,10 +32,10 @@ describe('Publicaciones', () => {
 
   const pedir = (offset: number) =>
     http.expectOne(
-      (pedido) =>
-        pedido.url === URL &&
-        pedido.params.get('offset') === String(offset) &&
-        pedido.params.get('limit') === '10',
+      (solicitud) =>
+        solicitud.url === URL &&
+        solicitud.params.get('offset') === String(offset) &&
+        solicitud.params.get('limit') === '10',
     );
 
   const texto = () => fixture.nativeElement.textContent as string;

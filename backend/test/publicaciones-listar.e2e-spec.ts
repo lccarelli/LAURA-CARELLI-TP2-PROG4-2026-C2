@@ -4,6 +4,7 @@ import request from 'supertest';
 import { crearApp, limpiarBase } from './ayudas/app.js';
 import { registrarYObtenerSesion } from './ayudas/datos.js';
 import { sembrarPublicaciones } from './ayudas/publicaciones.js';
+import { TTL_LISTADO_MS } from '../src/publicaciones/publicaciones.module.js';
 
 describe('GET /publicaciones', () => {
   let app: INestApplication;
@@ -187,6 +188,60 @@ describe('GET /publicaciones', () => {
 
     it('[E] un limit que no es número responde 400', async () => {
       await listar('?limit=abc').expect(400);
+    });
+  });
+
+  describe('caché', () => {
+    const esperarQueVenza = () =>
+      new Promise((resolver) => setTimeout(resolver, TTL_LISTADO_MS + 100));
+
+    it('[O] dentro del tiempo, un segundo listado sale del caché', async () => {
+      await sembrarPublicaciones(app, usuarioId, 1);
+      const primero = await listar().expect(200);
+      await sembrarPublicaciones(app, usuarioId, 1);
+
+      const segundo = await listar().expect(200);
+
+      expect(primero.body.datos).toHaveLength(1);
+      expect(segundo.body.datos).toHaveLength(1);
+    });
+
+    it('[B] vencido el tiempo, vuelve a leer la base', async () => {
+      await sembrarPublicaciones(app, usuarioId, 1);
+      await listar().expect(200);
+      await sembrarPublicaciones(app, usuarioId, 1);
+      await esperarQueVenza();
+
+      const { body } = await listar().expect(200);
+
+      expect(body.datos).toHaveLength(2);
+    });
+
+    it('[M] cada combinación de offset y limit tiene su propio listado', async () => {
+      await sembrarPublicaciones(app, usuarioId, 3);
+
+      const uno = await listar('?limit=1').expect(200);
+      const dos = await listar('?limit=2').expect(200);
+
+      expect(uno.body.datos).toHaveLength(1);
+      expect(dos.body.datos).toHaveLength(2);
+    });
+
+    it('[S] al publicar, el listado se actualiza al instante', async () => {
+      await sembrarPublicaciones(app, usuarioId, 1);
+      await listar().expect(200);
+
+      await request(app.getHttpServer())
+        .post('/publicaciones')
+        .set('Authorization', `Bearer ${token}`)
+        .field('tipo', 'tip')
+        .field('titulo', 'Recién publicada')
+        .field('mensaje', 'Mensaje')
+        .expect(201);
+      const { body } = await listar().expect(200);
+
+      expect(body.datos).toHaveLength(2);
+      expect(body.datos[0].titulo).toBe('Recién publicada');
     });
   });
 });

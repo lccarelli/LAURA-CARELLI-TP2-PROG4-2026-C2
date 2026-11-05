@@ -130,7 +130,8 @@
     "IMAGEN_TIPO_INVALIDO": "La imagen debe ser JPG, PNG, WEBP o GIF.",
     "CREDENCIALES_INVALIDAS": "El usuario o la clave son incorrectos.",
     "TOKEN_AUSENTE": "Tenés que ingresar para hacer esto.",
-    "TOKEN_INVALIDO": "Tu sesión no es válida o venció. Ingresá de nuevo."
+    "TOKEN_INVALIDO": "Tu sesión no es válida o venció. Ingresá de nuevo.",
+    "DEMASIADAS_SOLICITUDES": "Hiciste demasiadas solicitudes seguidas. Esperá un momento e intentá de nuevo."
   },
   "tipos": {
     "receta": "Receta",

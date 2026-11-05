@@ -58,11 +58,11 @@ describe('Auth', () => {
       datos.append('nombre', 'Laura');
 
       auth.registro(datos).subscribe();
-      const pedido = http.expectOne(`${environment.API_URL}/auth/registro`);
+      const solicitud = http.expectOne(`${environment.API_URL}/auth/registro`);
 
-      expect(pedido.request.method).toBe('POST');
-      expect(pedido.request.body).toBe(datos);
-      pedido.flush(sesion);
+      expect(solicitud.request.method).toBe('POST');
+      expect(solicitud.request.body).toBe(datos);
+      solicitud.flush(sesion);
     });
 
     it('[E] si la API responde con error no guarda nada', () => {
@@ -93,14 +93,14 @@ describe('Auth', () => {
       const { auth, http } = crearAuth();
 
       auth.ingresar('laura_c', 'Clave1234').subscribe();
-      const pedido = http.expectOne(`${environment.API_URL}/auth/ingresar`);
+      const solicitud = http.expectOne(`${environment.API_URL}/auth/ingresar`);
 
-      expect(pedido.request.method).toBe('POST');
-      expect(pedido.request.body).toEqual({
+      expect(solicitud.request.method).toBe('POST');
+      expect(solicitud.request.body).toEqual({
         identificador: 'laura_c',
         clave: 'Clave1234',
       });
-      pedido.flush(sesion);
+      solicitud.flush(sesion);
     });
 
     it('[E] con credenciales incorrectas no guarda nada', () => {

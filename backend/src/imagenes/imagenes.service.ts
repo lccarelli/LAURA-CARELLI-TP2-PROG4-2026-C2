@@ -2,11 +2,15 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import {
+  EVENTOS_DE_LOG,
+  LoggerFactory,
+  ContextLogger,
+} from '../logs/logs.factory.js';
 import { Publicacion } from '../publicaciones/schemas/publicacion.schema.js';
 import { Usuario } from '../usuarios/schemas/usuario.schema.js';
 import { CloudinaryCliente } from './cloudinary.cliente.js';
@@ -15,7 +19,7 @@ import { Imagen } from './schemas/imagen.schema.js';
 
 @Injectable()
 export class ImagenesService {
-  private readonly logger = new Logger(ImagenesService.name);
+  private readonly logger: ContextLogger;
 
   constructor(
     @InjectModel(Imagen.name) private readonly imagenModel: Model<Imagen>,
@@ -23,7 +27,10 @@ export class ImagenesService {
     private readonly publicacionModel: Model<Publicacion>,
     @InjectModel(Usuario.name) private readonly usuarioModel: Model<Usuario>,
     private readonly cloudinary: CloudinaryCliente,
-  ) {}
+    loggerFactory: LoggerFactory,
+  ) {
+    this.logger = loggerFactory.crear(ImagenesService.name);
+  }
 
   async guardar(
     archivo: Express.Multer.File,
@@ -45,9 +52,12 @@ export class ImagenesService {
       tamano: archivo.size,
       usuario: usuarioId,
     });
-    this.logger.log(
-      `Imagen subida: ${publicId} (${destino}, ${archivo.mimetype}, ${archivo.size} bytes)`,
-    );
+    this.logger.info(EVENTOS_DE_LOG.IMAGEN_SUBIDA, 'Imagen subida', {
+      public_id: publicId,
+      destino,
+      tipo_mime: archivo.mimetype,
+      tamano_bytes: archivo.size,
+    });
     return creada.toObject();
   }
 
@@ -104,6 +114,8 @@ export class ImagenesService {
 
     await this.cloudinary.borrar(imagen.publicId);
     await this.imagenModel.deleteOne({ _id: id });
-    this.logger.log(`Imagen borrada: ${imagen.publicId}`);
+    this.logger.info(EVENTOS_DE_LOG.IMAGEN_BORRADA, 'Imagen borrada', {
+      public_id: imagen.publicId,
+    });
   }
 }

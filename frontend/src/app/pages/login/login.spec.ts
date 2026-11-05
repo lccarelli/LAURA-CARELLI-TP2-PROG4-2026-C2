@@ -59,9 +59,9 @@ describe('Login', () => {
     componente.formulario.setValue({ identificador: '  laura_c ', clave: 'Clave1234' });
 
     await enviar();
-    const pedido = http.expectOne(URL);
+    const solicitud = http.expectOne(URL);
 
-    expect(pedido.request.body).toEqual({ identificador: 'laura_c', clave: 'Clave1234' });
+    expect(solicitud.request.body).toEqual({ identificador: 'laura_c', clave: 'Clave1234' });
   });
 
   it('[I] se muestra en una ventana flotante sobre la portada, que queda inactiva', () => {

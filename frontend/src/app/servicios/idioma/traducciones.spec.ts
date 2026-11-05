@@ -10,6 +10,7 @@ const CODIGOS_DE_LA_API = [
   'CREDENCIALES_INVALIDAS',
   'TOKEN_AUSENTE',
   'TOKEN_INVALIDO',
+  'DEMASIADAS_SOLICITUDES',
 ];
 
 function aplanar(objeto: object, prefijo = ''): Record<string, string> {

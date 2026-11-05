@@ -33,17 +33,17 @@ export function registrar(
   datos: Record<string, string> = usuarioValido(),
   archivo?: { contenido: Buffer; nombre: string; tipo: string },
 ) {
-  const pedido = request(app.getHttpServer()).post('/auth/registro');
+  const solicitud = request(app.getHttpServer()).post('/auth/registro');
   for (const [campo, valor] of Object.entries(datos)) {
-    pedido.field(campo, valor);
+    solicitud.field(campo, valor);
   }
   if (archivo) {
-    pedido.attach('imagen', archivo.contenido, {
+    solicitud.attach('imagen', archivo.contenido, {
       filename: archivo.nombre,
       contentType: archivo.tipo,
     });
   }
-  return pedido;
+  return solicitud;
 }
 
 export async function registrarYObtenerSesion(

@@ -24,8 +24,8 @@ describe('tokenInterceptor', () => {
   it('[Z] sin token no agrega el header', () => {
     http.get(`${environment.API_URL}/publicaciones`).subscribe();
 
-    const pedido = controlador.expectOne(`${environment.API_URL}/publicaciones`);
-    expect(pedido.request.headers.has('Authorization')).toBe(false);
+    const solicitud = controlador.expectOne(`${environment.API_URL}/publicaciones`);
+    expect(solicitud.request.headers.has('Authorization')).toBe(false);
   });
 
   it('[O] con token agrega Authorization Bearer', () => {
@@ -42,8 +42,8 @@ describe('tokenInterceptor', () => {
 
     http.get(`${environment.API_URL}/publicaciones`).subscribe();
 
-    const pedido = controlador.expectOne(`${environment.API_URL}/publicaciones`);
-    expect(pedido.request.headers.get('Authorization')).toBe('Bearer abc');
+    const solicitud = controlador.expectOne(`${environment.API_URL}/publicaciones`);
+    expect(solicitud.request.headers.get('Authorization')).toBe('Bearer abc');
   });
 
   it('[I] no manda el token a direcciones que no son de la API', () => {
@@ -51,8 +51,8 @@ describe('tokenInterceptor', () => {
 
     http.get('https://otro-sitio.com/datos').subscribe();
 
-    const pedido = controlador.expectOne('https://otro-sitio.com/datos');
-    expect(pedido.request.headers.has('Authorization')).toBe(false);
+    const solicitud = controlador.expectOne('https://otro-sitio.com/datos');
+    expect(solicitud.request.headers.has('Authorization')).toBe(false);
   });
 
   it('[S] después de salir deja de agregar el token', () => {
@@ -62,7 +62,7 @@ describe('tokenInterceptor', () => {
 
     http.get(`${environment.API_URL}/publicaciones`).subscribe();
 
-    const pedido = controlador.expectOne(`${environment.API_URL}/publicaciones`);
-    expect(pedido.request.headers.has('Authorization')).toBe(false);
+    const solicitud = controlador.expectOne(`${environment.API_URL}/publicaciones`);
+    expect(solicitud.request.headers.has('Authorization')).toBe(false);
   });
 });
