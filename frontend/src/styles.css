@@ -23,7 +23,6 @@
   --color-acento: var(--tema-acento);
   --color-acento-tinta: var(--tema-acento-tinta);
   --color-error: var(--tema-error);
-  --color-velo: var(--tema-velo);
 
   --color-serie-1: var(--tema-serie-1);
   --color-serie-2: var(--tema-serie-2);
@@ -57,7 +56,6 @@
   --tema-secundario: #e4e1dc;
   --tema-secundario-tinta: #262221;
   --tema-error: #b3261e;
-  --tema-velo: rgb(38 34 33 / 0.45);
   --tema-brillo: rgb(255 255 255 / 0.6);
   --tema-serie-1: #404d63;
   --tema-serie-2: #006697;
@@ -87,7 +85,6 @@
   --tema-secundario: #46536b;
   --tema-secundario-tinta: #eef1f6;
   --tema-error: #ff9a8a;
-  --tema-velo: rgb(0 0 0 / 0.6);
   --tema-brillo: rgb(255 255 255 / 0.05);
   --tema-serie-1: #abc9f7;
   --tema-serie-2: #abc9f7;
@@ -145,6 +142,90 @@ body {
 
   .lista-receta {
     @apply flex flex-col gap-2;
+  }
+
+  .ingredientes {
+    @apply mt-1 flex flex-col gap-3;
+  }
+
+  .ingrediente-fila {
+    @apply grid grid-cols-[1fr_6.5rem_auto] items-center gap-2 sm:grid-cols-[8rem_8rem_1fr_auto];
+  }
+
+  .ingrediente-fila .campo {
+    @apply mt-0;
+  }
+
+  .ingrediente-nombre {
+    @apply order-last col-span-full sm:order-none sm:col-span-1;
+  }
+
+  .ingrediente-error {
+    @apply order-last col-span-full;
+  }
+
+  .paso-fila {
+    @apply grid grid-cols-[auto_auto_1fr_auto] items-start gap-2 rounded-2xl;
+  }
+
+  .paso-fila .campo {
+    @apply mt-0;
+  }
+
+  .paso-fila .numero-paso {
+    @apply mt-2;
+  }
+
+  .paso-fila .boton-icono {
+    @apply mt-0;
+  }
+
+  .paso-error {
+    @apply col-start-3;
+  }
+
+  .manija {
+    @apply mt-1 grid size-9 shrink-0 cursor-grab touch-none place-items-center rounded-full text-suave anillo-foco hover:bg-secundario/40 active:cursor-grabbing;
+  }
+
+  .cdk-drag-preview {
+    @apply bg-papel shadow-flota;
+  }
+
+  .cdk-drag-placeholder {
+    @apply opacity-30;
+  }
+
+  .cdk-drop-list-dragging .cdk-drag {
+    transition: transform 200ms ease;
+  }
+
+  .cdk-drag-animating {
+    transition: transform 200ms ease;
+  }
+
+  .boton-agregar {
+    @apply mt-3 inline-flex min-h-11 items-center gap-2 rounded-full bg-secundario px-5 py-2 font-medium text-secundario-tinta anillo-foco hover:bg-secundario/70 disabled:opacity-50;
+  }
+
+  .ficha {
+    @apply flex flex-col gap-1;
+  }
+
+  .ficha-rotulo {
+    @apply font-semibold;
+  }
+
+  .costo-apagado {
+    @apply text-suave/40;
+  }
+
+  .ingrediente {
+    @apply flex items-baseline gap-3;
+  }
+
+  .ingrediente-medida {
+    @apply min-w-16 shrink-0 text-right font-sans text-[0.95rem] font-semibold text-primario;
   }
 
   .texto-suave {
@@ -273,20 +354,12 @@ body {
     -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0) 55%, transparent);
   }
 
-  .velo {
-    @apply fixed inset-0 z-50 flex items-center justify-center bg-velo p-4;
+  .pagina-detalle {
+    @apply fixed inset-0 z-50 overflow-y-auto bg-hoja;
   }
 
-  .ventana {
-    @apply max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-hoja p-6 shadow-flota focus:outline-none;
-  }
-
-  .ventana-completa {
-    @apply fixed inset-0 z-50 max-h-none max-w-none rounded-none p-0;
-  }
-
-  .ventana-cabecera-flota {
-    @apply fixed top-4 right-4 z-10 mb-0;
+  .cerrar-detalle {
+    @apply fixed top-4 right-4 z-10;
   }
 
   .detalle {
@@ -309,10 +382,6 @@ body {
     @apply font-serif text-3xl leading-tight font-black md:text-5xl;
   }
 
-  .ventana-cabecera {
-    @apply mb-4 flex items-start justify-between gap-4;
-  }
-
   .compartir-hoy {
     @apply flex min-h-14 w-full items-center justify-between gap-4 rounded-full bg-hoja px-6 text-left text-suave shadow-hoja anillo-foco hover:shadow-flota;
   }
@@ -325,12 +394,32 @@ body {
     @apply fixed right-4 bottom-24 z-30 inline-flex h-14 items-center gap-2 rounded-full bg-primario px-6 text-base font-bold text-sobre-primario shadow-flota anillo-foco hover:bg-primario-fuerte md:right-8 md:bottom-8;
   }
 
-  .dialogo {
-    @apply w-full max-w-md rounded-3xl bg-hoja p-6 shadow-flota;
+  .aviso {
+    @apply flex items-start justify-between gap-4 rounded-2xl border border-error bg-hoja p-4 text-sm;
+  }
+
+  .aviso-info {
+    @apply border-linea-fuerte;
+  }
+
+  .aviso-info .aviso-titulo {
+    @apply text-tinta;
+  }
+
+  .aviso-titulo {
+    @apply mb-1 font-semibold text-error;
   }
 
   .formulario {
     @apply flex flex-col gap-4;
+  }
+
+  .formulario-pagina .campo {
+    @apply bg-hoja;
+  }
+
+  .formulario-pagina fieldset:not(:first-child) {
+    @apply border-t border-linea-fuerte/40 pt-5;
   }
 
   .fila-campos {

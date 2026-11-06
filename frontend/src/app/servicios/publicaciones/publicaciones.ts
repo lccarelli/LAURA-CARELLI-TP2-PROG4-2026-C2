@@ -13,6 +13,12 @@ export class PublicacionesApi {
     });
   }
 
+  obtener(id: string) {
+    return this.http.get<Publicacion>(
+      `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}`,
+    );
+  }
+
   crear(datos: FormData) {
     return this.http.post<Publicacion>(`${environment.API_URL}/publicaciones`, datos);
   }

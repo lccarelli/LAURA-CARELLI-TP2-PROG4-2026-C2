@@ -1,0 +1,290 @@
+<section class="pagina max-w-3xl">
+  <a class="enlace" routerLink="/publicaciones">{{ 'comun.volver' | translate }}</a>
+  <h1 class="titulo">{{ 'publicaciones.ventana_titulo' | translate }}</h1>
+
+  @if (avisoSesion(); as mensaje) {
+    <app-aviso titulo="publicaciones.sesion_titulo" (cerrar)="avisoSesion.set(null)">
+      {{ mensaje | translate }} {{ 'publicaciones.sesion_guardado' | translate }}
+      <span class="acciones mt-2">
+        <button type="button" class="boton-principal" (click)="ingresarDeNuevo()">
+          {{ 'publicaciones.ingresar_de_nuevo' | translate }}
+        </button>
+      </span>
+    </app-aviso>
+  }
+
+  @if (borradorRecuperado(); as fecha) {
+    <app-aviso [info]="true" titulo="borrador.titulo" (cerrar)="borradorRecuperado.set(null)">
+      {{
+        'borrador.recuperado'
+          | translate: { fecha: fecha | date: ('formatos.fecha_hora' | translate) }
+      }}
+      <span class="acciones mt-2">
+        <button type="button" class="boton-secundario" (click)="descartarBorrador()">
+          {{ 'borrador.descartar' | translate }}
+        </button>
+      </span>
+    </app-aviso>
+  }
+
+  @if (guardadoEn(); as fecha) {
+    <p class="meta">
+      {{
+        'borrador.guardado'
+          | translate: { fecha: fecha | date: ('formatos.fecha_hora' | translate) }
+      }}
+    </p>
+  }
+
+  @if (mensajeError(); as mensaje) {
+    <app-aviso titulo="publicaciones.error_publicar" (cerrar)="mensajeError.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+
+  <form
+    class="formulario formulario-pagina"
+    [formGroup]="formulario"
+    (ngSubmit)="publicar()"
+    novalidate
+  >
+    <fieldset>
+      <legend class="etiqueta">{{ 'publicaciones.tipo_pregunta' | translate }}</legend>
+      <div class="tipos mt-2">
+        @for (opcion of tipos; track opcion) {
+          <button
+            type="button"
+            class="tipo-opcion"
+            [class.activo]="tipo() === opcion"
+            [attr.aria-pressed]="tipo() === opcion"
+            (click)="tipo.set(opcion)"
+          >
+            {{ 'tipos.' + opcion | translate }}
+          </button>
+        }
+      </div>
+    </fieldset>
+
+    <label class="block">
+      <span class="etiqueta">{{ 'publicaciones.campo_titulo' | translate }}</span>
+      <input class="campo" formControlName="titulo" />
+      @if (mensajeDeError('titulo'); as mensaje) {
+        <span class="mensaje-error">{{ mensaje }}</span>
+      }
+    </label>
+
+    <label class="block">
+      <span class="etiqueta">{{ 'publicaciones.mensaje_' + tipo() | translate }}</span>
+      <textarea class="campo" rows="3" formControlName="mensaje"></textarea>
+      @if (mensajeDeError('mensaje'); as mensaje) {
+        <span class="mensaje-error">{{ mensaje }}</span>
+      }
+    </label>
+
+    @if (llevaLista()) {
+      <fieldset>
+        <legend class="etiqueta">{{ 'publicaciones.ficha' | translate }}</legend>
+        <div class="fila-campos mt-2">
+          @for (campo of camposFicha; track campo) {
+            <label class="block">
+              <span class="etiqueta">{{ 'publicaciones.campo_' + campo | translate }}</span>
+              <input
+                class="campo"
+                inputmode="numeric"
+                maxlength="6"
+                [placeholder]="
+                  'publicaciones.solo_numeros' | translate: { n: ejemplosFicha[campo] }
+                "
+                [formControlName]="campo"
+                (input)="soloDigitos(campo)"
+              />
+              @if (mensajeDeError(campo); as mensaje) {
+                <span class="mensaje-error">{{ mensaje }}</span>
+              }
+            </label>
+          }
+          <div>
+            <span class="etiqueta">{{ 'publicaciones.campo_costo' | translate }}</span>
+            <div class="tipos mt-1">
+              @for (nivel of costos; track nivel) {
+                <button
+                  type="button"
+                  class="tipo-opcion"
+                  [class.activo]="costo() === nivel"
+                  [attr.aria-pressed]="costo() === nivel"
+                  [attr.aria-label]="'publicaciones.costo_opcion' | translate: { n: nivel }"
+                  (click)="elegirCosto(nivel)"
+                >
+                  {{ signos(nivel) }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset formArrayName="ingredientes">
+        <legend class="etiqueta">{{ 'publicaciones.campo_ingredientes' | translate }}</legend>
+        <div class="ingredientes">
+          @for (fila of ingredientes.controls; track fila; let i = $index) {
+            <div class="ingrediente-fila" [formGroupName]="i">
+              <input
+                class="campo"
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                formControlName="cantidad"
+                [placeholder]="'publicaciones.ingrediente_cantidad' | translate"
+                [attr.aria-label]="'publicaciones.ingrediente_cantidad' | translate"
+              />
+              <select
+                class="campo"
+                formControlName="unidad"
+                [attr.aria-label]="'publicaciones.ingrediente_medida' | translate"
+                (change)="alCambiarUnidad(fila)"
+              >
+                @for (unidad of unidades; track unidad) {
+                  <option [value]="unidad">{{ 'unidades.' + unidad | translate }}</option>
+                }
+              </select>
+              <input
+                class="campo ingrediente-nombre"
+                formControlName="nombre"
+                [placeholder]="'publicaciones.ingrediente_nombre' | translate"
+                [attr.aria-label]="'publicaciones.ingrediente_nombre' | translate"
+              />
+              <button
+                type="button"
+                class="boton-icono"
+                [attr.aria-label]="'publicaciones.ingrediente_quitar' | translate"
+                (click)="quitarIngrediente(i)"
+              >
+                <svg
+                  class="icono-chico"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14" />
+                </svg>
+              </button>
+              @if (mensajeDeIngrediente(fila); as mensaje) {
+                <span class="mensaje-error ingrediente-error">{{ mensaje }}</span>
+              }
+            </div>
+          }
+        </div>
+        <button
+          type="button"
+          class="boton-agregar"
+          [disabled]="ingredientes.length >= maximoIngredientes"
+          (click)="agregarIngrediente()"
+        >
+          <svg
+            class="icono-chico"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          {{ 'publicaciones.ingrediente_agregar' | translate }}
+        </button>
+      </fieldset>
+
+      <fieldset formArrayName="pasos">
+        <legend class="etiqueta">{{ 'publicaciones.campo_pasos' | translate }}</legend>
+        <div class="ingredientes" cdkDropList (cdkDropListDropped)="soltarPaso($event)">
+          @for (paso of pasos.controls; track paso; let i = $index) {
+            <div class="paso-fila" cdkDrag cdkDragPreviewContainer="parent">
+              <button
+                type="button"
+                class="manija"
+                cdkDragHandle
+                [attr.aria-label]="'publicaciones.paso_mover' | translate: { n: i + 1 }"
+                (keydown.arrowup)="moverPaso(i, i - 1); $event.preventDefault()"
+                (keydown.arrowdown)="moverPaso(i, i + 1); $event.preventDefault()"
+              >
+                <svg class="icono-chico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <circle cx="9" cy="6" r="1.6" />
+                  <circle cx="15" cy="6" r="1.6" />
+                  <circle cx="9" cy="12" r="1.6" />
+                  <circle cx="15" cy="12" r="1.6" />
+                  <circle cx="9" cy="18" r="1.6" />
+                  <circle cx="15" cy="18" r="1.6" />
+                </svg>
+              </button>
+              <span class="numero-paso" aria-hidden="true">{{ i + 1 }}</span>
+              <textarea
+                class="campo"
+                rows="2"
+                [formControlName]="i"
+                [placeholder]="'publicaciones.paso_descripcion' | translate"
+                [attr.aria-label]="'publicaciones.paso_numero' | translate: { n: i + 1 }"
+              ></textarea>
+              <button
+                type="button"
+                class="boton-icono"
+                [attr.aria-label]="'publicaciones.paso_quitar' | translate: { n: i + 1 }"
+                (click)="quitarPaso(i)"
+              >
+                <svg
+                  class="icono-chico"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14" />
+                </svg>
+              </button>
+              @if (mensajeDePaso(paso); as mensaje) {
+                <span class="mensaje-error paso-error">{{ mensaje }}</span>
+              }
+            </div>
+          }
+        </div>
+        <button
+          type="button"
+          class="boton-agregar"
+          [disabled]="pasos.length >= maximoPasos"
+          (click)="agregarPaso()"
+        >
+          <svg
+            class="icono-chico"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          {{ 'publicaciones.paso_agregar' | translate }}
+        </button>
+      </fieldset>
+    }
+
+    <label class="block">
+      <span class="etiqueta">{{ 'publicaciones.campo_imagen' | translate }}</span>
+      <input class="campo-archivo" type="file" accept="image/*" (change)="elegirImagen($event)" />
+      @if (errorImagen(); as mensaje) {
+        <span class="mensaje-error">{{ mensaje | translate }}</span>
+      }
+    </label>
+
+    <button type="submit" class="boton-principal w-full" [disabled]="publicando()">
+      {{ (publicando() ? 'publicaciones.publicando' : 'publicaciones.publicar') | translate }}
+    </button>
+  </form>
+</section>

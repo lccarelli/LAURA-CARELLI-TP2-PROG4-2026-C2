@@ -1,9 +1,13 @@
-<div inert>
-  <app-inicio />
-</div>
+<section class="pagina-angosta">
+  <h1 class="titulo">{{ 'registro.titulo' | translate }}</h1>
 
-<app-ventana titulo="registro.titulo" [escape]="!mensajeModal()" (cerrar)="cerrar()">
-  <div>
+  @if (mensajeError(); as mensaje) {
+    <app-aviso titulo="registro.error_titulo" (cerrar)="mensajeError.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+
+  <div class="formulario-pagina">
     <p class="texto-suave mb-6">{{ 'registro.saludo' | translate }}</p>
 
     <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
@@ -105,10 +109,4 @@
       <a class="enlace" routerLink="/login">{{ 'registro.ingresar' | translate }}</a>
     </p>
   </div>
-</app-ventana>
-
-@if (mensajeModal(); as mensaje) {
-  <app-modal titulo="registro.error_titulo" (cerrar)="mensajeModal.set(null)">{{
-    mensaje | translate
-  }}</app-modal>
-}
+</section>

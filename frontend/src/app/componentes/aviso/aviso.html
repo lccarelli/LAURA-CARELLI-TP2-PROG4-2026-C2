@@ -1,0 +1,24 @@
+<div class="aviso" [class.aviso-info]="info()" [attr.role]="info() ? 'status' : 'alert'">
+  <div>
+    <p class="aviso-titulo">{{ titulo() | translate }}</p>
+    <div class="whitespace-pre-line"><ng-content /></div>
+  </div>
+  <button
+    type="button"
+    class="boton-icono"
+    [attr.aria-label]="'comun.cerrar' | translate"
+    (click)="cerrar.emit()"
+  >
+    <svg
+      class="icono"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  </button>
+</div>

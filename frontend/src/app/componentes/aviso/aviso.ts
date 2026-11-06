@@ -3,11 +3,11 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   imports: [TranslatePipe],
-  selector: 'app-modal',
-  templateUrl: './modal.html',
-  host: { '(document:keydown.escape)': 'cerrar.emit()' },
+  selector: 'app-aviso',
+  templateUrl: './aviso.html',
 })
-export class Modal {
+export class Aviso {
   readonly titulo = input('comun.aviso');
+  readonly info = input(false);
   readonly cerrar = output<void>();
 }

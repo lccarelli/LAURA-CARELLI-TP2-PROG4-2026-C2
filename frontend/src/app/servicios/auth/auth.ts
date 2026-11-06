@@ -24,6 +24,12 @@ export class Auth {
       .pipe(tap((sesion) => this.guardarSesion(sesion)));
   }
 
+  refrescar() {
+    return this.http
+      .post<{ token: string }>(`${environment.API_URL}/auth/refrescar`, {})
+      .pipe(tap(({ token }) => this.guardarToken(token)));
+  }
+
   salir() {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
@@ -32,10 +38,14 @@ export class Auth {
   }
 
   private guardarSesion(sesion: Sesion) {
-    localStorage.setItem('token', sesion.token);
     localStorage.setItem('usuario', JSON.stringify(sesion.usuario));
-    this.token.set(sesion.token);
     this.usuario.set(sesion.usuario);
+    this.guardarToken(sesion.token);
+  }
+
+  private guardarToken(token: string) {
+    localStorage.setItem('token', token);
+    this.token.set(token);
   }
 
   private leerUsuario(): Usuario | null {

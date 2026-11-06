@@ -1,4 +1,4 @@
-<button type="button" class="pin" (click)="abrir.emit()">
+<a class="pin" [routerLink]="['/publicaciones', publicacion()._id]">
   @if (publicacion().imagen; as imagen) {
     <img class="pin-imagen" [src]="urlImagen(imagen)" alt="" />
   } @else {
@@ -56,4 +56,4 @@
       </span>
     </span>
   </span>
-</button>
+</a>

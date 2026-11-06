@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   Req,
@@ -12,6 +13,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
+import { IdParamDto } from '../common/id-param.dto.js';
 import { PaginacionDto } from '../common/paginacion.dto.js';
 import { imagenOpcional } from '../imagenes/imagen-opcional.pipe.js';
 import { TAMANO_MAXIMO_IMAGEN } from '../imagenes/imagenes.constantes.js';
@@ -38,5 +40,10 @@ export class PublicacionesController {
   @Get()
   listar(@Query() { offset, limit }: PaginacionDto) {
     return this.publicacionesService.listar(offset, limit);
+  }
+
+  @Get(':id')
+  obtener(@Param() { id }: IdParamDto) {
+    return this.publicacionesService.obtener(id);
   }
 }
