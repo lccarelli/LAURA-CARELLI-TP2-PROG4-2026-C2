@@ -66,18 +66,188 @@ describe('CrearPublicacionDto', () => {
     });
   });
 
-  describe('ingredientes y pasos', () => {
-    it('[B] son opcionales y tienen tope de 1000 y 2000 caracteres', async () => {
-      expect(await camposInvalidos({ ingredientes: 'a'.repeat(1000) })).toEqual(
+  describe('pasos', () => {
+    it('[O] es opcional y acepta una lista de textos, también como JSON', async () => {
+      expect(await camposInvalidos({ pasos: ['Mezclar', 'Hornear'] })).toEqual(
         [],
       );
-      expect(await camposInvalidos({ ingredientes: 'a'.repeat(1001) })).toEqual(
-        ['ingredientes'],
-      );
-      expect(await camposInvalidos({ pasos: 'a'.repeat(2000) })).toEqual([]);
-      expect(await camposInvalidos({ pasos: 'a'.repeat(2001) })).toEqual([
+      expect(
+        await camposInvalidos({ pasos: JSON.stringify(['Mezclar']) }),
+      ).toEqual([]);
+      expect(await camposInvalidos({ pasos: [] })).toEqual([]);
+    });
+
+    it('[E] un texto que no es lista, o con pasos vacíos o que no son texto, falla', async () => {
+      expect(await camposInvalidos({ pasos: 'Mezclar\nHornear' })).toEqual([
         'pasos',
       ]);
+      expect(await camposInvalidos({ pasos: ['Mezclar', ''] })).toEqual([
+        'pasos',
+      ]);
+      expect(await camposInvalidos({ pasos: ['   '] })).toEqual(['pasos']);
+      expect(await camposInvalidos({ pasos: [1] })).toEqual(['pasos']);
+    });
+
+    it('[B] cada paso tiene hasta 500 caracteres y hay hasta 40 pasos', async () => {
+      expect(await camposInvalidos({ pasos: ['a'.repeat(500)] })).toEqual([]);
+      expect(await camposInvalidos({ pasos: ['a'.repeat(501)] })).toEqual([
+        'pasos',
+      ]);
+      expect(await camposInvalidos({ pasos: Array(40).fill('a') })).toEqual([]);
+      expect(await camposInvalidos({ pasos: Array(41).fill('a') })).toEqual([
+        'pasos',
+      ]);
+    });
+  });
+
+  describe('ficha: porciones, tiempoMinutos, costo y calorias', () => {
+    const limites = [
+      ['porciones', 1, 100],
+      ['tiempoMinutos', 1, 10080],
+      ['costo', 1, 4],
+      ['calorias', 1, 10000],
+    ] as const;
+
+    it('[Z] son opcionales', async () => {
+      expect(await camposInvalidos({})).toEqual([]);
+    });
+
+    it.each(limites)(
+      '[B] %s acepta de %i a %i y rechaza afuera',
+      async (campo, minimo, maximo) => {
+        expect(await camposInvalidos({ [campo]: minimo })).toEqual([]);
+        expect(await camposInvalidos({ [campo]: maximo })).toEqual([]);
+        expect(await camposInvalidos({ [campo]: minimo - 1 })).toEqual([campo]);
+        expect(await camposInvalidos({ [campo]: maximo + 1 })).toEqual([campo]);
+      },
+    );
+
+    it.each(limites)(
+      '[O] %s llega como texto desde un formulario con archivo',
+      async (campo, minimo) => {
+        expect(await camposInvalidos({ [campo]: String(minimo) })).toEqual([]);
+      },
+    );
+
+    it('[Z] un null cuenta como campo no enviado', async () => {
+      expect(await camposInvalidos({ porciones: null, costo: null })).toEqual(
+        [],
+      );
+    });
+
+    it.each(limites)(
+      '[E] %s rechaza todo lo que no sea un entero escrito con dígitos',
+      async (campo) => {
+        const intentos = [
+          '',
+          ' 2',
+          '2 ',
+          '2.5',
+          '-2',
+          '1e2',
+          '0x10',
+          'dos',
+          '2; DROP TABLE publicaciones',
+          "2' OR '1'='1",
+          '<script>1</script>',
+          '1234567',
+          2.5,
+          true,
+          [2],
+          { $gt: 0 },
+          { $ne: null },
+          '{"$gt":0}',
+        ];
+
+        for (const intento of intentos) {
+          expect(
+            await camposInvalidos({ [campo]: intento }),
+            JSON.stringify(intento),
+          ).toEqual([campo]);
+        }
+      },
+    );
+  });
+
+  describe('ingredientes', () => {
+    const harina = { nombre: 'Harina', cantidad: 250, unidad: 'g' };
+
+    it('[O] es opcional y acepta una lista de ingredientes', async () => {
+      expect(await camposInvalidos({})).toEqual([]);
+      expect(await camposInvalidos({ ingredientes: [harina] })).toEqual([]);
+      expect(await camposInvalidos({ ingredientes: [] })).toEqual([]);
+    });
+
+    it('[O] llega como texto JSON desde un formulario con archivo', async () => {
+      expect(
+        await camposInvalidos({ ingredientes: JSON.stringify([harina]) }),
+      ).toEqual([]);
+    });
+
+    it('[E] un texto que no es JSON o que no es una lista falla', async () => {
+      expect(await camposInvalidos({ ingredientes: 'Pan\nManteca' })).toEqual([
+        'ingredientes',
+      ]);
+      expect(
+        await camposInvalidos({ ingredientes: '{"nombre":"Pan"}' }),
+      ).toEqual(['ingredientes']);
+    });
+
+    it('[B] hasta 40 ingredientes pasan y 41 fallan', async () => {
+      expect(
+        await camposInvalidos({ ingredientes: Array(40).fill(harina) }),
+      ).toEqual([]);
+      expect(
+        await camposInvalidos({ ingredientes: Array(41).fill(harina) }),
+      ).toEqual(['ingredientes']);
+    });
+
+    it('[B] el nombre va de 1 a 100 caracteres y no puede ser sólo espacios', async () => {
+      const con = (nombre: string) => ({
+        ingredientes: [{ ...harina, nombre }],
+      });
+
+      expect(await camposInvalidos(con('a'))).toEqual([]);
+      expect(await camposInvalidos(con('a'.repeat(100)))).toEqual([]);
+      expect(await camposInvalidos(con(''))).toEqual(['ingredientes']);
+      expect(await camposInvalidos(con('   '))).toEqual(['ingredientes']);
+      expect(await camposInvalidos(con('a'.repeat(101)))).toEqual([
+        'ingredientes',
+      ]);
+    });
+
+    it('[B] la cantidad es mayor que 0, con hasta 2 decimales y hasta 100000', async () => {
+      const con = (cantidad: unknown) => ({
+        ingredientes: [{ ...harina, cantidad }],
+      });
+
+      expect(await camposInvalidos(con(0.25))).toEqual([]);
+      expect(await camposInvalidos(con(100000))).toEqual([]);
+      expect(await camposInvalidos(con(0))).toEqual(['ingredientes']);
+      expect(await camposInvalidos(con(-1))).toEqual(['ingredientes']);
+      expect(await camposInvalidos(con(0.255))).toEqual(['ingredientes']);
+      expect(await camposInvalidos(con(100001))).toEqual(['ingredientes']);
+      expect(await camposInvalidos(con('dos'))).toEqual(['ingredientes']);
+      expect(await camposInvalidos(con(undefined))).toEqual(['ingredientes']);
+    });
+
+    it('[I] "a gusto" no necesita cantidad', async () => {
+      const sal = { nombre: 'Sal', unidad: 'a_gusto' };
+
+      expect(await camposInvalidos({ ingredientes: [sal] })).toEqual([]);
+    });
+
+    it('[E] una medida desconocida o ausente falla', async () => {
+      expect(
+        await camposInvalidos({
+          ingredientes: [{ ...harina, unidad: 'libra' }],
+        }),
+      ).toEqual(['ingredientes']);
+      expect(
+        await camposInvalidos({
+          ingredientes: [{ nombre: 'Harina', cantidad: 1 }],
+        }),
+      ).toEqual(['ingredientes']);
     });
   });
 

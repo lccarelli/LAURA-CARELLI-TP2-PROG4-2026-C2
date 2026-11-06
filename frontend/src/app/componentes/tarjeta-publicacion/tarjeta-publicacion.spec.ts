@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { Publicacion } from '../../interfaces/publicacion';
 import { TarjetaPublicacion } from './tarjeta-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
@@ -23,7 +24,7 @@ describe('TarjetaPublicacion', () => {
   async function crear(publicacion: Publicacion) {
     await TestBed.configureTestingModule({
       imports: [TarjetaPublicacion],
-      providers: [proveerIdiomaDePrueba()],
+      providers: [proveerIdiomaDePrueba(), provideRouter([])],
     }).compileComponents();
     const fixture: ComponentFixture<TarjetaPublicacion> =
       TestBed.createComponent(TarjetaPublicacion);
@@ -82,19 +83,9 @@ describe('TarjetaPublicacion', () => {
     expect(elemento.querySelector('.pin-texto')).toBeNull();
   });
 
-  it('[I] al tocarla avisa que se quiere abrir', async () => {
-    await TestBed.configureTestingModule({
-      imports: [TarjetaPublicacion],
-      providers: [proveerIdiomaDePrueba()],
-    }).compileComponents();
-    const fixture = TestBed.createComponent(TarjetaPublicacion);
-    fixture.componentRef.setInput('publicacion', base);
-    let avisos = 0;
-    fixture.componentInstance.abrir.subscribe(() => avisos++);
-    await fixture.whenStable();
+  it('[I] es un enlace a la página de la publicación', async () => {
+    const elemento = await crear(base);
 
-    (fixture.nativeElement as HTMLElement).querySelector('button')!.click();
-
-    expect(avisos).toBe(1);
+    expect(elemento.querySelector('a.pin')!.getAttribute('href')).toBe('/publicaciones/1');
   });
 });

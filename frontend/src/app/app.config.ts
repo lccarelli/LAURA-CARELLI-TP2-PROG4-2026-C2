@@ -12,6 +12,7 @@ import { routes } from './app.routes';
 import { reintentoInterceptor } from './interceptores/reintento-interceptor';
 import { tokenInterceptor } from './interceptores/token-interceptor';
 import { Idioma } from './servicios/idioma/idioma';
+import { Sesion } from './servicios/sesion/sesion';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,5 +22,6 @@ export const appConfig: ApplicationConfig = {
     provideTranslateService({ fallbackLang: 'es' }),
     provideTranslateHttpLoader({ prefix: '/i18n/', suffix: '.json' }),
     provideAppInitializer(() => inject(Idioma).iniciar()),
+    provideAppInitializer(() => inject(Sesion).iniciar()),
   ],
 };

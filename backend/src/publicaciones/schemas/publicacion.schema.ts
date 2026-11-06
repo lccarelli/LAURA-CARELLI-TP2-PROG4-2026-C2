@@ -1,7 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema, Types } from 'mongoose';
 import { TIPOS_PUBLICACION } from '../dto/crear-publicacion.dto.js';
+import { UNIDADES_INGREDIENTE } from '../dto/ingrediente.dto.js';
 import { Usuario } from '../../usuarios/schemas/usuario.schema.js';
+
+type Ingrediente = {
+  nombre: string;
+  cantidad?: number;
+  unidad: string;
+};
 
 @Schema({ collection: 'publicaciones', versionKey: false })
 export class Publicacion {
@@ -21,11 +28,32 @@ export class Publicacion {
   @Prop({ required: true })
   mensaje: string;
 
-  @Prop()
-  ingredientes?: string;
+  @Prop({
+    type: [
+      {
+        _id: false,
+        nombre: { type: String, required: true },
+        cantidad: Number,
+        unidad: { type: String, required: true, enum: UNIDADES_INGREDIENTE },
+      },
+    ],
+  })
+  ingredientes?: Ingrediente[];
+
+  @Prop({ type: [String] })
+  pasos?: string[];
 
   @Prop()
-  pasos?: string;
+  porciones?: number;
+
+  @Prop()
+  tiempoMinutos?: number;
+
+  @Prop()
+  costo?: number;
+
+  @Prop()
+  calorias?: number;
 
   @Prop()
   imagen?: string;

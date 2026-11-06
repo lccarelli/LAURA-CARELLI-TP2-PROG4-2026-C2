@@ -25,6 +25,18 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/publicaciones/publicaciones').then((m) => m.Publicaciones),
   },
   {
+    path: 'publicaciones/nueva',
+    canActivate: [sesionGuard],
+    loadComponent: () =>
+      import('./pages/nueva-publicacion/nueva-publicacion').then((m) => m.NuevaPublicacion),
+  },
+  {
+    path: 'publicaciones/:id',
+    canActivate: [sesionGuard],
+    loadComponent: () =>
+      import('./pages/detalle-publicacion/detalle-publicacion').then((m) => m.DetallePublicacion),
+  },
+  {
     path: 'perfil',
     canActivate: [sesionGuard],
     loadComponent: () => import('./pages/perfil/perfil').then((m) => m.Perfil),

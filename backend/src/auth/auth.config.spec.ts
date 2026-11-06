@@ -12,6 +12,7 @@ describe('authConfig', () => {
     expect(authConfig()).toEqual({
       secretoJwt: 'secreto',
       expiraJwt: '15m',
+      duracionMaximaSesionSegundos: 43200,
       rondasBcrypt: 10,
       correoAdmin: 'admin@correo.com',
     });

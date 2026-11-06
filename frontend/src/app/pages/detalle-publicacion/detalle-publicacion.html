@@ -1,0 +1,167 @@
+<div class="pagina-detalle">
+  <a
+    class="boton-icono cerrar-detalle"
+    routerLink="/publicaciones"
+    [attr.aria-label]="'comun.cerrar' | translate"
+  >
+    <svg
+      class="icono"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  </a>
+
+  @if (cargando() || mensajeError()) {
+    <div class="pagina">
+      @if (cargando()) {
+        <p class="estado-carga">{{ 'comun.cargando' | translate }}</p>
+      }
+
+      @if (mensajeError(); as mensaje) {
+        <app-aviso titulo="publicaciones.error_detalle" (cerrar)="mensajeError.set(null)">{{
+          mensaje | translate
+        }}</app-aviso>
+        <a class="enlace" routerLink="/publicaciones">{{ 'comun.volver' | translate }}</a>
+      }
+    </div>
+  }
+
+  @if (publicacion(); as publicacion) {
+    <article class="detalle" [class.detalle-texto]="!publicacion.imagen">
+      @if (publicacion.imagen; as imagen) {
+        <img class="detalle-imagen" [src]="urlImagen(imagen)" [alt]="publicacion.titulo" />
+      }
+      <div class="detalle-cuerpo">
+        <span class="pin-tipo">{{ 'tipos.' + publicacion.tipo | translate }}</span>
+        <h2 class="detalle-titulo">{{ publicacion.titulo }}</h2>
+        <header class="flex items-center gap-3">
+          <img
+            class="avatar"
+            [src]="urlImagen(publicacion.usuario.imagenPerfil)"
+            [alt]="'comun.foto_de' | translate: { nombre: publicacion.usuario.nombreUsuario }"
+          />
+          <div>
+            <p class="nombre">
+              {{ publicacion.usuario.nombre }} {{ publicacion.usuario.apellido }}
+              <span class="detalle-publicacion">&#64;{{ publicacion.usuario.nombreUsuario }}</span>
+            </p>
+            <p class="detalle-publicacion">
+              {{ publicacion.fecha | date: ('formatos.fecha_hora' | translate) }}
+            </p>
+          </div>
+        </header>
+        <span class="metricas metricas-detalle">
+          <span
+            class="metrica"
+            [attr.aria-label]="
+              'publicaciones.me_gusta' | translate: { n: publicacion.cantidadMeGusta }
+            "
+          >
+            <svg
+              class="icono-chico"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+            </svg>
+            <span aria-hidden="true">{{ publicacion.cantidadMeGusta }}</span>
+          </span>
+          <span
+            class="metrica"
+            [attr.aria-label]="
+              'publicaciones.comentarios' | translate: { n: publicacion.cantidadComentarios }
+            "
+          >
+            <svg
+              class="icono-chico"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 5h16v11H9l-5 4V5z" />
+            </svg>
+            <span aria-hidden="true">{{ publicacion.cantidadComentarios }}</span>
+          </span>
+        </span>
+        @if (
+          publicacion.porciones ||
+          publicacion.tiempoMinutos ||
+          publicacion.costo ||
+          publicacion.calorias
+        ) {
+          <h3 class="etiqueta">{{ 'publicaciones.ficha' | translate }}</h3>
+          <ul class="ficha">
+            @if (publicacion.porciones) {
+              <li class="texto-publicacion">
+                <span class="ficha-rotulo">{{ 'publicaciones.campo_porciones' | translate }}:</span>
+                {{ publicacion.porciones }}
+              </li>
+            }
+            @if (publicacion.tiempoMinutos) {
+              <li class="texto-publicacion">
+                <span class="ficha-rotulo">{{ 'publicaciones.ficha_tiempo' | translate }}:</span>
+                {{ 'publicaciones.minutos' | translate: { n: publicacion.tiempoMinutos } }}
+              </li>
+            }
+            @if (publicacion.costo; as costo) {
+              <li class="texto-publicacion">
+                <span class="ficha-rotulo">{{ 'publicaciones.campo_costo' | translate }}:</span>
+                &ngsp;<span class="ficha-rotulo">{{ signos(costo) }}</span
+                ><span class="costo-apagado">{{ signos(4 - costo) }}</span>
+              </li>
+            }
+            @if (publicacion.calorias) {
+              <li class="texto-publicacion">
+                <span class="ficha-rotulo">{{ 'publicaciones.ficha_calorias' | translate }}:</span>
+                {{ publicacion.calorias }} kcal
+              </li>
+            }
+          </ul>
+        }
+        <p class="texto-publicacion whitespace-pre-line">{{ publicacion.mensaje }}</p>
+
+        @if (publicacion.ingredientes?.length) {
+          <h3 class="rotulo-publicacion">{{ 'publicaciones.ingredientes' | translate }}</h3>
+          <ul class="lista-receta">
+            @for (ingrediente of publicacion.ingredientes; track $index) {
+              <li class="ingrediente">
+                <span class="ingrediente-medida">
+                  @if (ingrediente.cantidad !== undefined) {
+                    {{ ingrediente.cantidad }}
+                  }
+                  {{ 'unidades.' + ingrediente.unidad | translate }}
+                </span>
+                <span class="texto-publicacion">{{ ingrediente.nombre }}</span>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (publicacion.pasos?.length) {
+          <h3 class="rotulo-publicacion">{{ 'publicaciones.pasos' | translate }}</h3>
+          <ol class="lista-receta">
+            @for (paso of publicacion.pasos; track $index) {
+              <li class="flex items-start gap-3">
+                <span class="numero-paso">{{ $index + 1 }}</span>
+                <span class="texto-publicacion">{{ paso }}</span>
+              </li>
+            }
+          </ol>
+        }
+      </div>
+    </article>
+  }
+</div>

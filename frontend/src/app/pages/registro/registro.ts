@@ -4,9 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CampoClave } from '../../componentes/campo-clave/campo-clave';
-import { Modal } from '../../componentes/modal/modal';
-import { Ventana } from '../../componentes/ventana/ventana';
-import { Inicio } from '../inicio/inicio';
+import { Aviso } from '../../componentes/aviso/aviso';
 import { Auth } from '../../servicios/auth/auth';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { validarImagen } from '../../utilidades/imagen';
@@ -18,7 +16,7 @@ import {
 } from '../../utilidades/validadores';
 
 @Component({
-  imports: [ReactiveFormsModule, RouterLink, Modal, Ventana, Inicio, TranslatePipe, CampoClave],
+  imports: [ReactiveFormsModule, RouterLink, Aviso, TranslatePipe, CampoClave],
   selector: 'app-registro',
   templateUrl: './registro.html',
 })
@@ -32,7 +30,7 @@ export class Registro {
   readonly imagen = signal<File | null>(null);
   readonly errorImagen = signal<string | null>(null);
   readonly enviando = signal(false);
-  readonly mensajeModal = signal<string | null>(null);
+  readonly mensajeError = signal<string | null>(null);
 
   readonly formulario = this.formBuilder.nonNullable.group(
     {
@@ -47,10 +45,6 @@ export class Registro {
     },
     { validators: clavesIguales },
   );
-
-  cerrar() {
-    this.router.navigate(['/']);
-  }
 
   mensajeDeError(campo: string): string | null {
     const control = this.formulario.get(campo);
@@ -119,7 +113,7 @@ export class Registro {
       next: () => this.router.navigate(['/publicaciones']),
       error: (error: HttpErrorResponse) => {
         this.enviando.set(false);
-        this.mensajeModal.set(mensajeDeApi(error));
+        this.mensajeError.set(mensajeDeApi(error));
       },
     });
   }

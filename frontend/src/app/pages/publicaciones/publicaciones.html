@@ -1,7 +1,7 @@
 <section class="pagina-ancha">
   <h1 class="titulo">{{ 'publicaciones.titulo' | translate }}</h1>
 
-  <button type="button" class="compartir-hoy" (click)="abrirVentana()">
+  <a class="compartir-hoy" routerLink="/publicaciones/nueva">
     {{ 'publicaciones.invitacion' | translate }}
     <span class="compartir-hoy-icono" aria-hidden="true">
       <svg
@@ -15,14 +15,17 @@
         <path d="M12 5v14M5 12h14" />
       </svg>
     </span>
-  </button>
+  </a>
+
+  @if (mensajeError(); as mensaje) {
+    <app-aviso titulo="publicaciones.error_cargar" (cerrar)="mensajeError.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
 
   <div class="muro">
     @for (publicacion of publicaciones(); track publicacion._id) {
-      <app-tarjeta-publicacion
-        [publicacion]="publicacion"
-        (abrir)="seleccionada.set(publicacion)"
-      />
+      <app-tarjeta-publicacion [publicacion]="publicacion" />
     }
   </div>
 
@@ -43,7 +46,7 @@
   }
 </section>
 
-<button type="button" class="boton-flotante" (click)="abrirVentana()">
+<a class="boton-flotante" routerLink="/publicaciones/nueva">
   <svg
     class="icono"
     viewBox="0 0 24 24"
@@ -56,175 +59,4 @@
     <path d="M12 5v14M5 12h14" />
   </svg>
   {{ 'publicaciones.crear' | translate }}
-</button>
-
-@if (ventanaAbierta()) {
-  <app-ventana titulo="publicaciones.ventana_titulo" [escape]="!aviso()" (cerrar)="cerrarVentana()">
-    <form class="formulario" [formGroup]="formulario" (ngSubmit)="publicar()" novalidate>
-      <fieldset>
-        <legend class="etiqueta">{{ 'publicaciones.tipo_pregunta' | translate }}</legend>
-        <div class="tipos mt-2">
-          @for (opcion of tipos; track opcion) {
-            <button
-              type="button"
-              class="tipo-opcion"
-              [class.activo]="tipo() === opcion"
-              [attr.aria-pressed]="tipo() === opcion"
-              (click)="tipo.set(opcion)"
-            >
-              {{ 'tipos.' + opcion | translate }}
-            </button>
-          }
-        </div>
-      </fieldset>
-
-      <label class="block">
-        <span class="etiqueta">{{ 'publicaciones.campo_titulo' | translate }}</span>
-        <input class="campo" formControlName="titulo" data-foco />
-        @if (mensajeDeError('titulo'); as mensaje) {
-          <span class="mensaje-error">{{ mensaje }}</span>
-        }
-      </label>
-
-      <label class="block">
-        <span class="etiqueta">{{ 'publicaciones.mensaje_' + tipo() | translate }}</span>
-        <textarea class="campo" rows="3" formControlName="mensaje"></textarea>
-        @if (mensajeDeError('mensaje'); as mensaje) {
-          <span class="mensaje-error">{{ mensaje }}</span>
-        }
-      </label>
-
-      @if (llevaLista()) {
-        <label class="block">
-          <span class="etiqueta">{{ 'publicaciones.campo_ingredientes' | translate }}</span>
-          <textarea class="campo" rows="4" formControlName="ingredientes"></textarea>
-          @if (mensajeDeError('ingredientes'); as mensaje) {
-            <span class="mensaje-error">{{ mensaje }}</span>
-          }
-        </label>
-
-        <label class="block">
-          <span class="etiqueta">{{ 'publicaciones.campo_pasos' | translate }}</span>
-          <textarea class="campo" rows="4" formControlName="pasos"></textarea>
-          @if (mensajeDeError('pasos'); as mensaje) {
-            <span class="mensaje-error">{{ mensaje }}</span>
-          }
-        </label>
-      }
-
-      <label class="block">
-        <span class="etiqueta">{{ 'publicaciones.campo_imagen' | translate }}</span>
-        <input class="campo-archivo" type="file" accept="image/*" (change)="elegirImagen($event)" />
-        @if (errorImagen(); as mensaje) {
-          <span class="mensaje-error">{{ mensaje | translate }}</span>
-        }
-      </label>
-
-      <button type="submit" class="boton-principal w-full" [disabled]="publicando()">
-        {{ (publicando() ? 'publicaciones.publicando' : 'publicaciones.publicar') | translate }}
-      </button>
-    </form>
-  </app-ventana>
-}
-
-@if (seleccionada(); as publicacion) {
-  <app-ventana [completa]="true" [titulo]="publicacion.titulo" (cerrar)="seleccionada.set(null)">
-    <article class="detalle" [class.detalle-texto]="!publicacion.imagen">
-      @if (publicacion.imagen; as imagen) {
-        <img class="detalle-imagen" [src]="urlImagen(imagen)" [alt]="publicacion.titulo" />
-      }
-      <div class="detalle-cuerpo">
-        <span class="pin-tipo">{{ 'tipos.' + publicacion.tipo | translate }}</span>
-        <h2 class="detalle-titulo">{{ publicacion.titulo }}</h2>
-        <header class="flex items-center gap-3">
-          <img
-            class="avatar"
-            [src]="urlImagen(publicacion.usuario.imagenPerfil)"
-            [alt]="'comun.foto_de' | translate: { nombre: publicacion.usuario.nombreUsuario }"
-          />
-          <div>
-            <p class="nombre">
-              {{ publicacion.usuario.nombre }} {{ publicacion.usuario.apellido }}
-              <span class="detalle-publicacion">&#64;{{ publicacion.usuario.nombreUsuario }}</span>
-            </p>
-            <p class="detalle-publicacion">
-              {{ publicacion.fecha | date: ('formatos.fecha_hora' | translate) }}
-            </p>
-          </div>
-        </header>
-        <span class="metricas metricas-detalle">
-          <span
-            class="metrica"
-            [attr.aria-label]="
-              'publicaciones.me_gusta' | translate: { n: publicacion.cantidadMeGusta }
-            "
-          >
-            <svg
-              class="icono-chico"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
-            </svg>
-            <span aria-hidden="true">{{ publicacion.cantidadMeGusta }}</span>
-          </span>
-          <span
-            class="metrica"
-            [attr.aria-label]="
-              'publicaciones.comentarios' | translate: { n: publicacion.cantidadComentarios }
-            "
-          >
-            <svg
-              class="icono-chico"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M4 5h16v11H9l-5 4V5z" />
-            </svg>
-            <span aria-hidden="true">{{ publicacion.cantidadComentarios }}</span>
-          </span>
-        </span>
-        <p class="texto-publicacion whitespace-pre-line">{{ publicacion.mensaje }}</p>
-
-        @if (lineas(publicacion.ingredientes); as ingredientes) {
-          @if (ingredientes.length) {
-            <h3 class="rotulo-publicacion">{{ 'publicaciones.ingredientes' | translate }}</h3>
-            <ul class="lista-receta">
-              @for (ingrediente of ingredientes; track $index) {
-                <li class="texto-publicacion">{{ ingrediente }}</li>
-              }
-            </ul>
-          }
-        }
-
-        @if (lineas(publicacion.pasos); as pasos) {
-          @if (pasos.length) {
-            <h3 class="rotulo-publicacion">{{ 'publicaciones.pasos' | translate }}</h3>
-            <ol class="lista-receta">
-              @for (paso of pasos; track $index) {
-                <li class="flex items-start gap-3">
-                  <span class="numero-paso">{{ $index + 1 }}</span>
-                  <span class="texto-publicacion">{{ paso }}</span>
-                </li>
-              }
-            </ol>
-          }
-        }
-      </div>
-    </article>
-  </app-ventana>
-}
-
-@if (aviso(); as datos) {
-  <app-modal [titulo]="datos.titulo" (cerrar)="aviso.set(null)">{{
-    datos.mensaje | translate
-  }}</app-modal>
-}
+</a>

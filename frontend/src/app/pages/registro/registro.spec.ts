@@ -50,19 +50,13 @@ describe('Registro', () => {
     await fixture.whenStable();
   });
 
-  it('[I] se muestra en una ventana flotante sobre la portada, que queda inactiva', () => {
+  it('[I] es una página completa, sin ventana flotante ni portada detrás', () => {
     const raiz = fixture.nativeElement as HTMLElement;
 
-    expect(raiz.querySelector('app-ventana form')).not.toBeNull();
-    expect(raiz.querySelector('[inert] app-inicio')).not.toBeNull();
-  });
-
-  it('[I] al cerrar la ventana vuelve a la portada', () => {
-    (fixture.nativeElement as HTMLElement)
-      .querySelector<HTMLButtonElement>('app-ventana .boton-icono')!
-      .click();
-
-    expect(navegar).toHaveBeenCalledWith(['/']);
+    expect(raiz.querySelector('.pagina-angosta form')).not.toBeNull();
+    expect(raiz.querySelector('[role="dialog"], [aria-modal], [inert]')).toBeNull();
+    expect(raiz.querySelector('app-inicio')).toBeNull();
+    expect(raiz.querySelector('h1')!.textContent).toContain('Crear cuenta');
   });
 
   it('[Z] con el formulario vacío no envía nada y marca los campos', async () => {
@@ -186,10 +180,10 @@ describe('Registro', () => {
       .flush({ codigo: 'CORREO_REPETIDO' }, { status: 409, statusText: 'Conflict' });
     fixture.detectChanges();
 
-    expect(componente.mensajeModal()).toBe('api.CORREO_REPETIDO');
+    expect(componente.mensajeError()).toBe('api.CORREO_REPETIDO');
     expect(componente.enviando()).toBe(false);
     expect(navegar).not.toHaveBeenCalled();
-    expect(fixture.nativeElement.querySelector('app-modal')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-aviso')).not.toBeNull();
   });
 
   it('[S] mientras espera la respuesta no envía una segunda vez', async () => {
