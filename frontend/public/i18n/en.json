@@ -1,5 +1,6 @@
 {
   "comun": {
+    "volver": "← Back",
     "aviso": "Notice",
     "aceptar": "OK",
     "cargando": "Loading…",
@@ -83,8 +84,35 @@
     "error_publicar": "The post could not be published",
     "crear": "Create post",
     "ventana_titulo": "New post",
-    "campo_ingredientes": "Ingredients (one per line)",
-    "campo_pasos": "Steps (one per line)",
+    "error_detalle": "The post could not be loaded",
+    "campo_ingredientes": "Ingredients",
+    "ingrediente_nombre": "Ingredient",
+    "ingrediente_cantidad": "Amount",
+    "ingrediente_medida": "Unit",
+    "ingrediente_agregar": "Add ingredient",
+    "ingrediente_quitar": "Remove ingredient",
+    "ingrediente_falta_nombre": "The ingredient name is missing",
+    "ingrediente_falta_cantidad": "The ingredient amount is missing",
+    "ingrediente_cantidad_invalida": "The amount must be a number greater than 0, with up to 2 decimals",
+    "solo_numeros": "Numbers only, e.g. {{n}}",
+    "ficha": "At a glance",
+    "campo_porciones": "Servings",
+    "campo_tiempoMinutos": "Prep time (min)",
+    "campo_calorias": "Calories per serving",
+    "campo_costo": "Cost",
+    "costo_opcion": "Cost {{n}} of 4",
+    "ficha_tiempo": "Prep time",
+    "ficha_calorias": "Calories",
+    "minutos": "{{n}} min",
+    "campo_pasos": "Steps",
+    "paso_descripcion": "Step description",
+    "paso_numero": "Step {{n}}",
+    "paso_mover": "Move step {{n}} (drag, or use the up and down arrows)",
+    "sesion_titulo": "Your session could not be extended",
+    "sesion_guardado": "Your draft is saved in this browser.",
+    "ingresar_de_nuevo": "Sign in again",
+    "paso_quitar": "Remove step {{n}}",
+    "paso_agregar": "Add step",
     "tipo_pregunta": "What do you want to share?",
     "ingredientes": "Ingredients",
     "pasos": "Steps",
@@ -96,6 +124,12 @@
     "comentarios": "{{n}} comments",
     "invitacion": "What do you want to share today?"
   },
+  "borrador": {
+    "titulo": "We recovered your draft",
+    "recuperado": "You saved it on {{fecha}}. The photo is not kept in the draft: choose it again if you had one.",
+    "descartar": "Discard draft",
+    "guardado": "Draft saved on {{fecha}}"
+  },
   "perfil": {
     "correo": "Email",
     "fecha_nacimiento": "Date of birth",
@@ -106,6 +140,7 @@
     "administrador": "administrator"
   },
   "validacion": {
+    "entero": "Enter a whole number from 1 to {{max}}",
     "minimo": "Must have at least {{n}} characters",
     "maximo": "Must have at most {{n}} characters",
     "correo": "Enter a valid email",
@@ -129,6 +164,8 @@
     "USUARIO_REPETIDO": "That username is already registered.",
     "IMAGEN_TIPO_INVALIDO": "The image must be JPG, PNG, WEBP or GIF.",
     "CREDENCIALES_INVALIDAS": "The username or password is incorrect.",
+    "PUBLICACION_NO_ENCONTRADA": "The post does not exist.",
+    "SESION_VENCIDA": "Your session reached its maximum length. Please sign in again.",
     "TOKEN_AUSENTE": "You need to log in to do this.",
     "TOKEN_INVALIDO": "Your session is not valid or has expired. Log in again.",
     "DEMASIADAS_SOLICITUDES": "You made too many requests in a row. Wait a moment and try again."
@@ -138,5 +175,17 @@
     "tip": "Culinary tip",
     "experiencia": "Experience",
     "completa": "Full post"
+  },
+  "unidades": {
+    "g": "g",
+    "kg": "kg",
+    "ml": "ml",
+    "l": "l",
+    "taza": "cup",
+    "cucharada": "tbsp",
+    "cucharadita": "tsp",
+    "unidad": "pc",
+    "pizca": "pinch",
+    "a_gusto": "to taste"
   }
 }

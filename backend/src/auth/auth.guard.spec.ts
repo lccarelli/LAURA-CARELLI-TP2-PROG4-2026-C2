@@ -60,7 +60,11 @@ describe('AuthGuard', () => {
     const { ejecucion, solicitud } = contexto(`Bearer ${token}`);
 
     expect(guard.canActivate(ejecucion)).toBe(true);
-    expect(solicitud.usuario).toEqual({ id: 'abc123', perfil: 'usuario' });
+    expect(solicitud.usuario).toEqual({
+      id: 'abc123',
+      perfil: 'usuario',
+      inicio: expect.any(Number),
+    });
   });
 
   it('[B] un token que venció hace un segundo responde 401', () => {

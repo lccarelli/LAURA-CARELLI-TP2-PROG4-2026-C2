@@ -3,7 +3,9 @@ import {
   Controller,
   HttpCode,
   Post,
+  Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -11,6 +13,8 @@ import { Throttle } from '@nestjs/throttler';
 import { imagenOpcional } from '../imagenes/imagen-opcional.pipe.js';
 import { TAMANO_MAXIMO_IMAGEN } from '../imagenes/imagenes.constantes.js';
 import { LIMITES_AUTENTICACION } from '../configs/throttler.config.js';
+import { AuthGuard } from './auth.guard.js';
+import type { SolicitudAutenticada } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
 import { IngresarDto } from './dto/ingresar.dto.js';
 import { RegistroDto } from './dto/registro.dto.js';
@@ -36,5 +40,12 @@ export class AuthController {
   @HttpCode(200)
   ingresar(@Body() dto: IngresarDto) {
     return this.authService.ingresar(dto);
+  }
+
+  @Post('refrescar')
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
+  refrescar(@Req() solicitud: SolicitudAutenticada) {
+    return this.authService.refrescar(solicitud.usuario);
   }
 }

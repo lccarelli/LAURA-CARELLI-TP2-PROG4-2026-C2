@@ -64,19 +64,13 @@ describe('Login', () => {
     expect(solicitud.request.body).toEqual({ identificador: 'laura_c', clave: 'Clave1234' });
   });
 
-  it('[I] se muestra en una ventana flotante sobre la portada, que queda inactiva', () => {
+  it('[I] es una página completa, sin ventana flotante ni portada detrás', () => {
     const raiz = fixture.nativeElement as HTMLElement;
 
-    expect(raiz.querySelector('app-ventana form')).not.toBeNull();
-    expect(raiz.querySelector('[inert] app-inicio')).not.toBeNull();
-  });
-
-  it('[I] al cerrar la ventana vuelve a la portada', () => {
-    (fixture.nativeElement as HTMLElement)
-      .querySelector<HTMLButtonElement>('app-ventana .boton-icono')!
-      .click();
-
-    expect(navegar).toHaveBeenCalledWith(['/']);
+    expect(raiz.querySelector('.pagina-angosta form')).not.toBeNull();
+    expect(raiz.querySelector('[role="dialog"], [aria-modal], [inert]')).toBeNull();
+    expect(raiz.querySelector('app-inicio')).toBeNull();
+    expect(raiz.querySelector('h1')!.textContent).toContain('Ingresar');
   });
 
   it('[I] la clave tiene un botón para verla', () => {
@@ -114,7 +108,7 @@ describe('Login', () => {
       .flush({ codigo: 'CREDENCIALES_INVALIDAS' }, { status: 401, statusText: 'Unauthorized' });
     fixture.detectChanges();
 
-    expect(componente.mensajeModal()).toBe('api.CREDENCIALES_INVALIDAS');
+    expect(componente.mensajeError()).toBe('api.CREDENCIALES_INVALIDAS');
     expect(componente.enviando()).toBe(false);
     expect(navegar).not.toHaveBeenCalled();
   });

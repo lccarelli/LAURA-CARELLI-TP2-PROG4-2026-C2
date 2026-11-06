@@ -116,6 +116,37 @@ describe('Auth', () => {
     });
   });
 
+  describe('refrescar', () => {
+    it('[O] pide un token nuevo, lo guarda y conserva al usuario', () => {
+      const { auth, http } = crearAuth();
+      auth.token.set('viejo');
+      auth.usuario.set(sesion.usuario);
+
+      auth.refrescar().subscribe();
+      const pedido = http.expectOne(`${environment.API_URL}/auth/refrescar`);
+      pedido.flush({ token: 'nuevo' });
+
+      expect(pedido.request.method).toBe('POST');
+      expect(auth.token()).toBe('nuevo');
+      expect(localStorage.getItem('token')).toBe('nuevo');
+      expect(auth.usuario()?.nombreUsuario).toBe('laura_c');
+    });
+
+    it('[E] si el token ya venció no borra lo que había', () => {
+      const { auth, http } = crearAuth();
+      auth.token.set('viejo');
+      localStorage.setItem('token', 'viejo');
+
+      auth.refrescar().subscribe({ error: () => undefined });
+      http
+        .expectOne(`${environment.API_URL}/auth/refrescar`)
+        .flush({ codigo: 'TOKEN_INVALIDO' }, { status: 401, statusText: 'Unauthorized' });
+
+      expect(auth.token()).toBe('viejo');
+      expect(localStorage.getItem('token')).toBe('viejo');
+    });
+  });
+
   describe('salir', () => {
     it('[Z] salir sin sesión no falla', () => {
       const { auth } = crearAuth();

@@ -14,6 +14,8 @@ export const EVENTOS_DE_LOG = {
   SOLICITUD_RECHAZADA: 'solicitud_rechazada',
   TOKEN_AUSENTE: 'token_ausente',
   TOKEN_RECHAZADO: 'token_rechazado',
+  TOKEN_REFRESCADO: 'token_refrescado',
+  SESION_VENCIDA: 'sesion_vencida',
   USUARIO_REGISTRADO: 'usuario_registrado',
 } as const;
 
