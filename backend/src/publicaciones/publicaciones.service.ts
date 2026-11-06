@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Cache } from 'cache-manager';
 import { Model } from 'mongoose';
@@ -57,8 +57,12 @@ export class PublicacionesService {
       tipo: dto.tipo,
       titulo: dto.titulo,
       mensaje: dto.mensaje,
-      ingredientes: dto.ingredientes || undefined,
-      pasos: dto.pasos || undefined,
+      ingredientes: dto.ingredientes,
+      pasos: dto.pasos,
+      porciones: dto.porciones,
+      tiempoMinutos: dto.tiempoMinutos,
+      costo: dto.costo,
+      calorias: dto.calorias,
       imagen: urlImagen,
     });
     await this.cache.clear();
@@ -68,6 +72,20 @@ export class PublicacionesService {
       id_usuario: usuarioId,
     });
     return creada.toObject();
+  }
+
+  async obtener(id: string) {
+    const publicacion = await this.publicacionModel
+      .findById(id)
+      .populate('usuario', CAMPOS_AUTOR)
+      .lean();
+    if (!publicacion) {
+      throw new NotFoundException({
+        message: 'La publicación no existe',
+        codigo: 'PUBLICACION_NO_ENCONTRADA',
+      });
+    }
+    return publicacion;
   }
 
   async listar(offset: number, limit: number) {

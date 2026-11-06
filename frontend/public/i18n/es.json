@@ -1,5 +1,6 @@
 {
   "comun": {
+    "volver": "← Volver",
     "aviso": "Aviso",
     "aceptar": "Aceptar",
     "cargando": "Cargando…",
@@ -83,8 +84,35 @@
     "error_publicar": "No se pudo publicar",
     "crear": "Crear publicación",
     "ventana_titulo": "Nueva publicación",
-    "campo_ingredientes": "Ingredientes (uno por línea)",
-    "campo_pasos": "Pasos (uno por línea)",
+    "error_detalle": "No se pudo cargar la publicación",
+    "campo_ingredientes": "Ingredientes",
+    "ingrediente_nombre": "Ingrediente",
+    "ingrediente_cantidad": "Cantidad",
+    "ingrediente_medida": "Medida",
+    "ingrediente_agregar": "Agregar ingrediente",
+    "ingrediente_quitar": "Quitar ingrediente",
+    "ingrediente_falta_nombre": "Falta el nombre del ingrediente",
+    "ingrediente_falta_cantidad": "Falta la cantidad del ingrediente",
+    "ingrediente_cantidad_invalida": "La cantidad debe ser un número mayor que 0, con hasta 2 decimales",
+    "solo_numeros": "Sólo números, ej. {{n}}",
+    "ficha": "Ficha",
+    "campo_porciones": "Porciones",
+    "campo_tiempoMinutos": "Tiempo de preparación (min)",
+    "campo_calorias": "Calorías por porción",
+    "campo_costo": "Costo",
+    "costo_opcion": "Costo {{n}} de 4",
+    "ficha_tiempo": "Tiempo de preparación",
+    "ficha_calorias": "Calorías",
+    "minutos": "{{n}} min",
+    "campo_pasos": "Pasos",
+    "paso_descripcion": "Descripción del paso",
+    "paso_numero": "Paso {{n}}",
+    "paso_mover": "Mover el paso {{n}} (arrastrá, o usá las flechas arriba y abajo)",
+    "sesion_titulo": "No se pudo extender tu sesión",
+    "sesion_guardado": "Tu borrador está guardado en este navegador.",
+    "ingresar_de_nuevo": "Ingresar de nuevo",
+    "paso_quitar": "Quitar el paso {{n}}",
+    "paso_agregar": "Agregar paso",
     "tipo_pregunta": "¿Qué querés compartir?",
     "ingredientes": "Ingredientes",
     "pasos": "Pasos",
@@ -96,6 +124,12 @@
     "comentarios": "{{n}} comentarios",
     "invitacion": "¿Qué querés compartir hoy?"
   },
+  "borrador": {
+    "titulo": "Recuperamos tu borrador",
+    "recuperado": "Lo guardaste el {{fecha}}. La foto no se guarda en el borrador: volvé a elegirla si la tenías.",
+    "descartar": "Descartar borrador",
+    "guardado": "Borrador guardado el {{fecha}}"
+  },
   "perfil": {
     "correo": "Correo",
     "fecha_nacimiento": "Fecha de nacimiento",
@@ -106,6 +140,7 @@
     "administrador": "administrador"
   },
   "validacion": {
+    "entero": "Ingresá un número entero entre 1 y {{max}}",
     "minimo": "Debe tener al menos {{n}} caracteres",
     "maximo": "Debe tener como máximo {{n}} caracteres",
     "correo": "Ingresá un correo válido",
@@ -129,6 +164,8 @@
     "USUARIO_REPETIDO": "El nombre de usuario ya está registrado.",
     "IMAGEN_TIPO_INVALIDO": "La imagen debe ser JPG, PNG, WEBP o GIF.",
     "CREDENCIALES_INVALIDAS": "El usuario o la clave son incorrectos.",
+    "PUBLICACION_NO_ENCONTRADA": "La publicación no existe.",
+    "SESION_VENCIDA": "Tu sesión llegó a su duración máxima. Ingresá de nuevo.",
     "TOKEN_AUSENTE": "Tenés que ingresar para hacer esto.",
     "TOKEN_INVALIDO": "Tu sesión no es válida o venció. Ingresá de nuevo.",
     "DEMASIADAS_SOLICITUDES": "Hiciste demasiadas solicitudes seguidas. Esperá un momento e intentá de nuevo."
@@ -138,5 +175,17 @@
     "tip": "Tip culinario",
     "experiencia": "Experiencia",
     "completa": "Publicación completa"
+  },
+  "unidades": {
+    "g": "g",
+    "kg": "kg",
+    "ml": "ml",
+    "l": "l",
+    "taza": "taza",
+    "cucharada": "cda.",
+    "cucharadita": "cdita.",
+    "unidad": "u.",
+    "pizca": "pizca",
+    "a_gusto": "a gusto"
   }
 }

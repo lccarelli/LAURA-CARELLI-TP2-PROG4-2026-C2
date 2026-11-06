@@ -195,22 +195,95 @@ describe('POST /publicaciones', () => {
         tipo: 'receta',
         titulo: 'Tostadas',
         mensaje: 'Simples',
-        ingredientes: 'Pan\nManteca',
-        pasos: 'Tostar\nUntar',
+        ingredientes: JSON.stringify([
+          { nombre: 'Pan', cantidad: 2, unidad: 'unidad' },
+          { nombre: 'Manteca', cantidad: 50, unidad: 'g' },
+          { nombre: 'Sal', unidad: 'a_gusto' },
+        ]),
+        pasos: JSON.stringify(['Tostar', 'Untar']),
       }).expect(201);
       const sola = await publicar().expect(201);
 
-      expect(completa.body.ingredientes).toBe('Pan\nManteca');
-      expect(completa.body.pasos).toBe('Tostar\nUntar');
-      expect(sola.body.ingredientes).toBeUndefined();
+      expect(completa.body.ingredientes).toEqual([
+        { nombre: 'Pan', cantidad: 2, unidad: 'unidad' },
+        { nombre: 'Manteca', cantidad: 50, unidad: 'g' },
+        { nombre: 'Sal', unidad: 'a_gusto' },
+      ]);
+      expect(completa.body.pasos).toEqual(['Tostar', 'Untar']);
+      expect(sola.body.ingredientes).toEqual([]);
+      expect(sola.body.pasos).toEqual([]);
     });
 
-    it('[B] ingredientes de 1000 caracteres pasan y 1001 responde 400; pasos 2000 y 2001', async () => {
+    it('[O] la ficha se guarda como números y es opcional', async () => {
+      const { body } = await publicar({
+        tipo: 'receta',
+        titulo: 'Crema de albahaca',
+        mensaje: 'Versátil',
+        porciones: '4',
+        tiempoMinutos: '19',
+        costo: '2',
+        calorias: '270',
+      }).expect(201);
+      const sola = await publicar().expect(201);
+
+      expect(body).toMatchObject({
+        porciones: 4,
+        tiempoMinutos: 19,
+        costo: 2,
+        calorias: 270,
+      });
+      expect(sola.body.porciones).toBeUndefined();
+      expect(sola.body.costo).toBeUndefined();
+    });
+
+    it('[E] una ficha con texto, operadores o fuera de rango responde 400 y no guarda nada', async () => {
       const base = { tipo: 'receta', titulo: 'Hola', mensaje: 'Texto' };
-      await publicar({ ...base, ingredientes: 'a'.repeat(1000) }).expect(201);
-      await publicar({ ...base, ingredientes: 'a'.repeat(1001) }).expect(400);
-      await publicar({ ...base, pasos: 'a'.repeat(2000) }).expect(201);
-      await publicar({ ...base, pasos: 'a'.repeat(2001) }).expect(400);
+      const malos: Record<string, string>[] = [
+        { porciones: 'cuatro' },
+        { porciones: '0' },
+        { porciones: '101' },
+        { tiempoMinutos: '1.5' },
+        { tiempoMinutos: '-3' },
+        { costo: '5' },
+        { calorias: '270; DROP TABLE publicaciones' },
+        { calorias: '{"$gt":0}' },
+        { porciones: "1' OR '1'='1" },
+      ];
+
+      for (const mala of malos) {
+        await publicar({ ...base, ...mala }).expect(400);
+      }
+      expect(await publicaciones.countDocuments()).toBe(0);
+    });
+
+    it('[E] ingredientes mal armados responden 400 y no guardan nada', async () => {
+      const base = { tipo: 'receta', titulo: 'Hola', mensaje: 'Texto' };
+      const con = (ingredientes: unknown) =>
+        publicar({ ...base, ingredientes: JSON.stringify(ingredientes) });
+
+      await publicar({ ...base, ingredientes: 'Pan\nManteca' }).expect(400);
+      await con([{ nombre: 'Pan', cantidad: 0, unidad: 'g' }]).expect(400);
+      await con([{ nombre: 'Pan', cantidad: 1, unidad: 'libra' }]).expect(400);
+      await con([{ nombre: '', cantidad: 1, unidad: 'g' }]).expect(400);
+      await con([
+        { nombre: 'Pan', cantidad: 1, unidad: 'g', marca: 'X' },
+      ]).expect(400);
+      expect(await publicaciones.countDocuments()).toBe(0);
+    });
+
+    it('[B] 40 ingredientes y 40 pasos pasan; 41 responden 400', async () => {
+      const base = { tipo: 'receta', titulo: 'Hola', mensaje: 'Texto' };
+      const lista = (cantidad: number) =>
+        JSON.stringify(
+          Array(cantidad).fill({ nombre: 'Sal', cantidad: 1, unidad: 'g' }),
+        );
+      await publicar({ ...base, ingredientes: lista(40) }).expect(201);
+      await publicar({ ...base, ingredientes: lista(41) }).expect(400);
+      const pasos = (cantidad: number) =>
+        JSON.stringify(Array(cantidad).fill('Mezclar'));
+      await publicar({ ...base, pasos: pasos(40) }).expect(201);
+      await publicar({ ...base, pasos: pasos(41) }).expect(400);
+      await publicar({ ...base, pasos: 'Mezclar\nHornear' }).expect(400);
     });
   });
 

@@ -105,7 +105,11 @@ export class AuthService {
         token,
         this.config.secretoJwt,
       ) as jwt.JwtPayload;
-      return { id: payload.sub as string, perfil: payload.perfil as string };
+      return {
+        id: payload.sub as string,
+        perfil: payload.perfil as string,
+        inicio: (payload.inicio ?? payload.iat) as number,
+      };
     } catch (error) {
       this.logger.advertir(EVENTOS_DE_LOG.TOKEN_RECHAZADO, 'Token rechazado', {
         motivo: (error as Error).message,
@@ -117,9 +121,37 @@ export class AuthService {
     }
   }
 
-  private generarToken(usuario: { _id: unknown; perfil: string }) {
+  refrescar(usuario: { id: string; perfil: string; inicio: number }) {
+    const ahora = Math.floor(Date.now() / 1000);
+    if (ahora - usuario.inicio > this.config.duracionMaximaSesionSegundos) {
+      this.logger.advertir(
+        EVENTOS_DE_LOG.SESION_VENCIDA,
+        'La sesión alcanzó su duración máxima',
+        { id_usuario: usuario.id },
+      );
+      throw new UnauthorizedException({
+        message: 'La sesión alcanzó su duración máxima',
+        codigo: 'SESION_VENCIDA',
+      });
+    }
+
+    this.logger.info(EVENTOS_DE_LOG.TOKEN_REFRESCADO, 'Token refrescado', {
+      id_usuario: usuario.id,
+    });
+    return {
+      token: this.generarToken(
+        { _id: usuario.id, perfil: usuario.perfil },
+        usuario.inicio,
+      ),
+    };
+  }
+
+  private generarToken(
+    usuario: { _id: unknown; perfil: string },
+    inicio = Math.floor(Date.now() / 1000),
+  ) {
     return jwt.sign(
-      { sub: String(usuario._id), perfil: usuario.perfil },
+      { sub: String(usuario._id), perfil: usuario.perfil, inicio },
       this.config.secretoJwt,
       { expiresIn: this.config.expiraJwt },
     );

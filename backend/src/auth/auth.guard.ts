@@ -13,7 +13,7 @@ import {
 import { AuthService } from './auth.service.js';
 
 export type SolicitudAutenticada = Request & {
-  usuario: { id: string; perfil: string };
+  usuario: { id: string; perfil: string; inicio: number };
 };
 
 @Injectable()
