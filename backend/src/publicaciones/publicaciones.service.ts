@@ -1,5 +1,10 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Cache } from 'cache-manager';
 import { Model } from 'mongoose';
@@ -10,6 +15,7 @@ import {
   LoggerFactory,
   ContextLogger,
 } from '../logs/logs.factory.js';
+import type { ArchivosPublicacion } from './archivos-publicacion.pipe.js';
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
 import { Publicacion } from './schemas/publicacion.schema.js';
 
@@ -39,8 +45,12 @@ export class PublicacionesService {
   async crear(
     usuarioId: string,
     dto: CrearPublicacionDto,
-    imagen?: Express.Multer.File,
+    archivos: ArchivosPublicacion = {},
   ) {
+    const imagen = archivos.imagen?.[0];
+    const fotosPasos = archivos.imagenesPasos ?? [];
+    this.validarFotosDePasos(dto, fotosPasos.length);
+
     const urlImagen = imagen
       ? (
           await this.imagenesService.guardar(
@@ -52,14 +62,19 @@ export class PublicacionesService {
         ).url
       : undefined;
 
+    const pasos = dto.pasos
+      ? await this.subirFotosDePasos(dto, fotosPasos, usuarioId)
+      : undefined;
+
     const creada = await this.publicacionModel.create({
       usuario: usuarioId,
       tipo: dto.tipo,
       titulo: dto.titulo,
       mensaje: dto.mensaje,
       ingredientes: dto.ingredientes,
-      pasos: dto.pasos,
+      pasos,
       porciones: dto.porciones,
+      tipoRinde: dto.tipoRinde,
       tiempoMinutos: dto.tiempoMinutos,
       costo: dto.costo,
       calorias: dto.calorias,
@@ -72,6 +87,45 @@ export class PublicacionesService {
       id_usuario: usuarioId,
     });
     return creada.toObject();
+  }
+
+  private validarFotosDePasos(dto: CrearPublicacionDto, cantidad: number) {
+    const usadas = (dto.pasos ?? []).flatMap(({ fotos }) => fotos ?? []);
+    const repetida = new Set(usadas).size !== usadas.length;
+    if (repetida || usadas.some((foto) => foto >= cantidad)) {
+      throw new BadRequestException({
+        message:
+          'Las fotos de los pasos no coinciden con los archivos enviados',
+        codigo: 'FOTO_DE_PASO_INVALIDA',
+      });
+    }
+  }
+
+  private subirFotosDePasos(
+    dto: CrearPublicacionDto,
+    fotos: Express.Multer.File[],
+    usuarioId: string,
+  ) {
+    return Promise.all(
+      (dto.pasos ?? []).map(async ({ titulo, texto, fotos: indices = [] }) => {
+        const imagenes = await Promise.all(
+          indices.map(async (indice) => {
+            const { url } = await this.imagenesService.guardar(
+              fotos[indice],
+              Destino.PUBLICACIONES,
+              usuarioId,
+              `${dto.tipo}-paso-${indice}`,
+            );
+            return url;
+          }),
+        );
+        return {
+          texto,
+          ...(titulo && { titulo }),
+          ...(imagenes.length && { imagenes }),
+        };
+      }),
+    );
   }
 
   async obtener(id: string) {

@@ -161,7 +161,7 @@ describe('POST /publicaciones', () => {
   });
 
   describe('tipo', () => {
-    it.each(['receta', 'tip', 'experiencia', 'completa'])(
+    it.each(['receta', 'tip', 'experiencia'])(
       '[M] el tipo %s se guarda',
       async (tipo) => {
         const { body } = await publicar({
@@ -209,7 +209,10 @@ describe('POST /publicaciones', () => {
         { nombre: 'Manteca', cantidad: 50, unidad: 'g' },
         { nombre: 'Sal', unidad: 'a_gusto' },
       ]);
-      expect(completa.body.pasos).toEqual(['Tostar', 'Untar']);
+      expect(completa.body.pasos).toEqual([
+        { texto: 'Tostar' },
+        { texto: 'Untar' },
+      ]);
       expect(sola.body.ingredientes).toEqual([]);
       expect(sola.body.pasos).toEqual([]);
     });
@@ -220,6 +223,7 @@ describe('POST /publicaciones', () => {
         titulo: 'Crema de albahaca',
         mensaje: 'Versátil',
         porciones: '4',
+        tipoRinde: 'unidades',
         tiempoMinutos: '19',
         costo: '2',
         calorias: '270',
@@ -228,6 +232,7 @@ describe('POST /publicaciones', () => {
 
       expect(body).toMatchObject({
         porciones: 4,
+        tipoRinde: 'unidades',
         tiempoMinutos: 19,
         costo: 2,
         calorias: 270,
@@ -248,6 +253,8 @@ describe('POST /publicaciones', () => {
         { calorias: '270; DROP TABLE publicaciones' },
         { calorias: '{"$gt":0}' },
         { porciones: "1' OR '1'='1" },
+        { tipoRinde: 'tazas' },
+        { tipoRinde: '{"$ne":null}' },
       ];
 
       for (const mala of malos) {
@@ -269,6 +276,202 @@ describe('POST /publicaciones', () => {
         { nombre: 'Pan', cantidad: 1, unidad: 'g', marca: 'X' },
       ]).expect(400);
       expect(await publicaciones.countDocuments()).toBe(0);
+    });
+
+    describe('fotos de los pasos', () => {
+      const recetaConFotos = (
+        pasos: unknown,
+        fotos: number,
+        extra: Record<string, string> = {},
+      ) => {
+        const solicitud = request(app.getHttpServer())
+          .post('/publicaciones')
+          .set('Authorization', `Bearer ${token}`)
+          .field('tipo', 'receta')
+          .field('titulo', 'Con fotos')
+          .field('mensaje', 'Paso a paso')
+          .field('pasos', JSON.stringify(pasos));
+        for (const [campo, valor] of Object.entries(extra)) {
+          solicitud.field(campo, valor);
+        }
+        for (let i = 0; i < fotos; i++) {
+          solicitud.attach('imagenesPasos', PNG, {
+            filename: `paso-${i}.png`,
+            contentType: 'image/png',
+          });
+        }
+        return solicitud;
+      };
+
+      it('[O] cada paso guarda su texto y, si la tiene, la URL de su foto', async () => {
+        const { body } = await recetaConFotos(
+          [
+            { titulo: 'La masa', texto: 'Mezclar', fotos: [0, 1] },
+            { texto: 'Dejar reposar' },
+            { texto: 'Hornear', fotos: [2] },
+          ],
+          3,
+        ).expect(201);
+
+        expect(body.pasos).toEqual([
+          {
+            titulo: 'La masa',
+            texto: 'Mezclar',
+            imagenes: [URL_IMAGEN_SUBIDA, URL_IMAGEN_SUBIDA],
+          },
+          { texto: 'Dejar reposar' },
+          { texto: 'Hornear', imagenes: [URL_IMAGEN_SUBIDA] },
+        ]);
+        expect(cloudinaryFalso.subir).toHaveBeenCalledTimes(3);
+      });
+
+      it('[O] el título del paso es opcional: vacío o con espacios no se guarda', async () => {
+        const { body } = await recetaConFotos(
+          [
+            { titulo: '   ', texto: 'Mezclar' },
+            { titulo: '', texto: 'Hornear' },
+          ],
+          0,
+        ).expect(201);
+
+        expect(body.pasos).toEqual([
+          { texto: 'Mezclar' },
+          { texto: 'Hornear' },
+        ]);
+      });
+
+      it('[B] un título de 80 caracteres y un texto de 2000 se guardan; 81 y 2001 responden 400', async () => {
+        await recetaConFotos(
+          [{ titulo: 'a'.repeat(80), texto: 'b'.repeat(2000) }],
+          0,
+        ).expect(201);
+        await recetaConFotos(
+          [{ titulo: 'a'.repeat(81), texto: 'b' }],
+          0,
+        ).expect(400);
+        await recetaConFotos([{ texto: 'b'.repeat(2001) }], 0).expect(400);
+      });
+
+      it('[M] cada foto se sube con un nombre propio, aunque se suban a la vez', async () => {
+        await recetaConFotos(
+          [
+            { texto: 'Mezclar', fotos: [0, 1] },
+            { texto: 'Hornear', fotos: [2, 3] },
+          ],
+          4,
+        ).expect(201);
+
+        const nombres = cloudinaryFalso.subir.mock.calls.map(
+          ([, , nombre]) => nombre,
+        );
+        expect(nombres).toHaveLength(4);
+        expect(new Set(nombres).size).toBe(4);
+      });
+
+      it('[O] los pasos como texto simple siguen funcionando', async () => {
+        const { body } = await recetaConFotos(['Mezclar', 'Hornear'], 0).expect(
+          201,
+        );
+
+        expect(body.pasos).toEqual([
+          { texto: 'Mezclar' },
+          { texto: 'Hornear' },
+        ]);
+      });
+
+      it('[E] una foto que no existe o repetida responde FOTO_DE_PASO_INVALIDA y no guarda nada', async () => {
+        for (const pasos of [
+          [{ texto: 'Mezclar', fotos: [1] }],
+          [
+            { texto: 'Mezclar', fotos: [0] },
+            { texto: 'Hornear', fotos: [0] },
+          ],
+        ]) {
+          const { body } = await recetaConFotos(pasos, 1).expect(400);
+          expect(body.codigo).toBe('FOTO_DE_PASO_INVALIDA');
+        }
+
+        expect(await publicaciones.countDocuments()).toBe(0);
+        expect(cloudinaryFalso.subir).not.toHaveBeenCalled();
+      });
+
+      it('[E] un número de foto negativo, decimal o fuera del máximo responde 400', async () => {
+        for (const foto of [-1, 0.5, 20, '0']) {
+          await recetaConFotos([{ texto: 'Mezclar', fotos: [foto] }], 1).expect(
+            400,
+          );
+        }
+        await recetaConFotos([{ texto: 'Mezclar', fotos: [0, 0] }], 2).expect(
+          400,
+        );
+      });
+
+      it('[B] un paso admite hasta 5 fotos y 6 se rechazan', async () => {
+        const fotos = (cantidad: number) =>
+          Array.from({ length: cantidad }, (_, i) => i);
+
+        await recetaConFotos([{ texto: 'Mezclar', fotos: fotos(5) }], 5).expect(
+          201,
+        );
+        await recetaConFotos([{ texto: 'Mezclar', fotos: fotos(6) }], 6).expect(
+          400,
+        );
+      });
+
+      it('[E] un paso con campos que no existen responde 400', async () => {
+        await recetaConFotos(
+          [{ texto: 'Mezclar', rol: 'admin', $set: { a: 1 } }],
+          0,
+        ).expect(400);
+      });
+
+      it('[E] un archivo que no es imagen responde IMAGEN_TIPO_INVALIDO', async () => {
+        const { body } = await request(app.getHttpServer())
+          .post('/publicaciones')
+          .set('Authorization', `Bearer ${token}`)
+          .field('tipo', 'receta')
+          .field('titulo', 'Mala')
+          .field('mensaje', 'Foto falsa')
+          .field('pasos', JSON.stringify([{ texto: 'Mezclar', fotos: [0] }]))
+          .attach('imagenesPasos', Buffer.from('no soy una imagen'), {
+            filename: 'paso.txt',
+            contentType: 'text/plain',
+          })
+          .expect(400);
+
+        expect(body.codigo).toBe('IMAGEN_TIPO_INVALIDO');
+        expect(await publicaciones.countDocuments()).toBe(0);
+      });
+
+      it('[B] hasta 20 fotos de pasos en total pasan y 21 se rechazan', async () => {
+        const pasos = (cantidad: number) =>
+          Array.from({ length: Math.ceil(cantidad / 5) }, (_, paso) => ({
+            texto: `Paso ${paso}`,
+            fotos: Array.from(
+              { length: Math.min(5, cantidad - paso * 5) },
+              (_, i) => paso * 5 + i,
+            ),
+          }));
+
+        await recetaConFotos(pasos(20), 20).expect(201);
+        await recetaConFotos(pasos(20), 21).expect(400);
+      });
+
+      it('[M] la foto principal y las de los pasos conviven', async () => {
+        const { body } = await recetaConFotos(
+          [{ texto: 'Mezclar', fotos: [0] }],
+          1,
+        )
+          .attach('imagen', PNG, {
+            filename: 'portada.png',
+            contentType: 'image/png',
+          })
+          .expect(201);
+
+        expect(body.imagen).toBe(URL_IMAGEN_SUBIDA);
+        expect(body.pasos[0].imagenes).toEqual([URL_IMAGEN_SUBIDA]);
+        expect(cloudinaryFalso.subir).toHaveBeenCalledTimes(2);
+      });
     });
 
     it('[B] 40 ingredientes y 40 pasos pasan; 41 responden 400', async () => {

@@ -53,15 +53,31 @@ describe('CrearPublicacionDto', () => {
     });
   });
 
+  describe('tipoRinde', () => {
+    it('[O] es opcional y acepta porciones o unidades', async () => {
+      expect(await camposInvalidos({})).toEqual([]);
+      for (const tipoRinde of ['porciones', 'unidades']) {
+        expect(await camposInvalidos({ tipoRinde })).toEqual([]);
+      }
+    });
+
+    it('[E] cualquier otro valor falla', async () => {
+      for (const tipoRinde of ['tazas', '', 5, { $ne: null }]) {
+        expect(await camposInvalidos({ tipoRinde })).toEqual(['tipoRinde']);
+      }
+    });
+  });
+
   describe('tipo', () => {
-    it('[O] los cuatro tipos pasan', async () => {
-      for (const tipo of ['receta', 'tip', 'experiencia', 'completa']) {
+    it('[O] los tres tipos pasan', async () => {
+      for (const tipo of ['receta', 'tip', 'experiencia']) {
         expect(await camposInvalidos({ tipo })).toEqual([]);
       }
     });
 
     it('[E] un tipo desconocido o vacío falla', async () => {
       expect(await camposInvalidos({ tipo: 'chisme' })).toEqual(['tipo']);
+      expect(await camposInvalidos({ tipo: 'completa' })).toEqual(['tipo']);
       expect(await camposInvalidos({ tipo: '' })).toEqual(['tipo']);
     });
   });
@@ -88,9 +104,43 @@ describe('CrearPublicacionDto', () => {
       expect(await camposInvalidos({ pasos: [1] })).toEqual(['pasos']);
     });
 
-    it('[B] cada paso tiene hasta 500 caracteres y hay hasta 40 pasos', async () => {
-      expect(await camposInvalidos({ pasos: ['a'.repeat(500)] })).toEqual([]);
-      expect(await camposInvalidos({ pasos: ['a'.repeat(501)] })).toEqual([
+    it('[O] un paso puede ser un objeto con título, texto y números de foto', async () => {
+      expect(
+        await camposInvalidos({
+          pasos: [
+            { titulo: 'La masa', texto: 'Mezclar', fotos: [0, 1] },
+            { texto: 'Hornear' },
+          ],
+        }),
+      ).toEqual([]);
+      expect(
+        await camposInvalidos({
+          pasos: JSON.stringify([{ texto: ' Mezclar ', fotos: [19] }]),
+        }),
+      ).toEqual([]);
+    });
+
+    it('[E] un paso sin texto, con título muy largo o con fotos inválidas falla', async () => {
+      for (const paso of [
+        { fotos: [0] },
+        { texto: '' },
+        { texto: 'a', titulo: 'a'.repeat(81) },
+        { texto: 'a', titulo: 5 },
+        { texto: 'a', fotos: [-1] },
+        { texto: 'a', fotos: [20] },
+        { texto: 'a', fotos: [1.5] },
+        { texto: 'a', fotos: ['1'] },
+        { texto: 'a', fotos: [0, 0] },
+        { texto: 'a', fotos: [0, 1, 2, 3, 4, 5] },
+        { texto: 'a', fotos: 1 },
+      ]) {
+        expect(await camposInvalidos({ pasos: [paso] })).toEqual(['pasos']);
+      }
+    });
+
+    it('[B] cada paso tiene hasta 2000 caracteres y hay hasta 40 pasos', async () => {
+      expect(await camposInvalidos({ pasos: ['a'.repeat(2000)] })).toEqual([]);
+      expect(await camposInvalidos({ pasos: ['a'.repeat(2001)] })).toEqual([
         'pasos',
       ]);
       expect(await camposInvalidos({ pasos: Array(40).fill('a') })).toEqual([]);
