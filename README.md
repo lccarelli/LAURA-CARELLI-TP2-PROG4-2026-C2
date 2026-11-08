@@ -177,12 +177,12 @@ La sesión usa un token JWT que dura **15 minutos** y se renueva mientras se usa
 
 **Borrador de una publicación.** Todo lo que se escribe en "Nueva publicación" se guarda solo en el navegador (`localStorage`, clave `borrador:<id del usuario>`), con una pausa de 0,8 segundos después de la última tecla, al salir de la pantalla, al ocultar o cerrar la pestaña y al recargar. Al volver a entrar se recupera con un aviso y la opción de descartarlo; al publicar se borra.
 
-- Guarda tipo, título, mensaje, ficha, costo, ingredientes y pasos. **No guarda la foto.**
+- Guarda tipo, título, mensaje, ficha, costo, ingredientes y pasos en `localStorage`. La foto de portada y las de los pasos van aparte, en IndexedDB (`banquete` / `fotos-borrador`): guarda los archivos tal cual, sin convertirlos a texto, así no choca con el límite de unos 5 MB de `localStorage`. Si el navegador no tiene IndexedDB, el borrador sigue funcionando sin fotos.
 - Cada usuario tiene el suyo; no se mezclan en un mismo navegador.
 - Lo que se lee del almacenamiento se valida otra vez (tipos, medidas, máximos, solo dígitos en la ficha), porque `localStorage` se puede modificar a mano.
 - Si la sesión ya venció, la pantalla avisa, mantiene el borrador y ofrece "Ingresar de nuevo".
 
-**Tests:** `backend/test/refrescar.e2e-spec.ts` (renovación, duración, `inicio` constante, tope de 12 horas, tokens vencidos o firmados con otra clave), `servicios/sesion/sesion.spec.ts`, `servicios/borrador/borrador.spec.ts` y `pages/nueva-publicacion/nueva-publicacion.spec.ts`.
+**Tests:** `backend/test/refrescar.e2e-spec.ts` (renovación, duración, `inicio` constante, tope de 12 horas, tokens vencidos o firmados con otra clave), `servicios/sesion/sesion.spec.ts`, `servicios/borrador/borrador.spec.ts`, `servicios/fotos-borrador/fotos-borrador.spec.ts` y `pages/nueva-publicacion/nueva-publicacion.spec.ts`.
 
 ---
 
