@@ -8,6 +8,7 @@ import {
   EVENTOS_DE_LOG,
   LoggerFactory,
 } from '../logs/logs.factory.js';
+import { PaginacionDto } from '../common/paginacion.dto.js';
 import { CrearComentarioDto } from './dto/crear-comentario.dto.js';
 import { Comentario } from './schemas/comentario.schema.js';
 import { Publicacion } from './schemas/publicacion.schema.js';
@@ -33,22 +34,31 @@ export class ComentariosService {
     this.logger = loggerFactory.crear(ComentariosService.name);
   }
 
+  async listar(publicacionId: string, { offset, limit }: PaginacionDto) {
+    await this.buscarPublicacionActiva(publicacionId);
+
+    const comentarios = await this.comentarioModel
+      .find({ publicacion: publicacionId })
+      .sort({ fecha: -1, _id: -1 })
+      .skip(offset)
+      .limit(limit + 1)
+      .populate('usuario', CAMPOS_AUTOR)
+      .lean();
+
+    return {
+      datos: comentarios.slice(0, limit),
+      offset,
+      limit,
+      hayMas: comentarios.length > limit,
+    };
+  }
+
   async crear(
     publicacionId: string,
     usuarioId: string,
     dto: CrearComentarioDto,
   ) {
-    const publicacion = await this.publicacionModel
-      .findOne({ _id: publicacionId, activa: true })
-      .select('usuario')
-      .populate('usuario', 'nombreUsuario')
-      .lean<AutorDeLaPublicacion>();
-    if (!publicacion) {
-      throw new NotFoundException({
-        message: 'La publicación no existe',
-        codigo: 'PUBLICACION_NO_ENCONTRADA',
-      });
-    }
+    const publicacion = await this.buscarPublicacionActiva(publicacionId);
 
     const creado = await this.comentarioModel.create({
       publicacion: publicacionId,
@@ -72,5 +82,20 @@ export class ComentariosService {
       nombre_autor: publicacion.usuario.nombreUsuario,
     });
     return creado.toObject();
+  }
+
+  private async buscarPublicacionActiva(publicacionId: string) {
+    const publicacion = await this.publicacionModel
+      .findOne({ _id: publicacionId, activa: true })
+      .select('usuario')
+      .populate('usuario', 'nombreUsuario')
+      .lean<AutorDeLaPublicacion>();
+    if (!publicacion) {
+      throw new NotFoundException({
+        message: 'La publicación no existe',
+        codigo: 'PUBLICACION_NO_ENCONTRADA',
+      });
+    }
+    return publicacion;
   }
 }

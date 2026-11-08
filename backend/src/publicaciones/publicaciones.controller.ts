@@ -16,6 +16,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
 import { IdParamDto } from '../common/id-param.dto.js';
+import { PaginacionDto } from '../common/paginacion.dto.js';
 import {
   MAXIMO_FOTOS_PASOS,
   TAMANO_MAXIMO_IMAGEN,
@@ -91,6 +92,14 @@ export class PublicacionesController {
     @Req() solicitud: SolicitudAutenticada,
   ) {
     return this.publicacionesService.quitarMeGusta(id, solicitud.usuario.id);
+  }
+
+  @Get(':id/comentarios')
+  listarComentarios(
+    @Param() { id }: IdParamDto,
+    @Query() paginacion: PaginacionDto,
+  ) {
+    return this.comentariosService.listar(id, paginacion);
   }
 
   @Post(':id/comentarios')
