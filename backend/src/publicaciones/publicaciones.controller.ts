@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Param,
   Post,
   Query,
@@ -14,7 +16,6 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
 import { IdParamDto } from '../common/id-param.dto.js';
-import { PaginacionDto } from '../common/paginacion.dto.js';
 import {
   MAXIMO_FOTOS_PASOS,
   TAMANO_MAXIMO_IMAGEN,
@@ -22,6 +23,7 @@ import {
 import { ArchivosPublicacionPipe } from './archivos-publicacion.pipe.js';
 import type { ArchivosPublicacion } from './archivos-publicacion.pipe.js';
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
+import { ListarPublicacionesDto } from './dto/listar-publicaciones.dto.js';
 import { PublicacionesService } from './publicaciones.service.js';
 
 @Controller('publicaciones')
@@ -48,12 +50,41 @@ export class PublicacionesController {
   }
 
   @Get()
-  listar(@Query() { offset, limit }: PaginacionDto) {
-    return this.publicacionesService.listar(offset, limit);
+  listar(
+    @Query() consulta: ListarPublicacionesDto,
+    @Req() solicitud: SolicitudAutenticada,
+  ) {
+    return this.publicacionesService.listar(consulta, solicitud.usuario.id);
   }
 
   @Get(':id')
-  obtener(@Param() { id }: IdParamDto) {
-    return this.publicacionesService.obtener(id);
+  obtener(@Param() { id }: IdParamDto, @Req() solicitud: SolicitudAutenticada) {
+    return this.publicacionesService.obtener(id, solicitud.usuario.id);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  eliminar(
+    @Param() { id }: IdParamDto,
+    @Req() solicitud: SolicitudAutenticada,
+  ) {
+    return this.publicacionesService.eliminar(id, solicitud.usuario);
+  }
+
+  @Post(':id/megusta')
+  darMeGusta(
+    @Param() { id }: IdParamDto,
+    @Req() solicitud: SolicitudAutenticada,
+  ) {
+    return this.publicacionesService.darMeGusta(id, solicitud.usuario.id);
+  }
+
+  @Delete(':id/megusta')
+  @HttpCode(204)
+  quitarMeGusta(
+    @Param() { id }: IdParamDto,
+    @Req() solicitud: SolicitudAutenticada,
+  ) {
+    return this.publicacionesService.quitarMeGusta(id, solicitud.usuario.id);
   }
 }

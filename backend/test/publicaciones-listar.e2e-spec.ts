@@ -1,9 +1,12 @@
 import { INestApplication } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { crearApp, limpiarBase } from './ayudas/app.js';
 import { registrarYObtenerSesion } from './ayudas/datos.js';
 import { sembrarPublicaciones } from './ayudas/publicaciones.js';
+import { Publicacion } from '../src/publicaciones/schemas/publicacion.schema.js';
 import { TTL_LISTADO_MS } from '../src/publicaciones/publicaciones.module.js';
 
 describe('GET /publicaciones', () => {
@@ -105,6 +108,157 @@ describe('GET /publicaciones', () => {
       expect(ids).toHaveLength(12);
       expect(new Set(ids).size).toBe(12);
       expect([...ids].sort().reverse()).toEqual(ids);
+    });
+  });
+
+  describe('orden y filtros', () => {
+    const modelo = () =>
+      app.get<Model<Publicacion>>(getModelToken(Publicacion.name));
+    const titulos = (cuerpo: { datos: { titulo: string }[] }) =>
+      cuerpo.datos.map(({ titulo }) => titulo);
+    const darMeGusta = (id: string, cantidad: number) =>
+      modelo().updateOne({ _id: id }, { cantidadMeGusta: cantidad });
+    const otraPersona = () =>
+      registrarYObtenerSesion(app, {
+        correo: 'juan@correo.com',
+        nombreUsuario: 'juan_p',
+      });
+
+    it('[O] por defecto ordena por fecha, de la más reciente a la más antigua', async () => {
+      await sembrarPublicaciones(app, usuarioId, 3);
+
+      const { body } = await listar().expect(200);
+      const explicito = await listar('?orden=fecha').expect(200);
+
+      expect(titulos(body)).toEqual(['Título 3', 'Título 2', 'Título 1']);
+      expect(titulos(explicito.body)).toEqual(titulos(body));
+    });
+
+    it('[O] con orden=megusta va primero la que tiene más me gusta', async () => {
+      const [una, dos, tres] = await sembrarPublicaciones(app, usuarioId, 3);
+      await darMeGusta(una.id, 5);
+      await darMeGusta(dos.id, 1);
+      await darMeGusta(tres.id, 3);
+
+      const { body } = await listar('?orden=megusta').expect(200);
+
+      expect(titulos(body)).toEqual(['Título 1', 'Título 3', 'Título 2']);
+    });
+
+    it('[M] con los mismos me gusta, desempata por fecha y las páginas no repiten ni omiten', async () => {
+      const creadas = await sembrarPublicaciones(app, usuarioId, 6);
+      await Promise.all(creadas.map(({ id }) => darMeGusta(id, 2)));
+
+      const paginas = await Promise.all(
+        [0, 2, 4].map((offset) =>
+          listar(`?orden=megusta&limit=2&offset=${offset}`).expect(200),
+        ),
+      );
+
+      const todos = paginas.flatMap(({ body }) => titulos(body));
+      expect(todos).toEqual([
+        'Título 6',
+        'Título 5',
+        'Título 4',
+        'Título 3',
+        'Título 2',
+        'Título 1',
+      ]);
+    });
+
+    it('[B] las publicaciones sin me gusta quedan al final del orden por me gusta', async () => {
+      const [una, , tres] = await sembrarPublicaciones(app, usuarioId, 3);
+      await darMeGusta(tres.id, 1);
+      await darMeGusta(una.id, 0);
+
+      const { body } = await listar('?orden=megusta').expect(200);
+
+      expect(titulos(body)[0]).toBe('Título 3');
+    });
+
+    it('[O] con usuario=<id> trae sólo las publicaciones de esa persona', async () => {
+      const otra = await otraPersona();
+      await sembrarPublicaciones(app, usuarioId, 2);
+      await sembrarPublicaciones(app, otra.usuario._id, 3);
+
+      const mias = await listar(`?usuario=${usuarioId}`).expect(200);
+      const deJuan = await listar(`?usuario=${otra.usuario._id}`).expect(200);
+
+      expect(mias.body.datos).toHaveLength(2);
+      expect(deJuan.body.datos).toHaveLength(3);
+      expect(
+        deJuan.body.datos.every(
+          ({ usuario }: { usuario: { _id: string } }) =>
+            usuario._id === otra.usuario._id,
+        ),
+      ).toBe(true);
+    });
+
+    it('[M] el filtro por usuario se combina con el orden y con la paginación', async () => {
+      const creadas = await sembrarPublicaciones(app, usuarioId, 5);
+      await darMeGusta(creadas[0].id, 9);
+
+      const { body } = await listar(
+        `?usuario=${usuarioId}&orden=megusta&limit=2`,
+      ).expect(200);
+
+      expect(titulos(body)[0]).toBe('Título 1');
+      expect(body.datos).toHaveLength(2);
+      expect(body.hayMas).toBe(true);
+    });
+
+    it('[B] una persona sin publicaciones devuelve la lista vacía', async () => {
+      const otra = await otraPersona();
+      await sembrarPublicaciones(app, usuarioId, 2);
+
+      const { body } = await listar(`?usuario=${otra.usuario._id}`).expect(200);
+
+      expect(body.datos).toEqual([]);
+      expect(body.hayMas).toBe(false);
+    });
+
+    it('[E] un orden desconocido responde 400', async () => {
+      for (const orden of ['autor', '', 'FECHA', '%7B%22%24ne%22%3Anull%7D']) {
+        await listar(`?orden=${orden}`).expect(400);
+      }
+    });
+
+    it('[E] un usuario que no es un id, o con operadores, responde 400', async () => {
+      for (const usuario of ['abc', '123', '[$ne]=x']) {
+        await listar(`?usuario=${usuario}`).expect(400);
+      }
+      await listar('?usuario[$ne]=64b64b64b64b64b64b64b64b').expect(400);
+    });
+
+    it('[I] las publicaciones dadas de baja no aparecen en ningún orden ni filtro', async () => {
+      const [una] = await sembrarPublicaciones(app, usuarioId, 2);
+      await modelo().updateOne({ _id: una.id }, { activa: false });
+
+      for (const consulta of ['', '?orden=megusta', `?usuario=${usuarioId}`]) {
+        const { body } = await listar(consulta).expect(200);
+        expect(body.datos, consulta).toHaveLength(1);
+      }
+    });
+
+    it('[I] cada elemento trae meGusta, en falso si todavía no di me gusta', async () => {
+      await sembrarPublicaciones(app, usuarioId, 2);
+
+      const { body } = await listar().expect(200);
+
+      expect(
+        body.datos.map(({ meGusta }: { meGusta: boolean }) => meGusta),
+      ).toEqual([false, false]);
+    });
+
+    it('[S] listados con distinto orden o filtro no se pisan en el caché', async () => {
+      const [una] = await sembrarPublicaciones(app, usuarioId, 2);
+      await darMeGusta(una.id, 4);
+
+      const porFecha = await listar().expect(200);
+      const porMeGusta = await listar('?orden=megusta').expect(200);
+
+      expect(titulos(porFecha.body)).toEqual(['Título 2', 'Título 1']);
+      expect(titulos(porMeGusta.body)).toEqual(['Título 1', 'Título 2']);
     });
   });
 

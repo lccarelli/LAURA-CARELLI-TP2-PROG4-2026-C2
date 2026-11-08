@@ -219,9 +219,59 @@ El backend escribe **una línea de JSON por evento** en la salida estándar, en 
 | `id_solicitud`   | Identificador que une todos los logs de una misma solicitud HTTP                    |
 | `evento`         | Nombre estable del hecho (`ingreso_fallido`, `imagen_subida`, `solicitud_exitosa`...) |
 | `mensaje`        | Texto legible para una persona                                                      |
-| resto            | Campos específicos de cada evento (`id_usuario`, `estado_http`, `latencia_ms`...)       |
+| resto            | Campos específicos de cada evento (`id_usuario`, `nombre_usuario`, `estado_http`, `latencia_ms`...) |
 
 Las claves siempre salen en ese orden y en `snake_case`, para que las consultas de Grafana usen los mismos nombres en todos lados.
+
+### Quién hizo qué
+
+Toda línea que corresponde a una persona trae su `id_usuario` **y** su `nombre_usuario`, para identificarla de un vistazo sin buscar el id. El nombre viaja en el token y, para los eventos de negocio, se confirma contra la base.
+
+| Evento                    | Campos de negocio                                                                                   |
+| ------------------------- | --------------------------------------------------------------------------------------------------- |
+| `usuario_registrado`      | `id_usuario`, `nombre_usuario`, `perfil`                                                            |
+| `ingreso_correcto`        | `id_usuario`, `nombre_usuario`                                                                      |
+| `publicacion_creada`      | `id_publicacion`, `id_usuario`, `nombre_usuario`, `tipo`                                            |
+| `publicacion_eliminada`   | `id_publicacion`, `id_usuario`, `nombre_usuario`, `id_autor`, `nombre_autor`, `por_administrador`   |
+| `me_gusta_dado`           | `id_publicacion`, `id_usuario`, `nombre_usuario`, `id_autor`, `nombre_autor`, `cantidad_me_gusta`   |
+| `me_gusta_quitado`        | los mismos, con la cantidad que quedó                                                               |
+
+La línea del evento y la línea HTTP de la misma solicitud comparten `id_solicitud` (la HTTP trae además la IP).
+
+### Historial de me gusta
+
+Los logs sirven para auditar, pero se pierden. Para poder sacar métricas, cada me gusta dado o quitado queda también como un documento en la colección **`eventos_megusta`**, que **sólo se agrega y nunca se modifica ni se borra**. La colección `megusta` sólo guarda los me gusta vigentes; ésta guarda toda la historia.
+
+| Campo               | Qué es                                                        |
+| ------------------- | ------------------------------------------------------------- |
+| `tipo`              | `dado` o `quitado`                                            |
+| `usuario`, `nombreUsuario`   | Quién lo hizo                                        |
+| `publicacion`, `tituloPublicacion` | A qué publicación, con el título de ese momento |
+| `autor`, `nombreAutor`       | Quién es la dueña de la publicación                  |
+| `cantidadMeGusta`   | Cuántos me gusta tenía la publicación justo después          |
+| `fecha`             | Cuándo                                                        |
+
+Los nombres se copian en cada evento, así la información queda legible aunque cambie el título o se dé de baja la publicación. Si guardar el evento falla, el me gusta se guarda igual y queda una línea de error `evento_me_gusta_no_registrado`.
+
+Consultas de ejemplo en `mongosh`:
+
+```js
+// Me gusta dados por día
+db.eventos_megusta.aggregate([
+  { $match: { tipo: 'dado' } },
+  { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$fecha' } }, total: { $sum: 1 } } },
+  { $sort: { _id: 1 } }
+])
+
+// Cuántos me gusta recibió cada autora (dados menos quitados)
+db.eventos_megusta.aggregate([
+  { $group: { _id: '$nombreAutor', neto: { $sum: { $cond: [{ $eq: ['$tipo', 'dado'] }, 1, -1] } } } },
+  { $sort: { neto: -1 } }
+])
+
+// Cuándo y quién dio y quitó me gusta en una publicación
+db.eventos_megusta.find({ publicacion: ObjectId('...') }).sort({ fecha: 1 })
+```
 
 ### Niveles
 

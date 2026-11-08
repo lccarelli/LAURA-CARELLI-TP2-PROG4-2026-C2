@@ -3,8 +3,15 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../auth/auth.module.js';
 import { ImagenesModule } from '../imagenes/imagenes.module.js';
+import { Usuario, UsuarioSchema } from '../usuarios/schemas/usuario.schema.js';
+import { EventosMeGustaService } from './eventos-me-gusta.service.js';
 import { PublicacionesController } from './publicaciones.controller.js';
 import { PublicacionesService } from './publicaciones.service.js';
+import {
+  EventoMeGusta,
+  EventoMeGustaSchema,
+} from './schemas/evento-me-gusta.schema.js';
+import { MeGusta, MeGustaSchema } from './schemas/me-gusta.schema.js';
 import {
   Publicacion,
   PublicacionSchema,
@@ -16,12 +23,15 @@ export const TTL_LISTADO_MS = 1000;
   imports: [
     MongooseModule.forFeature([
       { name: Publicacion.name, schema: PublicacionSchema },
+      { name: MeGusta.name, schema: MeGustaSchema },
+      { name: EventoMeGusta.name, schema: EventoMeGustaSchema },
+      { name: Usuario.name, schema: UsuarioSchema },
     ]),
     CacheModule.register({ ttl: TTL_LISTADO_MS }),
     AuthModule,
     ImagenesModule,
   ],
   controllers: [PublicacionesController],
-  providers: [PublicacionesService],
+  providers: [PublicacionesService, EventosMeGustaService],
 })
 export class PublicacionesModule {}
