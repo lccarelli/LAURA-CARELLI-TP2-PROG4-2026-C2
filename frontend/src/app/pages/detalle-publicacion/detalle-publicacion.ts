@@ -1,13 +1,33 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Aviso } from '../../componentes/aviso/aviso';
-import { Publicacion } from '../../interfaces/publicacion';
+import { Ingrediente, Paso, Publicacion, UNIDADES } from '../../interfaces/publicacion';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
+
+const enteroEnRango = (valor: unknown, maximo: number) =>
+  typeof valor === 'number' && Number.isInteger(valor) && valor >= 1 && valor <= maximo
+    ? valor
+    : undefined;
+
+const esIngrediente = (valor: unknown): valor is Ingrediente => {
+  const ingrediente = valor as Partial<Ingrediente> | null;
+  return (
+    typeof ingrediente === 'object' &&
+    ingrediente !== null &&
+    typeof ingrediente.nombre === 'string' &&
+    ingrediente.nombre.trim() !== '' &&
+    (UNIDADES as readonly unknown[]).includes(ingrediente.unidad) &&
+    (ingrediente.cantidad === undefined ||
+      (typeof ingrediente.cantidad === 'number' &&
+        Number.isFinite(ingrediente.cantidad) &&
+        ingrediente.cantidad > 0))
+  );
+};
 
 @Component({
   imports: [DatePipe, RouterLink, Aviso, TranslatePipe],
@@ -23,6 +43,44 @@ export class DetallePublicacion implements OnInit {
   readonly publicacion = signal<Publicacion | null>(null);
   readonly cargando = signal(true);
   readonly mensajeError = signal<string | null>(null);
+
+  protected readonly ingredientes = computed(() => {
+    const lista = this.publicacion()?.ingredientes;
+    return Array.isArray(lista) ? lista.filter(esIngrediente) : [];
+  });
+
+  protected readonly pasos = computed((): Required<Paso>[] => {
+    const lista: unknown = this.publicacion()?.pasos;
+    if (!Array.isArray(lista)) {
+      return [];
+    }
+    return lista
+      .map((paso: unknown) =>
+        typeof paso === 'string' ? { texto: paso } : (paso as Partial<Paso> | null),
+      )
+      .filter((paso) => typeof paso?.texto === 'string' && paso.texto.trim() !== '')
+      .map((paso) => ({
+        titulo: typeof paso!.titulo === 'string' ? paso!.titulo.trim() : '',
+        texto: paso!.texto!,
+        imagenes: Array.isArray(paso!.imagenes)
+          ? paso!.imagenes.filter((imagen) => typeof imagen === 'string' && imagen !== '')
+          : [],
+      }));
+  });
+
+  protected readonly rinde = computed(() =>
+    this.publicacion()?.tipoRinde === 'unidades' ? 'unidades' : 'porciones',
+  );
+
+  protected readonly ficha = computed(() => {
+    const publicacion = this.publicacion();
+    return {
+      porciones: enteroEnRango(publicacion?.porciones, 100),
+      tiempoMinutos: enteroEnRango(publicacion?.tiempoMinutos, 10080),
+      costo: enteroEnRango(publicacion?.costo, 4),
+      calorias: enteroEnRango(publicacion?.calorias, 10000),
+    };
+  });
 
   protected urlImagen = urlImagen;
 

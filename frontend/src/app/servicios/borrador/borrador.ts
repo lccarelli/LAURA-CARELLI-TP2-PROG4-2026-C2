@@ -1,5 +1,12 @@
 import { inject, Service } from '@angular/core';
-import { Tipo, TIPOS, Unidad, UNIDADES } from '../../interfaces/publicacion';
+import {
+  Tipo,
+  TipoRinde,
+  TIPOS,
+  TIPOS_RINDE,
+  Unidad,
+  UNIDADES,
+} from '../../interfaces/publicacion';
 import { Auth } from '../auth/auth';
 
 export interface IngredienteBorrador {
@@ -8,16 +15,23 @@ export interface IngredienteBorrador {
   nombre: string;
 }
 
+export interface PasoBorrador {
+  titulo: string;
+  texto: string;
+}
+
 export interface BorradorPublicacion {
   tipo: Tipo;
   titulo: string;
   mensaje: string;
   porciones: string;
+  tipoRinde: TipoRinde;
   tiempoMinutos: string;
   calorias: string;
   costo: number | null;
   ingredientes: IngredienteBorrador[];
-  pasos: string[];
+  pasos: PasoBorrador[];
+  conFotos: boolean;
   guardadoEn: string;
 }
 
@@ -45,8 +59,9 @@ export function borradorVacio(datos: DatosBorrador): boolean {
     !datos.tiempoMinutos &&
     !datos.calorias &&
     datos.costo === null &&
+    !datos.conFotos &&
     datos.ingredientes.every((fila) => !fila.nombre.trim() && fila.cantidad === null) &&
-    datos.pasos.every((paso) => !paso.trim())
+    datos.pasos.every((paso) => !paso.titulo.trim() && !paso.texto.trim())
   );
 }
 
@@ -59,6 +74,7 @@ function normalizar(valor: unknown): BorradorPublicacion | null {
     titulo: texto(crudo['titulo'], 55),
     mensaje: texto(crudo['mensaje'], 2000),
     porciones: digitos(crudo['porciones']),
+    tipoRinde: TIPOS_RINDE.find((tipo) => tipo === crudo['tipoRinde']) ?? 'porciones',
     tiempoMinutos: digitos(crudo['tiempoMinutos']),
     calorias: digitos(crudo['calorias']),
     costo:
@@ -73,7 +89,14 @@ function normalizar(valor: unknown): BorradorPublicacion | null {
         nombre: texto(nombre, 100),
       };
     }),
-    pasos: lista(crudo['pasos']).map((paso) => texto(paso, 500)),
+    pasos: lista(crudo['pasos']).map((paso) => {
+      if (typeof paso === 'string') {
+        return { titulo: '', texto: texto(paso, 2000) };
+      }
+      const { titulo, texto: cuerpo } = objeto(paso);
+      return { titulo: texto(titulo, 80), texto: texto(cuerpo, 2000) };
+    }),
+    conFotos: crudo['conFotos'] === true,
   };
 
   if (borradorVacio(datos)) {
