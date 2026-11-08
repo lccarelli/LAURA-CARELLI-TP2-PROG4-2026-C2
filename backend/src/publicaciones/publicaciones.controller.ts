@@ -21,7 +21,9 @@ import {
   TAMANO_MAXIMO_IMAGEN,
 } from '../imagenes/imagenes.constantes.js';
 import { ArchivosPublicacionPipe } from './archivos-publicacion.pipe.js';
+import { ComentariosService } from './comentarios.service.js';
 import type { ArchivosPublicacion } from './archivos-publicacion.pipe.js';
+import { CrearComentarioDto } from './dto/crear-comentario.dto.js';
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
 import { ListarPublicacionesDto } from './dto/listar-publicaciones.dto.js';
 import { PublicacionesService } from './publicaciones.service.js';
@@ -29,7 +31,10 @@ import { PublicacionesService } from './publicaciones.service.js';
 @Controller('publicaciones')
 @UseGuards(AuthGuard)
 export class PublicacionesController {
-  constructor(private readonly publicacionesService: PublicacionesService) {}
+  constructor(
+    private readonly publicacionesService: PublicacionesService,
+    private readonly comentariosService: ComentariosService,
+  ) {}
 
   @Post()
   @UseInterceptors(
@@ -86,5 +91,14 @@ export class PublicacionesController {
     @Req() solicitud: SolicitudAutenticada,
   ) {
     return this.publicacionesService.quitarMeGusta(id, solicitud.usuario.id);
+  }
+
+  @Post(':id/comentarios')
+  comentar(
+    @Param() { id }: IdParamDto,
+    @Body() dto: CrearComentarioDto,
+    @Req() solicitud: SolicitudAutenticada,
+  ) {
+    return this.comentariosService.crear(id, solicitud.usuario.id, dto);
   }
 }
