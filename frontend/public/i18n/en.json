@@ -169,7 +169,10 @@
     "eliminando_corto": "…",
     "eliminar_si_aria": "Yes, delete the post",
     "eliminar_no_aria": "Do not delete, cancel",
-    "eliminar_aviso": "This cannot be undone"
+    "eliminar_aviso": "This cannot be undone",
+    "paso_foto_primera": "Add photo",
+    "paso_foto_primera_aria": "Add a photo to step {{n}}",
+    "paso_foto_otra": "Add another photo"
   },
   "borrador": {
     "titulo": "We recovered your draft",

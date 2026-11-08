@@ -822,13 +822,43 @@ describe('NuevaPublicacion', () => {
         globalThis.URL.revokeObjectURL = vi.fn();
       });
 
-      it('[O] cada paso ofrece un botón redondo con + para agregar una foto', async () => {
+      it('[O] un paso sin fotos ofrece un botón con una cámara y el texto "Agregar foto", no un +', async () => {
         await cargarCon(['Mezclar']);
 
         const boton = fixture.nativeElement.querySelector('.boton-foto') as HTMLElement;
-        expect(boton).not.toBeNull();
+        expect(boton.textContent).toContain('Agregar foto');
+        expect(boton.classList.contains('boton-icono')).toBe(false);
+        const trazos = Array.from(boton.querySelectorAll('svg > *')).map((n) => n.tagName);
+        expect(trazos).toContain('circle');
+        expect(boton.querySelector('input')!.getAttribute('aria-label')).toBe(
+          'Agregar una foto al paso 1',
+        );
+      });
+
+      it('[O] con fotos, el botón pasa a ser redondo, con la cámara y sin texto', async () => {
+        await cargarCon(['Mezclar']);
+        await elegir(0, foto('uno.png'));
+
+        const boton = fixture.nativeElement.querySelector('.boton-foto') as HTMLElement;
         expect(boton.classList.contains('boton-icono')).toBe(true);
-        expect(boton.querySelector('path')!.getAttribute('d')).toBe('M12 5v14M5 12h14');
+        expect(boton.textContent!.trim()).toBe('');
+        expect(boton.getAttribute('title')).toBe('Agregar otra foto');
+        expect(boton.querySelector('input')!.getAttribute('aria-label')).toBe(
+          'Agregar otra foto al paso 1',
+        );
+      });
+
+      it('[I] el botón de fotos no se parece al de agregar paso: no usa el signo +', async () => {
+        await cargarCon(['Mezclar']);
+        await elegir(0, foto('uno.png'));
+
+        const botonesDeFoto = fixture.nativeElement.querySelectorAll('.boton-foto');
+        for (const boton of Array.from(botonesDeFoto) as HTMLElement[]) {
+          const trazado = Array.from(boton.querySelectorAll('path')).map((p) =>
+            p.getAttribute('d'),
+          );
+          expect(trazado).not.toContain('M12 5v14M5 12h14');
+        }
       });
 
       it('[O] al elegir una foto se ve la vista previa y el botón + sigue para agregar más', async () => {

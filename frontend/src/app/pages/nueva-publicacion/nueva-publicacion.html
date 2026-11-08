@@ -610,25 +610,39 @@
                         </span>
                       }
                       @if (puedeAgregarFoto(paso)) {
-                        <label class="boton-icono boton-foto">
+                        <label
+                          class="boton-foto"
+                          [class.boton-icono]="fotosDe(paso).length > 0"
+                          [class.paso-foto-boton]="fotosDe(paso).length === 0"
+                          [attr.title]="'publicaciones.paso_foto_otra' | translate"
+                        >
                           <svg
                             class="icono-chico"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            stroke-width="2.2"
+                            stroke-width="1.9"
                             stroke-linecap="round"
+                            stroke-linejoin="round"
                             aria-hidden="true"
                           >
-                            <path d="M12 5v14M5 12h14" />
+                            <path d="M3 9.5h3l1.5-2h5l1.5 2h2.5V19H3z" />
+                            <circle cx="10" cy="14" r="3" />
+                            <path d="M20 3v6M17 6h6" />
                           </svg>
+                          @if (fotosDe(paso).length === 0) {
+                            {{ 'publicaciones.paso_foto_primera' | translate }}
+                          }
                           <input
                             class="archivo-oculto"
                             type="file"
                             accept="image/*"
                             multiple
                             [attr.aria-label]="
-                              'publicaciones.paso_foto_agregar' | translate: { n: i + 1 }
+                              (fotosDe(paso).length === 0
+                                ? 'publicaciones.paso_foto_primera_aria'
+                                : 'publicaciones.paso_foto_agregar'
+                              ) | translate: { n: i + 1 }
                             "
                             (change)="agregarFotosPaso(paso, $event)"
                           />

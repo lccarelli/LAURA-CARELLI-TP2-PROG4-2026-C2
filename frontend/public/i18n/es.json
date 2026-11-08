@@ -169,7 +169,10 @@
     "eliminando_corto": "…",
     "eliminar_si_aria": "Sí, eliminar la publicación",
     "eliminar_no_aria": "No eliminar, cancelar",
-    "eliminar_aviso": "No se puede deshacer"
+    "eliminar_aviso": "No se puede deshacer",
+    "paso_foto_primera": "Agregar foto",
+    "paso_foto_primera_aria": "Agregar una foto al paso {{n}}",
+    "paso_foto_otra": "Agregar otra foto"
   },
   "borrador": {
     "titulo": "Recuperamos tu borrador",
