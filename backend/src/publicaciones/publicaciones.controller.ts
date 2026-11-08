@@ -6,17 +6,21 @@ import {
   Post,
   Query,
   Req,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
 import { IdParamDto } from '../common/id-param.dto.js';
 import { PaginacionDto } from '../common/paginacion.dto.js';
-import { imagenOpcional } from '../imagenes/imagen-opcional.pipe.js';
-import { TAMANO_MAXIMO_IMAGEN } from '../imagenes/imagenes.constantes.js';
+import {
+  MAXIMO_FOTOS_PASOS,
+  TAMANO_MAXIMO_IMAGEN,
+} from '../imagenes/imagenes.constantes.js';
+import { ArchivosPublicacionPipe } from './archivos-publicacion.pipe.js';
+import type { ArchivosPublicacion } from './archivos-publicacion.pipe.js';
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
 import { PublicacionesService } from './publicaciones.service.js';
 
@@ -27,14 +31,20 @@ export class PublicacionesController {
 
   @Post()
   @UseInterceptors(
-    FileInterceptor('imagen', { limits: { fileSize: TAMANO_MAXIMO_IMAGEN } }),
+    FileFieldsInterceptor(
+      [
+        { name: 'imagen', maxCount: 1 },
+        { name: 'imagenesPasos', maxCount: MAXIMO_FOTOS_PASOS },
+      ],
+      { limits: { fileSize: TAMANO_MAXIMO_IMAGEN } },
+    ),
   )
   crear(
     @Req() solicitud: SolicitudAutenticada,
     @Body() dto: CrearPublicacionDto,
-    @UploadedFile(imagenOpcional()) imagen?: Express.Multer.File,
+    @UploadedFiles(ArchivosPublicacionPipe) archivos: ArchivosPublicacion,
   ) {
-    return this.publicacionesService.crear(solicitud.usuario.id, dto, imagen);
+    return this.publicacionesService.crear(solicitud.usuario.id, dto, archivos);
   }
 
   @Get()

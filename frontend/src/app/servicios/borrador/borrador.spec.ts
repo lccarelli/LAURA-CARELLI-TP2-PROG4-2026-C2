@@ -22,18 +22,21 @@ const vacio: DatosBorrador = {
   titulo: '',
   mensaje: '',
   porciones: '',
+  tipoRinde: 'porciones',
   tiempoMinutos: '',
   calorias: '',
   costo: null,
   ingredientes: [{ cantidad: null, unidad: 'g', nombre: '' }],
-  pasos: [''],
+  pasos: [{ titulo: '', texto: '' }],
+  conFotos: false,
 };
 
 const conDatos: DatosBorrador = {
-  tipo: 'completa',
+  tipo: 'receta',
   titulo: 'Crema de albahaca',
   mensaje: 'Versátil',
   porciones: '4',
+  tipoRinde: 'unidades',
   tiempoMinutos: '19',
   calorias: '270',
   costo: 2,
@@ -41,7 +44,11 @@ const conDatos: DatosBorrador = {
     { cantidad: 1, unidad: 'taza', nombre: 'albahaca' },
     { cantidad: null, unidad: 'a_gusto', nombre: 'sal' },
   ],
-  pasos: ['Cortar', 'Mezclar'],
+  pasos: [
+    { titulo: 'La base', texto: 'Cortar' },
+    { titulo: '', texto: 'Mezclar' },
+  ],
+  conFotos: false,
 };
 
 describe('Borrador', () => {
@@ -142,19 +149,20 @@ describe('Borrador', () => {
         titulo: 'a'.repeat(100),
         mensaje: 'a'.repeat(3000),
         ingredientes: [{ cantidad: 1, unidad: 'g', nombre: 'a'.repeat(300) }],
-        pasos: ['a'.repeat(900)],
+        pasos: [{ titulo: 'a'.repeat(200), texto: 'a'.repeat(3000) }],
       });
 
       expect(leido.titulo).toHaveLength(55);
       expect(leido.mensaje).toHaveLength(2000);
       expect(leido.ingredientes[0].nombre).toHaveLength(100);
-      expect(leido.pasos[0]).toHaveLength(500);
+      expect(leido.pasos[0].titulo).toHaveLength(80);
+      expect(leido.pasos[0].texto).toHaveLength(2000);
     });
 
     it('[E] las listas se recortan a 40 filas', () => {
       const leido = leerAlterado({
         ingredientes: Array(60).fill({ cantidad: 1, unidad: 'g', nombre: 'x' }),
-        pasos: Array(60).fill('x'),
+        pasos: Array(60).fill({ titulo: '', texto: 'x' }),
       });
 
       expect(leido.ingredientes).toHaveLength(40);
@@ -171,14 +179,35 @@ describe('Borrador', () => {
           { cantidad: '5', unidad: 'g', nombre: 'b' },
           { cantidad: Infinity, unidad: 'g', nombre: 'c' },
         ],
-        pasos: [1, null, { x: 1 }, 'ok'],
+        pasos: [1, null, { x: 1 }, 'ok', { titulo: 7, texto: 'bien' }],
       });
 
       expect(leido.porciones).toBe('4');
       expect(leido.tiempoMinutos).toBe('');
       expect(leido.calorias).toBe('');
       expect(leido.ingredientes.map((fila) => fila.cantidad)).toEqual([null, null, null]);
-      expect(leido.pasos).toEqual(['', '', '', 'ok']);
+      expect(leido.pasos).toEqual([
+        { titulo: '', texto: '' },
+        { titulo: '', texto: '' },
+        { titulo: '', texto: '' },
+        { titulo: '', texto: 'ok' },
+        { titulo: '', texto: 'bien' },
+      ]);
+    });
+
+    it('[O] un borrador guardado con pasos como texto (formato anterior) se sigue leyendo', () => {
+      const leido = leerAlterado({ pasos: ['Cortar', 'Mezclar'] });
+
+      expect(leido.pasos).toEqual([
+        { titulo: '', texto: 'Cortar' },
+        { titulo: '', texto: 'Mezclar' },
+      ]);
+    });
+
+    it('[E] el tipo de rinde desconocido vuelve a porciones', () => {
+      expect(leerAlterado({ tipoRinde: 'unidades' }).tipoRinde).toBe('unidades');
+      expect(leerAlterado({ tipoRinde: 'tazas' }).tipoRinde).toBe('porciones');
+      expect(leerAlterado({ tipoRinde: { $ne: 1 } }).tipoRinde).toBe('porciones');
     });
 
     it('[E] un borrador alterado que queda sin datos se ignora', () => {
@@ -219,8 +248,14 @@ describe('Borrador', () => {
 
   describe('borradorVacio', () => {
     it('[B] unos espacios no cuentan como contenido, pero un costo sí', () => {
-      expect(borradorVacio({ ...vacio, titulo: '   ', pasos: ['  '] })).toBe(true);
+      expect(
+        borradorVacio({ ...vacio, titulo: '   ', pasos: [{ titulo: ' ', texto: '  ' }] }),
+      ).toBe(true);
       expect(borradorVacio({ ...vacio, costo: 1 })).toBe(false);
+      expect(borradorVacio({ ...vacio, conFotos: true })).toBe(false);
+      expect(borradorVacio({ ...vacio, pasos: [{ titulo: 'Sólo título', texto: '' }] })).toBe(
+        false,
+      );
       expect(
         borradorVacio({ ...vacio, ingredientes: [{ cantidad: 2, unidad: 'g', nombre: '' }] }),
       ).toBe(false);

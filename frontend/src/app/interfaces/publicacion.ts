@@ -1,8 +1,12 @@
 import { Usuario } from './usuario';
 
-export const TIPOS = ['receta', 'tip', 'experiencia', 'completa'] as const;
+export const TIPOS = ['receta', 'tip', 'experiencia'] as const;
 
 export type Tipo = (typeof TIPOS)[number];
+
+export const TIPOS_RINDE = ['porciones', 'unidades'] as const;
+
+export type TipoRinde = (typeof TIPOS_RINDE)[number];
 
 export const UNIDADES = [
   'g',
@@ -25,6 +29,12 @@ export interface Ingrediente {
   unidad: Unidad;
 }
 
+export interface Paso {
+  titulo?: string;
+  texto: string;
+  imagenes?: string[];
+}
+
 export interface Publicacion {
   _id: string;
   usuario: Pick<Usuario, '_id' | 'nombre' | 'apellido' | 'nombreUsuario' | 'imagenPerfil'>;
@@ -32,8 +42,9 @@ export interface Publicacion {
   titulo: string;
   mensaje: string;
   ingredientes?: Ingrediente[];
-  pasos?: string[];
+  pasos?: Paso[];
   porciones?: number;
+  tipoRinde?: TipoRinde;
   tiempoMinutos?: number;
   costo?: number;
   calorias?: number;

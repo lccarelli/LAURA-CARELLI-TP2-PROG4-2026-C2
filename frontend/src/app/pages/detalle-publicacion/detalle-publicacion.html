@@ -39,7 +39,7 @@
       }
       <div class="detalle-cuerpo">
         <span class="pin-tipo">{{ 'tipos.' + publicacion.tipo | translate }}</span>
-        <h2 class="detalle-titulo">{{ publicacion.titulo }}</h2>
+        <h2 class="titulo">{{ publicacion.titulo }}</h2>
         <header class="flex items-center gap-3">
           <img
             class="avatar"
@@ -96,47 +96,45 @@
             <span aria-hidden="true">{{ publicacion.cantidadComentarios }}</span>
           </span>
         </span>
-        @if (
-          publicacion.porciones ||
-          publicacion.tiempoMinutos ||
-          publicacion.costo ||
-          publicacion.calorias
-        ) {
+        @let ficha = this.ficha();
+        @if (ficha.porciones || ficha.tiempoMinutos || ficha.costo || ficha.calorias) {
           <h3 class="etiqueta">{{ 'publicaciones.ficha' | translate }}</h3>
           <ul class="ficha">
-            @if (publicacion.porciones) {
+            @if (ficha.porciones) {
               <li class="texto-publicacion">
-                <span class="ficha-rotulo">{{ 'publicaciones.campo_porciones' | translate }}:</span>
-                {{ publicacion.porciones }}
+                <span class="ficha-rotulo"
+                  >{{ 'publicaciones.rinde_' + rinde() | translate }}:</span
+                >
+                {{ ficha.porciones }}
               </li>
             }
-            @if (publicacion.tiempoMinutos) {
+            @if (ficha.tiempoMinutos) {
               <li class="texto-publicacion">
                 <span class="ficha-rotulo">{{ 'publicaciones.ficha_tiempo' | translate }}:</span>
-                {{ 'publicaciones.minutos' | translate: { n: publicacion.tiempoMinutos } }}
+                {{ 'publicaciones.minutos' | translate: { n: ficha.tiempoMinutos } }}
               </li>
             }
-            @if (publicacion.costo; as costo) {
+            @if (ficha.costo; as costo) {
               <li class="texto-publicacion">
                 <span class="ficha-rotulo">{{ 'publicaciones.campo_costo' | translate }}:</span>
                 &ngsp;<span class="ficha-rotulo">{{ signos(costo) }}</span
                 ><span class="costo-apagado">{{ signos(4 - costo) }}</span>
               </li>
             }
-            @if (publicacion.calorias) {
+            @if (ficha.calorias) {
               <li class="texto-publicacion">
                 <span class="ficha-rotulo">{{ 'publicaciones.ficha_calorias' | translate }}:</span>
-                {{ publicacion.calorias }} kcal
+                {{ ficha.calorias }} kcal
               </li>
             }
           </ul>
         }
         <p class="texto-publicacion whitespace-pre-line">{{ publicacion.mensaje }}</p>
 
-        @if (publicacion.ingredientes?.length) {
+        @if (ingredientes().length) {
           <h3 class="rotulo-publicacion">{{ 'publicaciones.ingredientes' | translate }}</h3>
           <ul class="lista-receta">
-            @for (ingrediente of publicacion.ingredientes; track $index) {
+            @for (ingrediente of ingredientes(); track $index) {
               <li class="ingrediente">
                 <span class="ingrediente-medida">
                   @if (ingrediente.cantidad !== undefined) {
@@ -150,13 +148,29 @@
           </ul>
         }
 
-        @if (publicacion.pasos?.length) {
+        @if (pasos().length) {
           <h3 class="rotulo-publicacion">{{ 'publicaciones.pasos' | translate }}</h3>
           <ol class="lista-receta">
-            @for (paso of publicacion.pasos; track $index) {
+            @for (paso of pasos(); track $index; let n = $index) {
               <li class="flex items-start gap-3">
-                <span class="numero-paso">{{ $index + 1 }}</span>
-                <span class="texto-publicacion">{{ paso }}</span>
+                <span class="numero-paso">{{ n + 1 }}</span>
+                <span class="paso-contenido">
+                  @if (paso.titulo) {
+                    <span class="paso-titulo-detalle">{{ paso.titulo }}</span>
+                  }
+                  <span class="texto-publicacion whitespace-pre-line">{{ paso.texto }}</span>
+                  @if (paso.imagenes.length) {
+                    <span class="paso-imagenes">
+                      @for (imagen of paso.imagenes; track $index; let f = $index) {
+                        <img
+                          class="paso-imagen"
+                          [src]="imagen"
+                          [alt]="'publicaciones.paso_foto_alt' | translate: { n: n + 1, f: f + 1 }"
+                        />
+                      }
+                    </span>
+                  }
+                </span>
               </li>
             }
           </ol>

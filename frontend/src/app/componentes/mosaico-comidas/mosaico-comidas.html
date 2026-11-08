@@ -1,0 +1,11 @@
+<div class="mosaico" aria-hidden="true">
+  @for (foto of fotos; track foto.archivo) {
+    <img
+      class="mosaico-foto"
+      [class.mosaico-ancha]="foto.ancha"
+      [class.mosaico-alta]="foto.alta"
+      [src]="'comidas/' + foto.archivo + '.jpg'"
+      alt=""
+    />
+  }
+</div>

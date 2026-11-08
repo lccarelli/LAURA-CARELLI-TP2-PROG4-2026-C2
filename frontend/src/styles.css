@@ -109,7 +109,7 @@ body {
 
 @layer components {
   .titulo {
-    @apply font-serif text-4xl font-medium break-words;
+    @apply font-serif text-3xl leading-tight font-black break-words md:text-5xl;
   }
 
   .titulo-tarjeta {
@@ -145,11 +145,72 @@ body {
   }
 
   .ingredientes {
-    @apply mt-1 flex flex-col gap-3;
+    @apply mt-3 flex flex-col gap-4;
   }
 
   .ingrediente-fila {
-    @apply grid grid-cols-[1fr_6.5rem_auto] items-center gap-2 sm:grid-cols-[8rem_8rem_1fr_auto];
+    @apply grid grid-cols-[1fr_6.5rem_auto] items-center gap-2 sm:grid-cols-[10.5rem_8rem_1fr_auto];
+  }
+
+  .cantidad-paso {
+    @apply flex items-center gap-1.5;
+  }
+
+  .contador {
+    @apply flex items-center gap-2;
+  }
+
+  .cantidad-paso .campo {
+    @apply min-w-0 px-1 text-center;
+    appearance: textfield;
+  }
+
+  .cantidad-paso .campo::-webkit-inner-spin-button,
+  .cantidad-paso .campo::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .contador .campo {
+    @apply min-w-0 flex-1 text-lg font-semibold placeholder:text-sm;
+  }
+
+  .contador-unidad {
+    @apply text-sm text-suave;
+  }
+
+  .boton-contador {
+    @apply grid size-8 shrink-0 place-items-center rounded-full bg-secundario text-secundario-tinta anillo-foco hover:bg-secundario/70 disabled:opacity-40;
+  }
+
+  .fracciones {
+    @apply order-last col-span-full flex gap-1.5;
+  }
+
+  .fraccion {
+    @apply inline-flex min-h-8 min-w-10 items-center justify-center rounded-full bg-secundario px-3 text-base text-secundario-tinta anillo-foco hover:bg-secundario/70;
+  }
+
+  .fraccion.activo {
+    @apply bg-primario text-sobre-primario hover:bg-primario-fuerte;
+  }
+
+  .ficha-campos {
+    @apply mt-4 grid gap-4 sm:grid-cols-2;
+  }
+
+  .costos {
+    @apply flex items-center gap-2 pt-1;
+  }
+
+  .costo-signo {
+    @apply grid size-10 place-items-center rounded-full bg-secundario text-lg font-bold text-suave anillo-foco transition-colors;
+  }
+
+  .costo-signo.activo,
+  .costo-signo:hover,
+  .costo-signo:has(~ .costo-signo:hover) {
+    @apply bg-primario text-sobre-primario;
   }
 
   .ingrediente-fila .campo {
@@ -165,11 +226,91 @@ body {
   }
 
   .paso-fila {
-    @apply grid grid-cols-[auto_auto_1fr_auto] items-start gap-2 rounded-2xl;
+    @apply grid grid-cols-[auto_auto_1fr_auto] items-start gap-3 rounded-2xl;
   }
 
   .paso-fila .campo {
     @apply mt-0;
+  }
+
+  .portada {
+    @apply flex flex-col gap-2;
+  }
+
+  .portada-vista {
+    @apply aspect-video w-full rounded-2xl object-cover;
+  }
+
+  .portada-vacia {
+    @apply relative flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-linea-fuerte bg-hoja text-center text-suave hover:border-barra focus-within:border-barra;
+  }
+
+  .portada-texto {
+    @apply font-medium text-tinta;
+  }
+
+  .icono-grande {
+    @apply size-10 shrink-0;
+  }
+
+  .paso-cuerpo {
+    @apply flex min-w-0 flex-col gap-3;
+  }
+
+  .paso-titulo {
+    @apply font-semibold;
+  }
+
+  .paso-foto {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .paso-foto-item {
+    @apply relative;
+  }
+
+  .paso-foto-vista {
+    @apply h-24 w-32 rounded-2xl object-cover;
+  }
+
+  .paso-foto-quitar {
+    @apply absolute -top-2 -right-2 grid size-7 place-items-center rounded-full bg-tinta text-hoja anillo-foco;
+  }
+
+  .boton-foto {
+    @apply relative cursor-pointer focus-within:ring-2 focus-within:ring-barra;
+  }
+
+  .rinde-opcion {
+    @apply inline-flex min-h-8 items-center rounded-full bg-secundario px-3 text-sm font-medium text-secundario-tinta anillo-foco hover:bg-secundario/70;
+  }
+
+  .rinde-opcion.activa {
+    @apply bg-primario text-sobre-primario hover:bg-primario-fuerte;
+  }
+
+  .paso-foto-boton {
+    @apply relative inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-full bg-secundario px-4 text-sm font-medium text-secundario-tinta hover:bg-secundario/70 focus-within:ring-2 focus-within:ring-barra;
+  }
+
+  .archivo-oculto {
+    @apply absolute inset-0 size-full cursor-pointer opacity-0;
+  }
+
+  .paso-imagenes {
+    @apply mt-2 flex flex-wrap gap-2;
+  }
+
+  .paso-imagen {
+    @apply block max-h-72 max-w-full rounded-2xl object-cover sm:max-w-xs;
+  }
+
+  .paso-titulo-detalle {
+    @apply font-serif text-lg font-semibold text-tinta;
+  }
+
+  .paso-contenido {
+    @apply flex min-w-0 flex-col;
   }
 
   .paso-fila .numero-paso {
@@ -205,7 +346,7 @@ body {
   }
 
   .boton-agregar {
-    @apply mt-3 inline-flex min-h-11 items-center gap-2 rounded-full bg-secundario px-5 py-2 font-medium text-secundario-tinta anillo-foco hover:bg-secundario/70 disabled:opacity-50;
+    @apply mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-secundario px-5 py-2 font-medium text-secundario-tinta anillo-foco hover:bg-secundario/70 disabled:opacity-50;
   }
 
   .ficha {
@@ -250,6 +391,34 @@ body {
 
   .pagina {
     @apply mx-auto flex w-full max-w-2xl flex-col gap-4 p-4;
+  }
+
+  .acceso {
+    @apply grid min-h-[calc(100svh-4rem)] md:grid-cols-2;
+  }
+
+  .acceso-formulario {
+    @apply mx-auto flex w-full max-w-lg flex-col justify-center gap-4 p-6 md:p-12;
+  }
+
+  .mosaico-contenedor {
+    @apply relative block h-44 md:h-auto;
+  }
+
+  .mosaico {
+    @apply absolute inset-0 grid grid-cols-3 grid-rows-[repeat(2,minmax(0,1fr))] gap-1 md:grid-cols-2 md:grid-rows-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))];
+  }
+
+  .mosaico-foto {
+    @apply size-full object-cover;
+  }
+
+  .mosaico-ancha {
+    @apply md:col-span-2;
+  }
+
+  .mosaico-alta {
+    @apply md:row-span-2;
   }
 
   .pagina-angosta {
@@ -324,6 +493,26 @@ body {
     @apply text-[0.7rem] font-medium tracking-[0.14em] text-suave uppercase;
   }
 
+  .solapas {
+    @apply mt-2 flex flex-wrap items-end gap-1;
+  }
+
+  .solapa {
+    @apply -mb-0.5 rounded-t-2xl border-2 border-b-0 border-barra/30 bg-secundario px-5 py-2.5 text-sm font-medium text-secundario-tinta anillo-foco hover:bg-secundario/70;
+  }
+
+  .solapa.activa {
+    @apply border-barra bg-barra font-semibold text-barra-tinta hover:bg-barra;
+  }
+
+  .plantilla {
+    @apply relative flex flex-col gap-7 rounded-b-2xl rounded-tr-2xl border-2 border-barra p-5 md:p-8;
+  }
+
+  .plantilla legend {
+    @apply mb-1 w-full;
+  }
+
   .tipos {
     @apply flex flex-wrap gap-2;
   }
@@ -378,10 +567,6 @@ body {
     @apply flex flex-col justify-center gap-5 p-6 md:p-12;
   }
 
-  .detalle-titulo {
-    @apply font-serif text-3xl leading-tight font-black md:text-5xl;
-  }
-
   .compartir-hoy {
     @apply flex min-h-14 w-full items-center justify-between gap-4 rounded-full bg-hoja px-6 text-left text-suave shadow-hoja anillo-foco hover:shadow-flota;
   }
@@ -411,11 +596,7 @@ body {
   }
 
   .formulario {
-    @apply flex flex-col gap-4;
-  }
-
-  .formulario-pagina .campo {
-    @apply bg-hoja;
+    @apply flex flex-col gap-6;
   }
 
   .formulario-pagina fieldset:not(:first-child) {
@@ -427,7 +608,7 @@ body {
   }
 
   .campo {
-    @apply mt-1 min-h-11 w-full rounded-xl border border-linea-fuerte bg-papel/60 px-4 py-2.5 text-sm placeholder:text-suave/70 focus:border-barra focus:bg-hoja focus:ring-2 focus:ring-barra/30 focus:outline-none;
+    @apply mt-1 min-h-11 w-full rounded-2xl border-2 border-transparent bg-hoja px-4 py-2.5 text-sm font-medium placeholder:font-normal placeholder:text-suave/70 focus:border-barra focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-barra)_18%,transparent)] focus:outline-none;
   }
 
   .campo.ng-invalid.ng-touched {
@@ -444,6 +625,34 @@ body {
 
   .campo-clave .campo {
     @apply pr-12;
+  }
+
+  .caja {
+    @apply flex flex-col gap-2 rounded-2xl border-2 border-transparent bg-hoja px-5 py-3.5 transition-shadow focus-within:border-barra focus-within:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-barra)_18%,transparent)] has-[.campo.ng-invalid.ng-touched]:border-error;
+  }
+
+  .caja .etiqueta {
+    @apply block text-xs font-normal tracking-normal text-suave normal-case;
+  }
+
+  .caja:focus-within .etiqueta {
+    @apply text-barra;
+  }
+
+  .caja .campo {
+    @apply mt-0 min-h-7 rounded-none border-0 bg-transparent p-0 shadow-none;
+  }
+
+  .caja .campo-clave .campo {
+    @apply pr-10;
+  }
+
+  .caja .boton-ojo {
+    @apply top-1/2 right-0 bottom-auto size-8 -translate-y-1/2;
+  }
+
+  .caja .campo-archivo {
+    @apply mt-1;
   }
 
   .nombre-barra {
@@ -544,10 +753,6 @@ body {
 
   .comentario {
     @apply border-l-2 border-linea-fuerte pl-4;
-  }
-
-  .contador {
-    @apply text-sm text-suave tabular-nums;
   }
 
   .estado-vacio {

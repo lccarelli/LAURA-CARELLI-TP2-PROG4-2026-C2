@@ -15,13 +15,11 @@ import {
 import { TransformarAEntero } from '../../common/transformar-a-entero.decorator.js';
 import { SacarEspacios } from '../../common/sacar-espacios.decorator.js';
 import { IngredienteDto } from './ingrediente.dto.js';
+import { PasoDto } from './paso.dto.js';
 
-export const TIPOS_PUBLICACION = [
-  'receta',
-  'tip',
-  'experiencia',
-  'completa',
-] as const;
+export const TIPOS_RINDE = ['porciones', 'unidades'] as const;
+
+export const TIPOS_PUBLICACION = ['receta', 'tip', 'experiencia'] as const;
 
 function leerJson(texto: string): unknown {
   try {
@@ -53,6 +51,10 @@ export class CrearPublicacionDto {
   @Min(1)
   @Max(100)
   porciones?: number;
+
+  @IsOptional()
+  @IsIn(TIPOS_RINDE)
+  tipoRinde?: (typeof TIPOS_RINDE)[number];
 
   @IsOptional()
   @TransformarAEntero()
@@ -92,14 +94,15 @@ export class CrearPublicacionDto {
     const lista = typeof value === 'string' ? leerJson(value) : value;
     return Array.isArray(lista)
       ? lista.map((paso: unknown) =>
-          typeof paso === 'string' ? paso.trim() : paso,
+          plainToInstance(
+            PasoDto,
+            typeof paso === 'string' ? { texto: paso } : paso,
+          ),
         )
       : lista;
   })
   @IsArray()
   @ArrayMaxSize(40)
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  @MaxLength(500, { each: true })
-  pasos?: string[];
+  @ValidateNested({ each: true })
+  pasos?: PasoDto[];
 }
