@@ -474,11 +474,19 @@ body {
   }
 
   .pin-confirmar {
-    @apply mx-3 mb-3 flex flex-col gap-2 rounded-2xl bg-secundario/50 p-3;
+    @apply flex items-center gap-2 border-t border-error/25 bg-error/5 px-3 py-2;
   }
 
   .pin-confirmar-texto {
-    @apply text-sm font-medium text-tinta;
+    @apply mr-auto text-xs font-medium text-error;
+  }
+
+  .boton-mini {
+    @apply inline-flex min-h-7 items-center justify-center rounded-full px-3 text-xs font-semibold text-suave anillo-foco hover:bg-secundario/70 hover:text-tinta disabled:opacity-60;
+  }
+
+  .boton-mini-peligro {
+    @apply bg-error text-hoja hover:bg-error/85 hover:text-hoja;
   }
 
   .pin-error {

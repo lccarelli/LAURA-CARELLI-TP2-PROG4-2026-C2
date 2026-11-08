@@ -232,7 +232,9 @@ describe('Perfil', () => {
 
       (tarjetas()[0].querySelector('.boton-eliminar') as HTMLButtonElement).click();
       await actualizar();
-      (tarjetas()[0].querySelector('.pin-confirmar .boton-peligro') as HTMLButtonElement).click();
+      (
+        tarjetas()[0].querySelector('.pin-confirmar .boton-mini-peligro') as HTMLButtonElement
+      ).click();
       http
         .expectOne({ method: 'DELETE', url: `${URL}/id1` })
         .flush(null, { status: 204, statusText: 'No Content' });

@@ -214,7 +214,9 @@ describe('Publicaciones', () => {
     const eliminarLaPrimera = async () => {
       (tarjetas()[0].querySelector('.boton-eliminar') as HTMLButtonElement).click();
       await actualizar();
-      (tarjetas()[0].querySelector('.pin-confirmar .boton-peligro') as HTMLButtonElement).click();
+      (
+        tarjetas()[0].querySelector('.pin-confirmar .boton-mini-peligro') as HTMLButtonElement
+      ).click();
     };
 
     it('[O] al eliminar una publicación desaparece de la lista sin recargar', async () => {

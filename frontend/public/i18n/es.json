@@ -159,13 +159,17 @@
     "me_gusta_dar": "Dar me gusta ({{n}})",
     "me_gusta_quitar": "Quitar me gusta ({{n}})",
     "eliminar": "Eliminar publicación",
-    "eliminar_pregunta": "¿Eliminar esta publicación? No se puede deshacer.",
-    "eliminar_si": "Sí, eliminar",
-    "eliminar_no": "Cancelar",
+    "eliminar_pregunta": "¿Eliminar?",
+    "eliminar_si": "Sí",
+    "eliminar_no": "No",
     "eliminando": "Eliminando...",
     "ordenar_por": "Ordenar por",
     "orden_fecha": "Más recientes",
-    "orden_megusta": "Más me gusta"
+    "orden_megusta": "Más me gusta",
+    "eliminando_corto": "…",
+    "eliminar_si_aria": "Sí, eliminar la publicación",
+    "eliminar_no_aria": "No eliminar, cancelar",
+    "eliminar_aviso": "No se puede deshacer"
   },
   "borrador": {
     "titulo": "Recuperamos tu borrador",

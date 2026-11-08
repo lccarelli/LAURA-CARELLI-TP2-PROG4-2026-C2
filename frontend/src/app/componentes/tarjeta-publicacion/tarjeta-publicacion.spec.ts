@@ -284,7 +284,7 @@ describe('TarjetaPublicacion', () => {
         fixture.nativeElement.querySelectorAll(
           '.pin-confirmar button',
         ) as NodeListOf<HTMLButtonElement>,
-      ).find((boton) => boton.textContent!.includes(texto))!;
+      ).find((boton) => boton.getAttribute('aria-label')!.includes(texto))!;
     const actualizar = async () => {
       fixture.detectChanges();
       await fixture.whenStable();
@@ -333,10 +333,26 @@ describe('TarjetaPublicacion', () => {
       await actualizar();
 
       const confirmar = fixture.nativeElement.querySelector('.pin-confirmar') as HTMLElement;
-      expect(confirmar.textContent).toContain('¿Eliminar esta publicación?');
+      expect(confirmar.textContent).toContain('¿Eliminar?');
+      expect(confirmar.getAttribute('title')).toBe('No se puede deshacer');
       expect(confirmar.getAttribute('role')).toBe('group');
       expect(fixture.nativeElement.querySelector('[role="dialog"], [aria-modal]')).toBeNull();
       http.verify();
+    });
+
+    it('[I] la confirmación ocupa el lugar de las acciones, en una sola fila, y al cancelar vuelven', async () => {
+      await crear(base);
+      iniciarSesion(persona('u1'));
+      await actualizar();
+
+      botonEliminar()!.click();
+      await actualizar();
+      expect(fixture.nativeElement.querySelector('.pin-acciones')).toBeNull();
+      expect(fixture.nativeElement.querySelectorAll('.pin-confirmar > *')).toHaveLength(3);
+
+      botonDeConfirmacion('cancelar').click();
+      await actualizar();
+      expect(fixture.nativeElement.querySelector('.pin-acciones')).not.toBeNull();
     });
 
     it('[O] cancelar cierra la confirmación sin pedir nada', async () => {
@@ -346,7 +362,7 @@ describe('TarjetaPublicacion', () => {
       botonEliminar()!.click();
       await actualizar();
 
-      botonDeConfirmacion('Cancelar').click();
+      botonDeConfirmacion('cancelar').click();
       await actualizar();
 
       expect(fixture.nativeElement.querySelector('.pin-confirmar')).toBeNull();

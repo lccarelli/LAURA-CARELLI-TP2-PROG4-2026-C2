@@ -159,13 +159,17 @@
     "me_gusta_dar": "Like ({{n}})",
     "me_gusta_quitar": "Remove like ({{n}})",
     "eliminar": "Delete post",
-    "eliminar_pregunta": "Delete this post? This cannot be undone.",
-    "eliminar_si": "Yes, delete",
-    "eliminar_no": "Cancel",
+    "eliminar_pregunta": "Delete?",
+    "eliminar_si": "Yes",
+    "eliminar_no": "No",
     "eliminando": "Deleting...",
     "ordenar_por": "Sort by",
     "orden_fecha": "Newest",
-    "orden_megusta": "Most liked"
+    "orden_megusta": "Most liked",
+    "eliminando_corto": "…",
+    "eliminar_si_aria": "Yes, delete the post",
+    "eliminar_no_aria": "Do not delete, cancel",
+    "eliminar_aviso": "This cannot be undone"
   },
   "borrador": {
     "titulo": "We recovered your draft",
