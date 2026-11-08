@@ -1109,10 +1109,12 @@ describe('NuevaPublicacion', () => {
       cargarPasos(['a'.repeat(2001)]);
       await enviar();
       http.expectNone({ method: 'POST', url: URL });
+      expect(fixture.componentInstance.pasos.at(0).controls.texto.invalid).toBe(true);
 
       cargarPasos(['a'.repeat(2000)]);
       await enviar();
-      http.expectOne({ method: 'POST', url: URL });
+      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      expect(JSON.parse(cuerpo.get('pasos') as string)[0].texto).toHaveLength(2000);
     });
 
     it('[I] al elegir "a gusto" la cantidad se vacía y se desactiva', async () => {

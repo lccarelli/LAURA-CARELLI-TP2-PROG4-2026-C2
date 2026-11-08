@@ -8,6 +8,7 @@ export interface FotosGuardadas {
 }
 
 const BASE = 'banquete';
+const ERROR_INDEXEDDB = 'IndexedDB falló';
 const ALMACEN = 'fotos-borrador';
 const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAXIMO_PASOS = 40;
@@ -24,13 +25,13 @@ const abrirBase = () =>
     const pedido = indexedDB.open(BASE, 1);
     pedido.onupgradeneeded = () => pedido.result.createObjectStore(ALMACEN);
     pedido.onsuccess = () => resolver(pedido.result);
-    pedido.onerror = () => rechazar(pedido.error);
+    pedido.onerror = () => rechazar(pedido.error ?? new Error(ERROR_INDEXEDDB));
   });
 
 const esperar = <T>(pedido: IDBRequest<T>) =>
   new Promise<T>((resolver, rechazar) => {
     pedido.onsuccess = () => resolver(pedido.result);
-    pedido.onerror = () => rechazar(pedido.error);
+    pedido.onerror = () => rechazar(pedido.error ?? new Error(ERROR_INDEXEDDB));
   });
 
 @Service()

@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -122,11 +122,12 @@ function ingredienteCompleto(control: AbstractControl): ValidationErrors | null 
     '(window:beforeunload)': 'guardarBorrador()',
   },
 })
-export class NuevaPublicacion implements OnDestroy {
+export class NuevaPublicacion implements OnInit, OnDestroy {
   private auth = inject(Auth);
   private borrador = inject(Borrador);
   private fotosBorrador = inject(FotosBorrador);
   private publicado = false;
+  private hayFotosGuardadas = false;
 
   private api = inject(PublicacionesApi);
   private router = inject(Router);
@@ -178,9 +179,7 @@ export class NuevaPublicacion implements OnDestroy {
       this.restaurar(guardado);
       this.borradorRecuperado.set(guardado.guardadoEn);
       this.guardadoEn.set(guardado.guardadoEn);
-      if (guardado.conFotos) {
-        this.restaurarFotos();
-      }
+      this.hayFotosGuardadas = guardado.conFotos;
     }
 
     merge(
@@ -198,6 +197,12 @@ export class NuevaPublicacion implements OnDestroy {
     interval(INTERVALO_RENOVACION_MS)
       .pipe(takeUntilDestroyed())
       .subscribe(() => this.renovarSesion());
+  }
+
+  ngOnInit() {
+    if (this.hayFotosGuardadas) {
+      void this.restaurarFotos();
+    }
   }
 
   ngOnDestroy() {
