@@ -67,7 +67,8 @@ describe('Login', () => {
   it('[I] es una página completa, sin ventana flotante ni portada detrás', () => {
     const raiz = fixture.nativeElement as HTMLElement;
 
-    expect(raiz.querySelector('.pagina-angosta form')).not.toBeNull();
+    expect(raiz.querySelector('.acceso-formulario form')).not.toBeNull();
+    expect(raiz.querySelectorAll('app-mosaico-comidas img')).toHaveLength(6);
     expect(raiz.querySelector('[role="dialog"], [aria-modal], [inert]')).toBeNull();
     expect(raiz.querySelector('app-inicio')).toBeNull();
     expect(raiz.querySelector('h1')!.textContent).toContain('Ingresar');

@@ -1,112 +1,121 @@
-<section class="pagina-angosta">
-  <h1 class="titulo">{{ 'registro.titulo' | translate }}</h1>
+<section class="acceso">
+  <app-mosaico-comidas />
 
-  @if (mensajeError(); as mensaje) {
-    <app-aviso titulo="registro.error_titulo" (cerrar)="mensajeError.set(null)">{{
-      mensaje | translate
-    }}</app-aviso>
-  }
+  <div class="acceso-formulario">
+    <h1 class="titulo">{{ 'registro.titulo' | translate }}</h1>
 
-  <div class="formulario-pagina">
-    <p class="texto-suave mb-6">{{ 'registro.saludo' | translate }}</p>
+    @if (mensajeError(); as mensaje) {
+      <app-aviso titulo="registro.error_titulo" (cerrar)="mensajeError.set(null)">{{
+        mensaje | translate
+      }}</app-aviso>
+    }
 
-    <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
-      <div class="fila-campos">
-        <label class="block">
-          <span class="etiqueta">{{ 'registro.nombre' | translate }}</span>
-          <input class="campo" formControlName="nombre" autocomplete="given-name" />
-          @if (mensajeDeError('nombre'); as mensaje) {
+    <div>
+      <p class="texto-suave mb-6">{{ 'registro.saludo' | translate }}</p>
+
+      <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+        <div class="fila-campos">
+          <label class="caja">
+            <span class="etiqueta">{{ 'registro.nombre' | translate }}</span>
+            <input class="campo" formControlName="nombre" autocomplete="given-name" />
+            @if (mensajeDeError('nombre'); as mensaje) {
+              <span class="mensaje-error">{{ mensaje }}</span>
+            }
+          </label>
+          <label class="caja">
+            <span class="etiqueta">{{ 'registro.apellido' | translate }}</span>
+            <input class="campo" formControlName="apellido" autocomplete="family-name" />
+            @if (mensajeDeError('apellido'); as mensaje) {
+              <span class="mensaje-error">{{ mensaje }}</span>
+            }
+          </label>
+        </div>
+
+        <label class="caja">
+          <span class="etiqueta">{{ 'registro.correo' | translate }}</span>
+          <input class="campo" type="email" formControlName="correo" autocomplete="email" />
+          @if (mensajeDeError('correo'); as mensaje) {
             <span class="mensaje-error">{{ mensaje }}</span>
           }
         </label>
-        <label class="block">
-          <span class="etiqueta">{{ 'registro.apellido' | translate }}</span>
-          <input class="campo" formControlName="apellido" autocomplete="family-name" />
-          @if (mensajeDeError('apellido'); as mensaje) {
+
+        <label class="caja">
+          <span class="etiqueta">{{ 'registro.nombre_usuario' | translate }}</span>
+          <input class="campo" formControlName="nombreUsuario" autocomplete="username" />
+          @if (mensajeDeError('nombreUsuario'); as mensaje) {
             <span class="mensaje-error">{{ mensaje }}</span>
           }
         </label>
-      </div>
 
-      <label class="block">
-        <span class="etiqueta">{{ 'registro.correo' | translate }}</span>
-        <input class="campo" type="email" formControlName="correo" autocomplete="email" />
-        @if (mensajeDeError('correo'); as mensaje) {
-          <span class="mensaje-error">{{ mensaje }}</span>
-        }
-      </label>
+        <div class="fila-campos">
+          <label class="caja">
+            <span class="etiqueta">{{ 'registro.clave' | translate }}</span>
+            <app-campo-clave>
+              <input
+                class="campo"
+                type="password"
+                formControlName="clave"
+                autocomplete="new-password"
+              />
+            </app-campo-clave>
+            @if (mensajeDeError('clave'); as mensaje) {
+              <span class="mensaje-error">{{ mensaje }}</span>
+            }
+          </label>
+          <label class="caja">
+            <span class="etiqueta">{{ 'registro.repetir_clave' | translate }}</span>
+            <app-campo-clave>
+              <input
+                class="campo"
+                type="password"
+                formControlName="repetirClave"
+                autocomplete="new-password"
+              />
+            </app-campo-clave>
+            @if (mensajeDeError('repetirClave'); as mensaje) {
+              <span class="mensaje-error">{{ mensaje }}</span>
+            }
+          </label>
+        </div>
 
-      <label class="block">
-        <span class="etiqueta">{{ 'registro.nombre_usuario' | translate }}</span>
-        <input class="campo" formControlName="nombreUsuario" autocomplete="username" />
-        @if (mensajeDeError('nombreUsuario'); as mensaje) {
-          <span class="mensaje-error">{{ mensaje }}</span>
-        }
-      </label>
-
-      <div class="fila-campos">
-        <label class="block">
-          <span class="etiqueta">{{ 'registro.clave' | translate }}</span>
-          <app-campo-clave>
-            <input
-              class="campo"
-              type="password"
-              formControlName="clave"
-              autocomplete="new-password"
-            />
-          </app-campo-clave>
-          @if (mensajeDeError('clave'); as mensaje) {
+        <label class="caja">
+          <span class="etiqueta">{{ 'registro.fecha_nacimiento' | translate }}</span>
+          <input class="campo" type="date" formControlName="fechaNacimiento" [max]="hoy" />
+          @if (mensajeDeError('fechaNacimiento'); as mensaje) {
             <span class="mensaje-error">{{ mensaje }}</span>
           }
         </label>
-        <label class="block">
-          <span class="etiqueta">{{ 'registro.repetir_clave' | translate }}</span>
-          <app-campo-clave>
-            <input
-              class="campo"
-              type="password"
-              formControlName="repetirClave"
-              autocomplete="new-password"
-            />
-          </app-campo-clave>
-          @if (mensajeDeError('repetirClave'); as mensaje) {
+
+        <label class="caja">
+          <span class="etiqueta">{{ 'registro.descripcion' | translate }}</span>
+          <textarea class="campo" rows="3" formControlName="descripcion"></textarea>
+          @if (mensajeDeError('descripcion'); as mensaje) {
             <span class="mensaje-error">{{ mensaje }}</span>
           }
         </label>
-      </div>
 
-      <label class="block">
-        <span class="etiqueta">{{ 'registro.fecha_nacimiento' | translate }}</span>
-        <input class="campo" type="date" formControlName="fechaNacimiento" [max]="hoy" />
-        @if (mensajeDeError('fechaNacimiento'); as mensaje) {
-          <span class="mensaje-error">{{ mensaje }}</span>
-        }
-      </label>
+        <label class="caja">
+          <span class="etiqueta">{{ 'registro.imagen' | translate }}</span>
+          <input
+            class="campo-archivo"
+            type="file"
+            accept="image/*"
+            (change)="elegirImagen($event)"
+          />
+          @if (errorImagen(); as mensaje) {
+            <span class="mensaje-error">{{ mensaje | translate }}</span>
+          }
+        </label>
 
-      <label class="block">
-        <span class="etiqueta">{{ 'registro.descripcion' | translate }}</span>
-        <textarea class="campo" rows="3" formControlName="descripcion"></textarea>
-        @if (mensajeDeError('descripcion'); as mensaje) {
-          <span class="mensaje-error">{{ mensaje }}</span>
-        }
-      </label>
+        <button type="submit" class="boton-principal w-full" [disabled]="enviando()">
+          {{ (enviando() ? 'registro.boton_enviando' : 'registro.boton') | translate }}
+        </button>
+      </form>
 
-      <label class="block">
-        <span class="etiqueta">{{ 'registro.imagen' | translate }}</span>
-        <input class="campo-archivo" type="file" accept="image/*" (change)="elegirImagen($event)" />
-        @if (errorImagen(); as mensaje) {
-          <span class="mensaje-error">{{ mensaje | translate }}</span>
-        }
-      </label>
-
-      <button type="submit" class="boton-principal w-full" [disabled]="enviando()">
-        {{ (enviando() ? 'registro.boton_enviando' : 'registro.boton') | translate }}
-      </button>
-    </form>
-
-    <p class="pie-formulario">
-      {{ 'registro.con_cuenta' | translate }}
-      <a class="enlace" routerLink="/login">{{ 'registro.ingresar' | translate }}</a>
-    </p>
+      <p class="pie-formulario">
+        {{ 'registro.con_cuenta' | translate }}
+        <a class="enlace" routerLink="/login">{{ 'registro.ingresar' | translate }}</a>
+      </p>
+    </div>
   </div>
 </section>

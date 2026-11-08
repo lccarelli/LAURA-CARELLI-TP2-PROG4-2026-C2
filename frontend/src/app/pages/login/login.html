@@ -1,47 +1,51 @@
-<section class="pagina-angosta">
-  <h1 class="titulo">{{ 'login.titulo' | translate }}</h1>
+<section class="acceso">
+  <app-mosaico-comidas />
 
-  @if (mensajeError(); as mensaje) {
-    <app-aviso titulo="login.error_titulo" (cerrar)="mensajeError.set(null)">{{
-      mensaje | translate
-    }}</app-aviso>
-  }
+  <div class="acceso-formulario">
+    <h1 class="titulo">{{ 'login.titulo' | translate }}</h1>
 
-  <div class="formulario-pagina">
-    <p class="texto-suave mb-6">{{ 'login.saludo' | translate }}</p>
+    @if (mensajeError(); as mensaje) {
+      <app-aviso titulo="login.error_titulo" (cerrar)="mensajeError.set(null)">{{
+        mensaje | translate
+      }}</app-aviso>
+    }
 
-    <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
-      <label class="block">
-        <span class="etiqueta">{{ 'login.identificador' | translate }}</span>
-        <input class="campo" formControlName="identificador" autocomplete="username" />
-        @if (mensajeDeError('identificador'); as mensaje) {
-          <span class="mensaje-error">{{ mensaje }}</span>
-        }
-      </label>
+    <div>
+      <p class="texto-suave mb-6">{{ 'login.saludo' | translate }}</p>
 
-      <label class="block">
-        <span class="etiqueta">{{ 'login.clave' | translate }}</span>
-        <app-campo-clave>
-          <input
-            class="campo"
-            type="password"
-            formControlName="clave"
-            autocomplete="current-password"
-          />
-        </app-campo-clave>
-        @if (mensajeDeError('clave'); as mensaje) {
-          <span class="mensaje-error">{{ mensaje }}</span>
-        }
-      </label>
+      <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+        <label class="caja">
+          <span class="etiqueta">{{ 'login.identificador' | translate }}</span>
+          <input class="campo" formControlName="identificador" autocomplete="username" />
+          @if (mensajeDeError('identificador'); as mensaje) {
+            <span class="mensaje-error">{{ mensaje }}</span>
+          }
+        </label>
 
-      <button type="submit" class="boton-principal w-full" [disabled]="enviando()">
-        {{ (enviando() ? 'login.boton_enviando' : 'login.boton') | translate }}
-      </button>
-    </form>
+        <label class="caja">
+          <span class="etiqueta">{{ 'login.clave' | translate }}</span>
+          <app-campo-clave>
+            <input
+              class="campo"
+              type="password"
+              formControlName="clave"
+              autocomplete="current-password"
+            />
+          </app-campo-clave>
+          @if (mensajeDeError('clave'); as mensaje) {
+            <span class="mensaje-error">{{ mensaje }}</span>
+          }
+        </label>
 
-    <p class="pie-formulario">
-      {{ 'login.sin_cuenta' | translate }}
-      <a class="enlace" routerLink="/registro">{{ 'login.registrarme' | translate }}</a>
-    </p>
+        <button type="submit" class="boton-principal w-full" [disabled]="enviando()">
+          {{ (enviando() ? 'login.boton_enviando' : 'login.boton') | translate }}
+        </button>
+      </form>
+
+      <p class="pie-formulario">
+        {{ 'login.sin_cuenta' | translate }}
+        <a class="enlace" routerLink="/registro">{{ 'login.registrarme' | translate }}</a>
+      </p>
+    </div>
   </div>
 </section>
