@@ -1,6 +1,6 @@
-<section class="pagina-angosta">
+<section class="pagina-ancha">
   @if (auth.usuario(); as usuario) {
-    <div class="tarjeta">
+    <div class="tarjeta mx-auto w-full max-w-2xl">
       <div class="flex items-center gap-5">
         <img
           class="avatar-grande"
@@ -31,5 +31,37 @@
         </div>
       </dl>
     </div>
+
+    <h2 class="titulo-seccion">{{ 'perfil.ultimas_publicaciones' | translate }}</h2>
+
+    @if (mensajeError(); as mensaje) {
+      <app-aviso titulo="perfil.error_publicaciones" (cerrar)="mensajeError.set(null)">
+        {{ mensaje | translate }}
+        <span class="acciones mt-2">
+          <button type="button" class="boton-secundario" (click)="cargar()">
+            {{ 'comun.reintentar' | translate }}
+          </button>
+        </span>
+      </app-aviso>
+    }
+
+    @if (cargando()) {
+      <p class="estado-carga">{{ 'comun.cargando' | translate }}</p>
+    }
+
+    <div class="muro">
+      @for (publicacion of publicaciones(); track publicacion._id) {
+        <app-tarjeta-publicacion [publicacion]="publicacion" (eliminada)="cargar()" />
+      }
+    </div>
+
+    @if (cargaCompleta() && !cargando() && publicaciones().length === 0) {
+      <div class="tarjeta estado-vacio mx-auto w-full max-w-2xl">
+        <p>{{ 'perfil.sin_publicaciones' | translate }}</p>
+        <a class="boton-principal mt-3" routerLink="/publicaciones/nueva">
+          {{ 'perfil.publicar_primera' | translate }}
+        </a>
+      </div>
+    }
   }
 </section>

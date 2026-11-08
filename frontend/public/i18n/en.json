@@ -8,7 +8,8 @@
     "foto_de": "Photo of {{nombre}}",
     "ver_clave": "Show password",
     "ocultar_clave": "Hide password",
-    "cerrar": "Close"
+    "cerrar": "Close",
+    "reintentar": "Try again"
   },
   "formatos": {
     "fecha": "MM/dd/yyyy",
@@ -175,7 +176,11 @@
   "perfil": {
     "correo": "Email",
     "fecha_nacimiento": "Date of birth",
-    "descripcion": "Bio"
+    "descripcion": "Bio",
+    "ultimas_publicaciones": "My latest posts",
+    "error_publicaciones": "We could not load your posts",
+    "sin_publicaciones": "You have not posted anything yet.",
+    "publicar_primera": "Create my first post"
   },
   "roles": {
     "usuario": "user",

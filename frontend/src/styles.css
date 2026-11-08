@@ -779,6 +779,10 @@ body {
     @apply border-l-2 border-linea-fuerte pl-4;
   }
 
+  .titulo-seccion {
+    @apply font-serif text-2xl font-semibold text-tinta;
+  }
+
   .estado-vacio {
     @apply text-center text-suave;
   }

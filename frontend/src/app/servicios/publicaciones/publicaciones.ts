@@ -7,10 +7,12 @@ import { OrdenPublicaciones, PaginaPublicaciones, Publicacion } from '../../inte
 export class PublicacionesApi {
   private http = inject(HttpClient);
 
-  listar(offset: number, limit = 10, orden: OrdenPublicaciones = 'fecha') {
-    return this.http.get<PaginaPublicaciones>(`${environment.API_URL}/publicaciones`, {
-      params: { offset, limit, orden },
-    });
+  listar(offset: number, limit = 10, orden: OrdenPublicaciones = 'fecha', usuario?: string) {
+    const params: Record<string, string | number> = { offset, limit, orden };
+    if (usuario) {
+      params['usuario'] = usuario;
+    }
+    return this.http.get<PaginaPublicaciones>(`${environment.API_URL}/publicaciones`, { params });
   }
 
   obtener(id: string) {

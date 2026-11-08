@@ -58,6 +58,18 @@ describe('PublicacionesApi', () => {
     solicitud.flush({ datos: [], offset: 10, limit: 10, hayMas: false });
   });
 
+  it('[O] listar de una persona agrega usuario a la consulta, y sin ella no lo manda', () => {
+    api.listar(0, 3, 'fecha', 'abc123').subscribe();
+    api.listar(0, 3).subscribe();
+
+    const [con, sin] = http.match((p) => p.url === URL);
+
+    expect(con.request.params.get('usuario')).toBe('abc123');
+    expect(sin.request.params.has('usuario')).toBe(false);
+    con.flush({ datos: [], offset: 0, limit: 3, hayMas: false });
+    sin.flush({ datos: [], offset: 0, limit: 3, hayMas: false });
+  });
+
   it('[I] crear envía un POST con el formulario', () => {
     const datos = new FormData();
     datos.append('titulo', 'Hola');

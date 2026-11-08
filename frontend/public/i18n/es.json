@@ -8,7 +8,8 @@
     "foto_de": "Foto de {{nombre}}",
     "ver_clave": "Mostrar clave",
     "ocultar_clave": "Ocultar clave",
-    "cerrar": "Cerrar"
+    "cerrar": "Cerrar",
+    "reintentar": "Reintentar"
   },
   "formatos": {
     "fecha": "dd/MM/yyyy",
@@ -175,7 +176,11 @@
   "perfil": {
     "correo": "Correo",
     "fecha_nacimiento": "Fecha de nacimiento",
-    "descripcion": "Descripción"
+    "descripcion": "Descripción",
+    "ultimas_publicaciones": "Mis últimas publicaciones",
+    "error_publicaciones": "No pudimos cargar tus publicaciones",
+    "sin_publicaciones": "Todavía no publicaste nada.",
+    "publicar_primera": "Crear mi primera publicación"
   },
   "roles": {
     "usuario": "usuario",
