@@ -1,21 +1,20 @@
 <section class="pagina-ancha">
   <h1 class="titulo">{{ 'publicaciones.titulo' | translate }}</h1>
 
-  <a class="compartir-hoy" routerLink="/publicaciones/nueva">
-    {{ 'publicaciones.invitacion' | translate }}
-    <span class="compartir-hoy-icono" aria-hidden="true">
-      <svg
-        class="icono"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.2"
-        stroke-linecap="round"
+  <div class="orden" role="group" [attr.aria-label]="'publicaciones.ordenar_por' | translate">
+    <span class="etiqueta">{{ 'publicaciones.ordenar_por' | translate }}</span>
+    @for (opcion of ordenes; track opcion) {
+      <button
+        type="button"
+        class="tipo-opcion"
+        [class.activo]="orden() === opcion"
+        [attr.aria-pressed]="orden() === opcion"
+        (click)="cambiarOrden(opcion)"
       >
-        <path d="M12 5v14M5 12h14" />
-      </svg>
-    </span>
-  </a>
+        {{ 'publicaciones.orden_' + opcion | translate }}
+      </button>
+    }
+  </div>
 
   @if (mensajeError(); as mensaje) {
     <app-aviso titulo="publicaciones.error_cargar" (cerrar)="mensajeError.set(null)">{{
@@ -25,7 +24,7 @@
 
   <div class="muro">
     @for (publicacion of publicaciones(); track publicacion._id) {
-      <app-tarjeta-publicacion [publicacion]="publicacion" />
+      <app-tarjeta-publicacion [publicacion]="publicacion" (eliminada)="quitar($event)" />
     }
   </div>
 

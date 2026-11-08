@@ -50,9 +50,14 @@ export interface Publicacion {
   calorias?: number;
   imagen?: string;
   cantidadMeGusta: number;
+  meGusta?: boolean;
   cantidadComentarios: number;
   fecha: string;
 }
+
+export const ORDENES = ['fecha', 'megusta'] as const;
+
+export type OrdenPublicaciones = (typeof ORDENES)[number];
 
 export interface PaginaPublicaciones {
   datos: Publicacion[];

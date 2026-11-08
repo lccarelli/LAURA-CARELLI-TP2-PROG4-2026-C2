@@ -121,7 +121,6 @@
     "mensaje_experiencia": "Tu experiencia",
     "me_gusta": "{{n}} me gusta",
     "comentarios": "{{n}} comentarios",
-    "invitacion": "¿Qué querés compartir hoy?",
     "ficha_mas": "Aumentar {{campo}}",
     "ficha_menos": "Disminuir {{campo}}",
     "tiempo_horas": "{{n}} h",
@@ -155,7 +154,17 @@
     "campo_calorias_unidades": "Calorías por unidad",
     "paso_titulo": "Título del paso (opcional)",
     "paso_foto_maximo_paso": "Cada paso admite hasta {{n}} fotos",
-    "rinde_pregunta": "¿Qué rinde la receta?"
+    "rinde_pregunta": "¿Qué rinde la receta?",
+    "me_gusta_dar": "Dar me gusta ({{n}})",
+    "me_gusta_quitar": "Quitar me gusta ({{n}})",
+    "eliminar": "Eliminar publicación",
+    "eliminar_pregunta": "¿Eliminar esta publicación? No se puede deshacer.",
+    "eliminar_si": "Sí, eliminar",
+    "eliminar_no": "Cancelar",
+    "eliminando": "Eliminando...",
+    "ordenar_por": "Ordenar por",
+    "orden_fecha": "Más recientes",
+    "orden_megusta": "Más me gusta"
   },
   "borrador": {
     "titulo": "Recuperamos tu borrador",
@@ -201,7 +210,10 @@
     "SESION_VENCIDA": "Tu sesión llegó a su duración máxima. Ingresá de nuevo.",
     "TOKEN_AUSENTE": "Tenés que ingresar para hacer esto.",
     "TOKEN_INVALIDO": "Tu sesión no es válida o venció. Ingresá de nuevo.",
-    "DEMASIADAS_SOLICITUDES": "Hiciste demasiadas solicitudes seguidas. Esperá un momento e intentá de nuevo."
+    "DEMASIADAS_SOLICITUDES": "Hiciste demasiadas solicitudes seguidas. Esperá un momento e intentá de nuevo.",
+    "PUBLICACION_AJENA": "Sólo podés eliminar tus propias publicaciones.",
+    "ME_GUSTA_REPETIDO": "Ya le diste me gusta a esta publicación.",
+    "ME_GUSTA_INEXISTENTE": "No le habías dado me gusta a esta publicación."
   },
   "tipos": {
     "receta": "Receta",

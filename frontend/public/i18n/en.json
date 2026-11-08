@@ -121,7 +121,6 @@
     "mensaje_experiencia": "Your experience",
     "me_gusta": "{{n}} likes",
     "comentarios": "{{n}} comments",
-    "invitacion": "What do you want to share today?",
     "ficha_mas": "Increase {{campo}}",
     "ficha_menos": "Decrease {{campo}}",
     "tiempo_horas": "{{n}} h",
@@ -155,7 +154,17 @@
     "campo_calorias_unidades": "Calories per unit",
     "paso_titulo": "Step title (optional)",
     "paso_foto_maximo_paso": "Each step takes up to {{n}} photos",
-    "rinde_pregunta": "What does the recipe make?"
+    "rinde_pregunta": "What does the recipe make?",
+    "me_gusta_dar": "Like ({{n}})",
+    "me_gusta_quitar": "Remove like ({{n}})",
+    "eliminar": "Delete post",
+    "eliminar_pregunta": "Delete this post? This cannot be undone.",
+    "eliminar_si": "Yes, delete",
+    "eliminar_no": "Cancel",
+    "eliminando": "Deleting...",
+    "ordenar_por": "Sort by",
+    "orden_fecha": "Newest",
+    "orden_megusta": "Most liked"
   },
   "borrador": {
     "titulo": "We recovered your draft",
@@ -201,7 +210,10 @@
     "SESION_VENCIDA": "Your session reached its maximum length. Please sign in again.",
     "TOKEN_AUSENTE": "You need to log in to do this.",
     "TOKEN_INVALIDO": "Your session is not valid or has expired. Log in again.",
-    "DEMASIADAS_SOLICITUDES": "You made too many requests in a row. Wait a moment and try again."
+    "DEMASIADAS_SOLICITUDES": "You made too many requests in a row. Wait a moment and try again.",
+    "PUBLICACION_AJENA": "You can only delete your own posts.",
+    "ME_GUSTA_REPETIDO": "You already liked this post.",
+    "ME_GUSTA_INEXISTENTE": "You had not liked this post."
   },
   "tipos": {
     "receta": "Recipe",

@@ -450,11 +450,39 @@ body {
   }
 
   .pin-contenedor {
-    @apply mb-4 block break-inside-avoid;
+    @apply mb-4 block overflow-hidden rounded-2xl bg-hoja shadow-hoja transition-shadow break-inside-avoid hover:shadow-flota;
   }
 
   .pin {
-    @apply block w-full cursor-pointer overflow-hidden rounded-2xl bg-hoja text-left shadow-hoja transition-shadow anillo-foco hover:shadow-flota;
+    @apply block w-full cursor-pointer text-left anillo-foco;
+  }
+
+  .pin-acciones {
+    @apply flex items-center gap-2 px-3 pb-3 text-xs text-suave;
+  }
+
+  .boton-metrica {
+    @apply inline-flex min-h-8 items-center gap-1 rounded-full px-2 text-xs text-suave anillo-foco hover:bg-secundario/60 hover:text-tinta disabled:opacity-60;
+  }
+
+  .boton-metrica.activa {
+    @apply text-error;
+  }
+
+  .boton-eliminar {
+    @apply ml-auto;
+  }
+
+  .pin-confirmar {
+    @apply mx-3 mb-3 flex flex-col gap-2 rounded-2xl bg-secundario/50 p-3;
+  }
+
+  .pin-confirmar-texto {
+    @apply text-sm font-medium text-tinta;
+  }
+
+  .pin-error {
+    @apply mx-3 mb-3;
   }
 
   .pin-imagen {
@@ -513,6 +541,10 @@ body {
     @apply mb-1 w-full;
   }
 
+  .orden {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
   .tipos {
     @apply flex flex-wrap gap-2;
   }
@@ -565,14 +597,6 @@ body {
 
   .detalle-cuerpo {
     @apply flex flex-col justify-center gap-5 p-6 md:p-12;
-  }
-
-  .compartir-hoy {
-    @apply flex min-h-14 w-full items-center justify-between gap-4 rounded-full bg-hoja px-6 text-left text-suave shadow-hoja anillo-foco hover:shadow-flota;
-  }
-
-  .compartir-hoy-icono {
-    @apply grid size-9 shrink-0 place-items-center rounded-full bg-primario text-sobre-primario;
   }
 
   .boton-flotante {
