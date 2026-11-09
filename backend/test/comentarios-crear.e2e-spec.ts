@@ -16,8 +16,10 @@ describe('POST /publicaciones/:id/comentarios', () => {
   let usuarioId: string;
   let publicacionId: string;
 
+  const comentarioValido = { mensaje: 'Me encantó' };
+
   const comentar = (
-    cuerpo: unknown = { mensaje: 'Me encantó' },
+    body: unknown = comentarioValido,
     id = publicacionId,
     tokenUsado: string | null = token,
   ) => {
@@ -27,7 +29,7 @@ describe('POST /publicaciones/:id/comentarios', () => {
     if (tokenUsado) {
       solicitud.set('Authorization', `Bearer ${tokenUsado}`);
     }
-    return solicitud.send(cuerpo as object);
+    return solicitud.send(body as object);
   };
 
   const cantidad = async () =>
