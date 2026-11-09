@@ -184,7 +184,16 @@
     "boton": "Comment",
     "enviando": "Sending…",
     "contador": "{{n}} / {{max}}",
-    "error_comentar": "The comment could not be posted"
+    "error_comentar": "The comment could not be posted",
+    "editar": "Edit",
+    "editar_aria": "Edit the comment by @{{nombre}}",
+    "editar_etiqueta": "Edit your comment",
+    "guardar": "Save",
+    "guardando": "Saving…",
+    "cancelar": "Cancel",
+    "editado": "(edited)",
+    "editado_el": "Edited on {{fecha}}",
+    "error_editar": "The comment could not be saved"
   },
   "borrador": {
     "titulo": "We recovered your draft",
@@ -237,7 +246,9 @@
     "DEMASIADAS_SOLICITUDES": "You made too many requests in a row. Wait a moment and try again.",
     "PUBLICACION_AJENA": "You can only delete your own posts.",
     "ME_GUSTA_REPETIDO": "You already liked this post.",
-    "ME_GUSTA_INEXISTENTE": "You had not liked this post."
+    "ME_GUSTA_INEXISTENTE": "You had not liked this post.",
+    "COMENTARIO_AJENO": "You can only edit your own comments.",
+    "COMENTARIO_NO_ENCONTRADO": "The comment does not exist."
   },
   "tipos": {
     "receta": "Recipe",

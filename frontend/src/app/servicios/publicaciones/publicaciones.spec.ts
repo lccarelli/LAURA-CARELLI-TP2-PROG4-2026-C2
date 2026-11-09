@@ -66,6 +66,25 @@ describe('PublicacionesApi', () => {
     solicitud.flush({});
   });
 
+  it('[O] editarComentario envía el mensaje con PUT al comentario de esa publicación', () => {
+    api.editarComentario('abc', 'xyz', 'Nuevo').subscribe();
+
+    const solicitud = http.expectOne(`${URL}/abc/comentarios/xyz`);
+
+    expect(solicitud.request.method).toBe('PUT');
+    expect(solicitud.request.body).toEqual({ mensaje: 'Nuevo' });
+    solicitud.flush({});
+  });
+
+  it('[S] editarComentario codifica los dos ids en la dirección', () => {
+    api.editarComentario('a/b', 'c/d', 'Nuevo').subscribe();
+
+    const solicitud = http.expectOne(`${URL}/a%2Fb/comentarios/c%2Fd`);
+
+    expect(solicitud.request.method).toBe('PUT');
+    solicitud.flush({});
+  });
+
   it('[Z] listar sin indicar el límite pide 10', () => {
     api.listar(0).subscribe();
 

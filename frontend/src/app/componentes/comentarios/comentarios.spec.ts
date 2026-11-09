@@ -404,4 +404,52 @@ describe('Comentarios', () => {
       expect(texto()).toContain('<b>hola</b>');
     });
   });
+
+  describe('editar un comentario de la lista', () => {
+    it('[O] se edita en su lugar, queda marcado como editado y el resto no cambia', async () => {
+      TestBed.inject(Auth).usuario.set(usuarioDePrueba);
+      pedir(0).flush(pagina(1, 3, false));
+      await actualizar();
+      const primero = items()[0] as HTMLElement;
+      (primero.querySelector('button') as HTMLButtonElement).click();
+      await actualizar();
+      const cuadro = primero.querySelector('textarea') as HTMLTextAreaElement;
+      cuadro.value = 'Cambiado';
+      cuadro.dispatchEvent(new Event('input'));
+      await actualizar();
+
+      (primero.querySelector('button[type="submit"]') as HTMLButtonElement).click();
+      http
+        .expectOne({ method: 'PUT', url: `${URL}/c1` })
+        .flush(comentario(1, { mensaje: 'Cambiado', modificado: true }));
+      await actualizar();
+
+      const mensajes = [...items()].map((item) => (item as HTMLElement).textContent);
+      expect(mensajes).toHaveLength(3);
+      expect(mensajes[0]).toContain('Cambiado');
+      expect(mensajes[0]).toContain('(editado)');
+      expect(mensajes[1]).toContain('Comentario 2');
+      expect(mensajes[1]).not.toContain('(editado)');
+    });
+
+    it('[S] el botón Editar sólo aparece en los comentarios de quien tiene la sesión', async () => {
+      TestBed.inject(Auth).usuario.set(usuarioDePrueba);
+      pedir(0).flush({
+        ...pagina(1, 0, false),
+        datos: [
+          comentario(1),
+          comentario(2, {
+            usuario: { _id: 'u9', nombre: 'Ana', apellido: 'Gómez', nombreUsuario: 'ana_g' },
+          }),
+        ],
+      });
+      await actualizar();
+
+      const conBoton = [...items()].map((item) =>
+        (item as HTMLElement).textContent?.includes('Editar'),
+      );
+
+      expect(conBoton).toEqual([true, false]);
+    });
+  });
 });

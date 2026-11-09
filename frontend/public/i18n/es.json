@@ -184,7 +184,16 @@
     "boton": "Comentar",
     "enviando": "Enviando…",
     "contador": "{{n}} / {{max}}",
-    "error_comentar": "No se pudo publicar el comentario"
+    "error_comentar": "No se pudo publicar el comentario",
+    "editar": "Editar",
+    "editar_aria": "Editar el comentario de @{{nombre}}",
+    "editar_etiqueta": "Editar tu comentario",
+    "guardar": "Guardar",
+    "guardando": "Guardando…",
+    "cancelar": "Cancelar",
+    "editado": "(editado)",
+    "editado_el": "Editado el {{fecha}}",
+    "error_editar": "No se pudo guardar el comentario"
   },
   "borrador": {
     "titulo": "Recuperamos tu borrador",
@@ -237,7 +246,9 @@
     "DEMASIADAS_SOLICITUDES": "Hiciste demasiadas solicitudes seguidas. Esperá un momento e intentá de nuevo.",
     "PUBLICACION_AJENA": "Sólo podés eliminar tus propias publicaciones.",
     "ME_GUSTA_REPETIDO": "Ya le diste me gusta a esta publicación.",
-    "ME_GUSTA_INEXISTENTE": "No le habías dado me gusta a esta publicación."
+    "ME_GUSTA_INEXISTENTE": "No le habías dado me gusta a esta publicación.",
+    "COMENTARIO_AJENO": "Sólo podés editar tus propios comentarios.",
+    "COMENTARIO_NO_ENCONTRADO": "El comentario no existe."
   },
   "tipos": {
     "receta": "Receta",
