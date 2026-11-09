@@ -19,9 +19,10 @@ describe('POST /auth/autorizar', () => {
     }
     return solicitud;
   };
+  const diezMinutos: jwt.SignOptions = { expiresIn: '10m' };
   const firmar = (
     datos: Record<string, unknown>,
-    opciones: jwt.SignOptions = { expiresIn: '10m' },
+    opciones: jwt.SignOptions = diezMinutos,
     secreto = process.env.JWT_SECRET!,
   ) =>
     jwt.sign(
