@@ -2,28 +2,18 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
-import { PaginaPublicaciones, Publicacion } from '../../interfaces/publicacion';
+import { PaginaPublicaciones } from '../../interfaces/publicacion';
 import { provideRouter } from '@angular/router';
-import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
 import { Publicaciones } from './publicaciones';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
+import { publicacionDePrueba } from '../../../testing/publicacion';
+import { usuarioDePrueba } from '../../../testing/usuario';
 
 const URL = `${environment.API_URL}/publicaciones`;
 
-const publicacion = (numero: number): Publicacion => ({
-  _id: `id${numero}`,
-  usuario: { _id: 'u1', nombre: 'Laura', apellido: 'Carelli', nombreUsuario: 'laura_c' },
-  tipo: 'experiencia',
-  cantidadMeGusta: 7,
-  cantidadComentarios: 2,
-  titulo: `Título ${numero}`,
-  mensaje: `Mensaje ${numero}`,
-  fecha: '2026-10-22T15:30:00.000Z',
-});
-
 const pagina = (desde: number, cantidad: number, hayMas: boolean): PaginaPublicaciones => ({
-  datos: Array.from({ length: cantidad }, (_, i) => publicacion(desde + i)),
+  datos: Array.from({ length: cantidad }, (_, i) => publicacionDePrueba(desde + i)),
   offset: desde - 1,
   limit: 10,
   hayMas,
@@ -70,7 +60,11 @@ describe('Publicaciones', () => {
   });
 
   it('[I] la primera carga pide offset 0 y limit 10', () => {
-    pedir(0).flush(pagina(1, 0, false));
+    const solicitud = pedir(0);
+
+    expect(solicitud.request.method).toBe('GET');
+    expect(solicitud.request.params.get('limit')).toBe('10');
+    solicitud.flush(pagina(1, 0, false));
   });
 
   it('[Z] sin publicaciones avisa que todavía no hay y no ofrece ver más', async () => {
@@ -160,7 +154,9 @@ describe('Publicaciones', () => {
     fixture.componentInstance.cargarMas();
     fixture.componentInstance.cargarMas();
 
-    pedir(10).flush(pagina(11, 0, false));
+    const solicitud = pedir(10);
+    expect(solicitud.request.params.get('offset')).toBe('10');
+    solicitud.flush(pagina(11, 0, false));
   });
 
   describe('crear una publicación', () => {
@@ -199,17 +195,7 @@ describe('Publicaciones', () => {
   });
 
   describe('eliminar desde la lista', () => {
-    const autor: Usuario = {
-      _id: 'u1',
-      nombre: 'Laura',
-      apellido: 'Carelli',
-      correo: 'laura@correo.com',
-      nombreUsuario: 'laura_c',
-      fechaNacimiento: '1990-05-20T00:00:00.000Z',
-      descripcion: '',
-      perfil: 'usuario',
-      habilitado: true,
-    };
+    const autor = usuarioDePrueba;
     const tarjetas = () => fixture.nativeElement.querySelectorAll('app-tarjeta-publicacion');
     const eliminarLaPrimera = async () => {
       (tarjetas()[0].querySelector('.boton-eliminar') as HTMLButtonElement).click();

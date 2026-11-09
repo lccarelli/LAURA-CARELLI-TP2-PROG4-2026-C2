@@ -1,0 +1,46 @@
+<section class="comentarios" aria-labelledby="titulo-comentarios">
+  <h3 class="rotulo-publicacion" id="titulo-comentarios">
+    {{ 'comentarios.titulo' | translate }}
+  </h3>
+
+  @if (mensajeError(); as mensaje) {
+    <app-aviso titulo="comentarios.error_cargar" (cerrar)="mensajeError.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+
+  @if (comentarios().length) {
+    <ul class="lista-comentarios">
+      @for (comentario of comentarios(); track comentario._id) {
+        <li class="comentario">
+          <header class="flex items-center gap-2">
+            <img
+              class="avatar-chico"
+              [src]="urlImagen(comentario.usuario.imagenPerfil)"
+              [alt]="'comun.foto_de' | translate: { nombre: comentario.usuario.nombreUsuario }"
+            />
+            <span class="comentario-autor">&#64;{{ comentario.usuario.nombreUsuario }}</span>
+            <span class="detalle-publicacion">
+              {{ comentario.fecha | date: ('formatos.fecha_hora' | translate) }}
+            </span>
+          </header>
+          <p class="texto-publicacion whitespace-pre-line">{{ comentario.mensaje }}</p>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (comentarios().length === 0 && !cargando() && !fallaLaCarga()) {
+    <p class="estado-vacio">{{ 'comentarios.vacio' | translate }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="estado-carga">{{ 'comun.cargando' | translate }}</p>
+  }
+
+  @if (hayMas() && !cargando()) {
+    <button type="button" class="boton-secundario w-full" (click)="cargarMas()">
+      {{ 'comentarios.ver_mas' | translate }}
+    </button>
+  }
+</section>

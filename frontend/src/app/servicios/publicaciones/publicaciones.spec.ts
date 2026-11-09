@@ -18,6 +18,35 @@ describe('PublicacionesApi', () => {
     http = TestBed.inject(HttpTestingController);
   });
 
+  it('[O] listarComentarios pide los comentarios de esa publicación con offset y límite', () => {
+    api.listarComentarios('abc', 20, 5).subscribe();
+
+    const solicitud = http.expectOne((p) => p.url === `${URL}/abc/comentarios`);
+
+    expect(solicitud.request.method).toBe('GET');
+    expect(solicitud.request.params.get('offset')).toBe('20');
+    expect(solicitud.request.params.get('limit')).toBe('5');
+    solicitud.flush({ datos: [], offset: 20, limit: 5, hayMas: false });
+  });
+
+  it('[Z] listarComentarios sin indicar el límite pide 10', () => {
+    api.listarComentarios('abc', 0).subscribe();
+
+    const solicitud = http.expectOne((p) => p.url === `${URL}/abc/comentarios`);
+
+    expect(solicitud.request.params.get('limit')).toBe('10');
+    solicitud.flush({ datos: [], offset: 0, limit: 10, hayMas: false });
+  });
+
+  it('[S] listarComentarios codifica el id en la dirección', () => {
+    api.listarComentarios('a/b', 0).subscribe();
+
+    const solicitud = http.expectOne((p) => p.url === `${URL}/a%2Fb/comentarios`);
+
+    expect(solicitud.request.method).toBe('GET');
+    solicitud.flush({ datos: [], offset: 0, limit: 10, hayMas: false });
+  });
+
   it('[Z] listar sin indicar el límite pide 10', () => {
     api.listar(0).subscribe();
 
