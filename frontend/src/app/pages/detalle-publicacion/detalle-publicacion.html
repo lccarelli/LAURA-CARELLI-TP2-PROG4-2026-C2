@@ -10,7 +10,7 @@
   @if (cargando() || mensajeError()) {
     <div class="pagina">
       @if (cargando()) {
-        <p class="estado-carga">{{ 'comun.cargando' | translate }}</p>
+        <app-cubreplato-loading />
       }
 
       @if (mensajeError(); as mensaje) {

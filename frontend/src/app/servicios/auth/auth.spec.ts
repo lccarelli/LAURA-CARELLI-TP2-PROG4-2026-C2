@@ -147,6 +147,48 @@ describe('Auth', () => {
     });
   });
 
+  describe('autorizar', () => {
+    it('[O] valida el token, guarda los datos actuales y conserva el token', () => {
+      const { auth, http } = crearAuth();
+      auth.token.set('vigente');
+
+      auth.autorizar().subscribe();
+      const pedido = http.expectOne(`${environment.API_URL}/auth/autorizar`);
+      pedido.flush({ usuario: { ...sesion.usuario, nombre: 'Laurita' } });
+
+      expect(pedido.request.method).toBe('POST');
+      expect(auth.usuario()?.nombre).toBe('Laurita');
+      expect(JSON.parse(localStorage.getItem('usuario') ?? '{}').nombre).toBe('Laurita');
+      expect(auth.token()).toBe('vigente');
+    });
+
+    it('[E] si el token no sirve (401) no cambia nada guardado', () => {
+      const { auth, http } = crearAuth();
+      auth.token.set('vencido');
+      auth.usuario.set(sesion.usuario);
+
+      auth.autorizar().subscribe({ error: () => undefined });
+      http
+        .expectOne(`${environment.API_URL}/auth/autorizar`)
+        .flush({ codigo: 'TOKEN_INVALIDO' }, { status: 401, statusText: 'Unauthorized' });
+
+      expect(auth.usuario()?.nombre).toBe('Laura');
+      expect(auth.token()).toBe('vencido');
+    });
+  });
+
+  describe('despertarServidor', () => {
+    it('[I] hace un GET a la ruta de salud', () => {
+      const { auth, http } = crearAuth();
+
+      auth.despertarServidor().subscribe();
+      const pedido = http.expectOne(`${environment.API_URL}/health`);
+      pedido.flush({ status: 'ok' });
+
+      expect(pedido.request.method).toBe('GET');
+    });
+  });
+
   describe('salir', () => {
     it('[Z] salir sin sesión no falla', () => {
       const { auth } = crearAuth();

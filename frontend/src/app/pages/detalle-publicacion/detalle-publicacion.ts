@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
 import { Aviso } from '../../componentes/aviso/aviso';
 import { Comentarios } from '../../componentes/comentarios/comentarios';
 import { Ingrediente, Paso, Publicacion, UNIDADES } from '../../interfaces/publicacion';
@@ -32,7 +33,7 @@ const esIngrediente = (valor: unknown): valor is Ingrediente => {
 };
 
 @Component({
-  imports: [DatePipe, RouterLink, Aviso, Comentarios, TranslatePipe, Icono],
+  imports: [CubreplatoLoading, DatePipe, RouterLink, Aviso, Comentarios, TranslatePipe, Icono],
   selector: 'app-detalle-publicacion',
   templateUrl: './detalle-publicacion.html',
   host: { '(document:keydown.escape)': 'cerrar()' },

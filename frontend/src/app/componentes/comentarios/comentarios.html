@@ -64,7 +64,7 @@
   }
 
   @if (cargando()) {
-    <p class="estado-carga">{{ 'comun.cargando' | translate }}</p>
+    <app-cubreplato-loading />
   }
 
   @if (hayMas() && !cargando()) {

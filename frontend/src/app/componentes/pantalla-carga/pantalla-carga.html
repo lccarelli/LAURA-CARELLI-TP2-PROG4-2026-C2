@@ -1,0 +1,8 @@
+<section class="pantalla-carga">
+  <div>
+    <app-cubreplato-loading />
+    @if (lento()) {
+      <p class="meta mt-2">{{ 'carga.despertando' | translate }}</p>
+    }
+  </div>
+</section>
