@@ -27,6 +27,9 @@ export class Comentario {
 
   @Prop({ default: false })
   modificado: boolean;
+
+  @Prop()
+  modificadoEn?: Date;
 }
 
 export const ComentarioSchema = SchemaFactory.createForClass(Comentario);

@@ -247,7 +247,7 @@ Los logs sirven para auditar, pero se pierden. Para poder sacar métricas, cada 
 | `tipo`              | `dado` o `quitado`                                            |
 | `usuario`, `nombreUsuario`   | Quién lo hizo                                        |
 | `publicacion`, `tituloPublicacion` | A qué publicación, con el título de ese momento |
-| `autor`, `nombreAutor`       | Quién es la dueña de la publicación                  |
+| `autor`, `nombreAutor`       | Quién es el autor de la publicación                  |
 | `cantidadMeGusta`   | Cuántos me gusta tenía la publicación justo después          |
 | `fecha`             | Cuándo                                                        |
 
@@ -263,7 +263,7 @@ db.eventos_megusta.aggregate([
   { $sort: { _id: 1 } }
 ])
 
-// Cuántos me gusta recibió cada autora (dados menos quitados)
+// Cuántos me gusta recibió cada autor (dados menos quitados)
 db.eventos_megusta.aggregate([
   { $group: { _id: '$nombreAutor', neto: { $sum: { $cond: [{ $eq: ['$tipo', 'dado'] }, 1, -1] } } } },
   { $sort: { neto: -1 } }

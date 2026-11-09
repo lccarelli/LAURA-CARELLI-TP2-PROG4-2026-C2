@@ -291,7 +291,7 @@ describe('TarjetaPublicacion', () => {
     };
     const iniciarSesion = (usuario: Usuario | null) => TestBed.inject(Auth).usuario.set(usuario);
 
-    it('[O] la dueña ve el botón de eliminar', async () => {
+    it('[O] quien publicó ve el botón de eliminar', async () => {
       await crear(base);
       iniciarSesion(persona('u1'));
       await actualizar();
