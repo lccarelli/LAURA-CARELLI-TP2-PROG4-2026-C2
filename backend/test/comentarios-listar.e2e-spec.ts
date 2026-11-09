@@ -56,7 +56,7 @@ describe('GET /publicaciones/:id/comentarios', () => {
       expect(body).toEqual({ datos: [], offset: 0, limit: 10, hayMas: false });
     });
 
-    it('[O] devuelve el comentario con su mensaje, fecha, modificado y la autora', async () => {
+    it('[O] devuelve el comentario con su mensaje, fecha, modificado y el autor', async () => {
       await cargarComentarios(app, publicacionId, usuarioId, 1);
 
       const { body } = await listar().expect(200);
@@ -76,7 +76,7 @@ describe('GET /publicaciones/:id/comentarios', () => {
       });
     });
 
-    it('[I] la autora no incluye la clave ni el correo', async () => {
+    it('[I] el autor no incluye la clave ni el correo', async () => {
       await cargarComentarios(app, publicacionId, usuarioId, 1);
 
       const { body } = await listar().expect(200);
@@ -85,7 +85,7 @@ describe('GET /publicaciones/:id/comentarios', () => {
       expect(body.datos[0].usuario.correo).toBeUndefined();
     });
 
-    it('[M] cada comentario muestra a su propia autora', async () => {
+    it('[M] cada comentario muestra a su propio autor', async () => {
       const otra = await registrarYObtenerSesion(app, {
         correo: 'juan@correo.com',
         nombreUsuario: 'juan_p',
