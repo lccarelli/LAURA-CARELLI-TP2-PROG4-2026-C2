@@ -181,7 +181,7 @@ describe('GET /publicaciones/:id/comentarios', () => {
       );
       expect(ids).toHaveLength(12);
       expect(new Set(ids).size).toBe(12);
-      expect([...ids].sort().reverse()).toEqual(ids);
+      expect([...ids].sort((a, b) => b.localeCompare(a))).toEqual(ids);
     });
 
     it('[S] un comentario nuevo aparece arriba de todo en la primera página', async () => {
@@ -242,14 +242,12 @@ describe('GET /publicaciones/:id/comentarios', () => {
     it('[I] responde con datos, offset, limit y hayMas', async () => {
       const { body } = await listar('?offset=2&limit=5').expect(200);
 
-      expect(Object.keys(body).sort()).toEqual([
-        'datos',
-        'hayMas',
-        'limit',
-        'offset',
-      ]);
-      expect(body.offset).toBe(2);
-      expect(body.limit).toBe(5);
+      expect(body).toEqual({
+        datos: expect.any(Array),
+        hayMas: expect.any(Boolean),
+        limit: 5,
+        offset: 2,
+      });
     });
   });
 
