@@ -60,7 +60,11 @@ describe('Publicaciones', () => {
   });
 
   it('[I] la primera carga pide offset 0 y limit 10', () => {
-    pedir(0).flush(pagina(1, 0, false));
+    const solicitud = pedir(0);
+
+    expect(solicitud.request.method).toBe('GET');
+    expect(solicitud.request.params.get('limit')).toBe('10');
+    solicitud.flush(pagina(1, 0, false));
   });
 
   it('[Z] sin publicaciones avisa que todavía no hay y no ofrece ver más', async () => {
@@ -150,7 +154,9 @@ describe('Publicaciones', () => {
     fixture.componentInstance.cargarMas();
     fixture.componentInstance.cargarMas();
 
-    pedir(10).flush(pagina(11, 0, false));
+    const solicitud = pedir(10);
+    expect(solicitud.request.params.get('offset')).toBe('10');
+    solicitud.flush(pagina(11, 0, false));
   });
 
   describe('crear una publicación', () => {

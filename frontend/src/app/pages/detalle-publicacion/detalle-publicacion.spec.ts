@@ -84,6 +84,7 @@ describe('DetallePublicacion', () => {
     await actualizar();
 
     http.expectNone((p) => p.url === `${URL}/id1/comentarios`);
+    expect(fixture.nativeElement.querySelector('app-comentarios')).toBeNull();
   });
 
   it('[I] ocupa toda la pantalla con una X para cerrar que vuelve al muro', async () => {

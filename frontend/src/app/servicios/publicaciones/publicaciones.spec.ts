@@ -41,9 +41,10 @@ describe('PublicacionesApi', () => {
   it('[S] listarComentarios codifica el id en la dirección', () => {
     api.listarComentarios('a/b', 0).subscribe();
 
-    http
-      .expectOne((p) => p.url === `${URL}/a%2Fb/comentarios`)
-      .flush({ datos: [], offset: 0, limit: 10, hayMas: false });
+    const solicitud = http.expectOne((p) => p.url === `${URL}/a%2Fb/comentarios`);
+
+    expect(solicitud.request.method).toBe('GET');
+    solicitud.flush({ datos: [], offset: 0, limit: 10, hayMas: false });
   });
 
   it('[Z] listar sin indicar el límite pide 10', () => {
