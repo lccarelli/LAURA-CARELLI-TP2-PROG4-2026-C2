@@ -47,6 +47,25 @@ describe('PublicacionesApi', () => {
     solicitud.flush({ datos: [], offset: 0, limit: 10, hayMas: false });
   });
 
+  it('[O] comentar envía el mensaje con POST a los comentarios de esa publicación', () => {
+    api.comentar('abc', 'Hola').subscribe();
+
+    const solicitud = http.expectOne(`${URL}/abc/comentarios`);
+
+    expect(solicitud.request.method).toBe('POST');
+    expect(solicitud.request.body).toEqual({ mensaje: 'Hola' });
+    solicitud.flush({});
+  });
+
+  it('[S] comentar codifica el id en la dirección', () => {
+    api.comentar('a/b', 'Hola').subscribe();
+
+    const solicitud = http.expectOne(`${URL}/a%2Fb/comentarios`);
+
+    expect(solicitud.request.method).toBe('POST');
+    solicitud.flush({});
+  });
+
   it('[Z] listar sin indicar el límite pide 10', () => {
     api.listar(0).subscribe();
 

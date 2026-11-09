@@ -3,6 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
+import { usuarioDePrueba } from '../../../testing/usuario';
+import { Auth } from '../../servicios/auth/auth';
 import { Comentario, PaginaComentarios } from '../../interfaces/comentario';
 import { Comentarios } from './comentarios';
 
@@ -48,6 +50,25 @@ describe('Comentarios', () => {
     [...fixture.nativeElement.querySelectorAll('button')].find((boton) =>
       (boton as HTMLButtonElement).textContent?.includes('Ver más comentarios'),
     ) as HTMLButtonElement | undefined;
+
+  const escribir = async (texto: string) => {
+    const campo = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    campo.value = texto;
+    campo.dispatchEvent(new Event('input'));
+    await actualizar();
+  };
+  const boton = () =>
+    fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+  const enviar = async () => {
+    boton().click();
+    await actualizar();
+  };
+  const publicar = () => http.expectOne({ method: 'POST', url: URL });
+  const sinPublicar = () => http.expectNone({ method: 'POST', url: URL });
+  const abrirVacio = async () => {
+    pedir(0).flush(pagina(1, 0, false));
+    await actualizar();
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -201,5 +222,186 @@ describe('Comentarios', () => {
     fixture.destroy();
 
     expect(solicitud.cancelled).toBe(true);
+  });
+  describe('escribir un comentario', () => {
+    it('[I] con la sesión iniciada muestra la foto de quien comenta junto al cuadro de texto', async () => {
+      TestBed.inject(Auth).usuario.set({ ...usuarioDePrueba, nombreUsuario: 'yo_mismo' });
+      await abrirVacio();
+
+      const foto = fixture.nativeElement.querySelector('form img') as HTMLImageElement;
+
+      expect(foto.getAttribute('alt')).toBe('Foto de yo_mismo');
+      expect(foto.getAttribute('src')).toBe('/sin-foto.svg');
+    });
+
+    it('[B] pasados los 500 caracteres el contador se marca como excedido', async () => {
+      await abrirVacio();
+      await escribir('a'.repeat(501));
+
+      expect(fixture.nativeElement.querySelector('.contador-excedido')).not.toBeNull();
+    });
+
+    it('[I] muestra el cuadro de texto, el botón Comentar y el contador en 0 de 500', async () => {
+      await abrirVacio();
+
+      expect(fixture.nativeElement.querySelector('textarea')).not.toBeNull();
+      expect(boton().textContent).toContain('Comentar');
+      expect(texto()).toContain('0 / 500');
+    });
+
+    it('[M] el contador sigue lo que se escribe', async () => {
+      await abrirVacio();
+
+      await escribir('Hola');
+
+      expect(texto()).toContain('4 / 500');
+    });
+
+    it('[E] enviar vacío muestra que es obligatorio y no hace ningún pedido', async () => {
+      await abrirVacio();
+
+      await enviar();
+
+      expect(texto()).toContain('Este campo es obligatorio');
+      sinPublicar();
+    });
+
+    it('[E] enviar sólo espacios y saltos de línea también es obligatorio', async () => {
+      await abrirVacio();
+      await escribir('   \n  ');
+
+      await enviar();
+
+      expect(texto()).toContain('Este campo es obligatorio');
+      sinPublicar();
+    });
+
+    it('[B] con 500 caracteres se envía', async () => {
+      await abrirVacio();
+      await escribir('a'.repeat(500));
+
+      await enviar();
+
+      expect(publicar().request.body).toEqual({ mensaje: 'a'.repeat(500) });
+    });
+
+    it('[B] con 501 caracteres muestra el máximo y no se envía', async () => {
+      await abrirVacio();
+      await escribir('a'.repeat(501));
+
+      await enviar();
+
+      expect(texto()).toContain('Debe tener como máximo 500 caracteres');
+      expect(texto()).toContain('501 / 500');
+      sinPublicar();
+    });
+
+    it('[O] publica el mensaje sin espacios sobrantes y lo muestra arriba, con el cuadro vacío', async () => {
+      pedir(0).flush(pagina(1, 2, false));
+      await actualizar();
+      await escribir('  Qué rico  ');
+
+      await enviar();
+      const solicitud = publicar();
+      expect(solicitud.request.body).toEqual({ mensaje: 'Qué rico' });
+      solicitud.flush(comentario(99, { mensaje: 'Qué rico' }));
+      await actualizar();
+
+      const mensajes = [...items()].map((item) => (item as HTMLElement).textContent);
+      expect(mensajes).toHaveLength(3);
+      expect(mensajes[0]).toContain('Qué rico');
+      expect(mensajes[1]).toContain('Comentario 1');
+      expect((fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement).value).toBe(
+        '',
+      );
+      expect(texto()).toContain('0 / 500');
+      expect(texto()).not.toContain('Este campo es obligatorio');
+    });
+
+    it('[O] avisa que se creó un comentario para que el detalle sume uno al contador', async () => {
+      const avisos = vi.fn();
+      fixture.componentInstance.creado.subscribe(avisos);
+      await abrirVacio();
+      await escribir('Hola');
+
+      await enviar();
+      publicar().flush(comentario(1));
+
+      expect(avisos).toHaveBeenCalledTimes(1);
+    });
+
+    it('[M] después de publicar, Ver más sigue pidiendo desde la posición correcta', async () => {
+      pedir(0).flush(pagina(1, 10, true));
+      await actualizar();
+      await escribir('Nuevo');
+      await enviar();
+      publicar().flush(comentario(99));
+      await actualizar();
+
+      botonVerMas()!.click();
+
+      const solicitud = pedir(11);
+      expect(solicitud.request.params.get('offset')).toBe('11');
+      solicitud.flush(pagina(11, 1, false));
+    });
+
+    it('[B] mientras se envía, el botón queda deshabilitado y un segundo clic no repite el pedido', async () => {
+      await abrirVacio();
+      await escribir('Hola');
+
+      await enviar();
+      await enviar();
+
+      expect(boton().disabled).toBe(true);
+      expect(boton().textContent).toContain('Enviando');
+      publicar().flush(comentario(1));
+    });
+
+    it('[E] si el servidor lo rechaza, muestra el motivo y conserva lo escrito para reintentar', async () => {
+      pedir(0).flush(pagina(1, 1, false));
+      await actualizar();
+      await escribir('Hola');
+
+      await enviar();
+      publicar().flush(
+        { codigo: 'PUBLICACION_NO_ENCONTRADA' },
+        { status: 404, statusText: 'Not Found' },
+      );
+      await actualizar();
+
+      expect(texto()).toContain('No se pudo publicar el comentario');
+      expect(items().length).toBe(1);
+      expect((fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement).value).toBe(
+        'Hola',
+      );
+      expect(boton().disabled).toBe(false);
+    });
+
+    it('[E] si la sesión venció, lo informa y no agrega el comentario', async () => {
+      const avisos = vi.fn();
+      fixture.componentInstance.creado.subscribe(avisos);
+      await abrirVacio();
+      await escribir('Hola');
+
+      await enviar();
+      publicar().flush({ codigo: 'TOKEN_INVALIDO' }, { status: 401, statusText: 'Unauthorized' });
+      await actualizar();
+
+      expect(texto()).toContain('Tu sesión no es válida o venció');
+      expect(items().length).toBe(0);
+      expect(avisos).not.toHaveBeenCalled();
+    });
+
+    it('[S] un mensaje con HTML se publica como texto y no se interpreta', async () => {
+      await abrirVacio();
+      await escribir('<b>hola</b>');
+
+      await enviar();
+      publicar().flush(comentario(1, { mensaje: '<b>hola</b>' }));
+      await actualizar();
+
+      expect(fixture.nativeElement.querySelector('li.comentario b')).toBeNull();
+      expect(texto()).toContain('<b>hola</b>');
+    });
   });
 });

@@ -1,5 +1,7 @@
 import { Usuario } from './usuario';
 
+export const MAXIMO_COMENTARIO = 500;
+
 export interface Comentario {
   _id: string;
   publicacion: string;

@@ -791,6 +791,34 @@ body {
     @apply flex flex-col gap-4;
   }
 
+  .formulario-comentario {
+    @apply flex flex-col gap-2;
+  }
+
+  .entrada-comentario {
+    @apply flex items-start gap-3;
+  }
+
+  .entrada-campo {
+    @apply flex min-w-0 flex-1 flex-col;
+  }
+
+  .campo-comentario {
+    @apply mt-0 resize-y bg-papel py-3;
+  }
+
+  .pie-comentario {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .contador-excedido {
+    @apply text-error;
+  }
+
+  .avatar-comentario {
+    @apply size-9 shrink-0 rounded-full object-cover;
+  }
+
   .lista-comentarios {
     @apply flex flex-col gap-5;
   }

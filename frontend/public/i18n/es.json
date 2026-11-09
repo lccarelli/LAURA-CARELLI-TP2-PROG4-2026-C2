@@ -178,7 +178,13 @@
     "titulo": "Comentarios",
     "vacio": "Todavía no hay comentarios",
     "ver_mas": "Ver más comentarios",
-    "error_cargar": "No se pudieron cargar los comentarios"
+    "error_cargar": "No se pudieron cargar los comentarios",
+    "placeholder": "Escribí un comentario",
+    "etiqueta": "Tu comentario",
+    "boton": "Comentar",
+    "enviando": "Enviando…",
+    "contador": "{{n}} / {{max}}",
+    "error_comentar": "No se pudo publicar el comentario"
   },
   "borrador": {
     "titulo": "Recuperamos tu borrador",
