@@ -60,7 +60,7 @@ describe('POST /publicaciones/:id/comentarios', () => {
   });
 
   describe('alta', () => {
-    it('[O] crea el comentario: 201 con el mensaje, la autora, la fecha y modificado en falso', async () => {
+    it('[O] crea el comentario: 201 con el mensaje, el autor, la fecha y modificado en falso', async () => {
       const antes = Date.now();
 
       const { body } = await comentar().expect(201);
@@ -78,14 +78,14 @@ describe('POST /publicaciones/:id/comentarios', () => {
       expect(Date.parse(body.fecha)).toBeLessThanOrEqual(Date.now() + 1000);
     });
 
-    it('[I] la autora no incluye la clave ni el correo', async () => {
+    it('[I] el autor no incluye la clave ni el correo', async () => {
       const { body } = await comentar().expect(201);
 
       expect(body.usuario.clave).toBeUndefined();
       expect(body.usuario.correo).toBeUndefined();
     });
 
-    it('[O] se guarda en la base con la publicación y la autora', async () => {
+    it('[O] se guarda en la base con la publicación y el autor', async () => {
       await comentar().expect(201);
 
       const [guardado] = await comentarios.find().lean();
@@ -246,7 +246,7 @@ describe('POST /publicaciones/:id/comentarios', () => {
       expect(await comentarios.countDocuments()).toBe(0);
     });
 
-    it('[S] no se puede mandar la autora, la fecha ni modificado en el cuerpo', async () => {
+    it('[S] no se puede mandar el autor, la fecha ni modificado en el cuerpo', async () => {
       const otra = await otraPersona();
 
       for (const extra of [
