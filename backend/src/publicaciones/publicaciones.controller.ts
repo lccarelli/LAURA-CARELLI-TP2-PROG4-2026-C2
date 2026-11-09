@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UploadedFiles,
@@ -24,8 +25,10 @@ import {
 import { ArchivosPublicacionPipe } from './archivos-publicacion.pipe.js';
 import { ComentariosService } from './comentarios.service.js';
 import type { ArchivosPublicacion } from './archivos-publicacion.pipe.js';
+import { ComentarioParamDto } from './dto/comentario-param.dto.js';
 import { CrearComentarioDto } from './dto/crear-comentario.dto.js';
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
+import { EditarComentarioDto } from './dto/editar-comentario.dto.js';
 import { ListarPublicacionesDto } from './dto/listar-publicaciones.dto.js';
 import { PublicacionesService } from './publicaciones.service.js';
 
@@ -109,5 +112,19 @@ export class PublicacionesController {
     @Req() solicitud: SolicitudAutenticada,
   ) {
     return this.comentariosService.crear(id, solicitud.usuario.id, dto);
+  }
+
+  @Put(':id/comentarios/:comentarioId')
+  editarComentario(
+    @Param() { id, comentarioId }: ComentarioParamDto,
+    @Body() dto: EditarComentarioDto,
+    @Req() solicitud: SolicitudAutenticada,
+  ) {
+    return this.comentariosService.editar(
+      id,
+      comentarioId,
+      solicitud.usuario.id,
+      dto,
+    );
   }
 }

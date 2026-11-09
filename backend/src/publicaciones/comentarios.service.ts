@@ -1,5 +1,10 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Cache } from 'cache-manager';
 import { Model, Types } from 'mongoose';
@@ -10,10 +15,16 @@ import {
 } from '../logs/logs.factory.js';
 import { PaginacionDto } from '../common/paginacion.dto.js';
 import { CrearComentarioDto } from './dto/crear-comentario.dto.js';
+import { EditarComentarioDto } from './dto/editar-comentario.dto.js';
 import { Comentario } from './schemas/comentario.schema.js';
 import { Publicacion } from './schemas/publicacion.schema.js';
 
 type AutorDeLaPublicacion = {
+  usuario: { _id: Types.ObjectId; nombreUsuario: string };
+};
+
+type ComentarioConAutor = Comentario & {
+  _id: Types.ObjectId;
   usuario: { _id: Types.ObjectId; nombreUsuario: string };
 };
 
@@ -82,6 +93,56 @@ export class ComentariosService {
       nombre_autor: publicacion.usuario.nombreUsuario,
     });
     return creado.toObject();
+  }
+
+  async editar(
+    publicacionId: string,
+    comentarioId: string,
+    usuarioId: string,
+    dto: EditarComentarioDto,
+  ) {
+    await this.buscarPublicacionActiva(publicacionId);
+
+    const comentario = await this.comentarioModel
+      .findOne({ _id: comentarioId, publicacion: publicacionId })
+      .populate('usuario', CAMPOS_AUTOR)
+      .lean<ComentarioConAutor>();
+    if (!comentario) {
+      throw new NotFoundException({
+        message: 'El comentario no existe',
+        codigo: 'COMENTARIO_NO_ENCONTRADO',
+      });
+    }
+    if (String(comentario.usuario._id) !== usuarioId) {
+      throw new ForbiddenException({
+        message: 'Sólo podés editar tus propios comentarios',
+        codigo: 'COMENTARIO_AJENO',
+      });
+    }
+    if (comentario.mensaje === dto.mensaje) {
+      return comentario;
+    }
+
+    const modificado = await this.comentarioModel
+      .findByIdAndUpdate(
+        comentarioId,
+        { mensaje: dto.mensaje, modificado: true, modificadoEn: new Date() },
+        { returnDocument: 'after' },
+      )
+      .populate('usuario', CAMPOS_AUTOR)
+      .lean<ComentarioConAutor>();
+
+    this.logger.info(
+      EVENTOS_DE_LOG.COMENTARIO_MODIFICADO,
+      'Comentario modificado',
+      {
+        id_comentario: comentarioId,
+        id_publicacion: publicacionId,
+        id_usuario: usuarioId,
+        nombre_usuario: comentario.usuario.nombreUsuario,
+      },
+    );
+    return modificado;
   }
 
   private async buscarPublicacionActiva(publicacionId: string) {
