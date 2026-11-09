@@ -56,3 +56,10 @@ export async function registrarYObtenerSesion(
     usuario: { _id: string; nombreUsuario: string };
   };
 }
+
+export function registrarOtraPersona(app: INestApplication) {
+  return registrarYObtenerSesion(app, {
+    correo: 'juan@correo.com',
+    nombreUsuario: 'juan_p',
+  });
+}
