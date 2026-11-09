@@ -22,6 +22,7 @@ export const EVENTOS_DE_LOG = {
   TOKEN_RECHAZADO: 'token_rechazado',
   TOKEN_REFRESCADO: 'token_refrescado',
   SESION_VENCIDA: 'sesion_vencida',
+  USUARIO_NO_AUTORIZADO: 'usuario_no_autorizado',
   USUARIO_REGISTRADO: 'usuario_registrado',
 } as const;
 
