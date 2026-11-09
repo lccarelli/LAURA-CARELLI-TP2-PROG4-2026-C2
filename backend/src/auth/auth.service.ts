@@ -124,6 +124,24 @@ export class AuthService {
     }
   }
 
+  async autorizar(usuario: { id: string; nombreUsuario?: string }) {
+    const encontrado = Types.ObjectId.isValid(usuario.id)
+      ? await this.usuariosService.buscarPorId(usuario.id)
+      : null;
+    if (!encontrado?.habilitado) {
+      this.logger.advertir(
+        EVENTOS_DE_LOG.USUARIO_NO_AUTORIZADO,
+        'Usuario inexistente o deshabilitado',
+        { id_usuario: usuario.id, nombre_usuario: usuario.nombreUsuario },
+      );
+      throw new UnauthorizedException({
+        message: 'Usuario no autorizado',
+        codigo: 'USUARIO_NO_AUTORIZADO',
+      });
+    }
+    return { usuario: encontrado };
+  }
+
   refrescar(usuario: {
     id: string;
     perfil: string;
