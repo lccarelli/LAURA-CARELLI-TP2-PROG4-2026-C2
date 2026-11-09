@@ -173,6 +173,7 @@ La sesión usa un token JWT que dura **15 minutos** y se renueva mientras se usa
 | Renovación | `POST /auth/refrescar` (con token válido) devuelve un token nuevo de 15 minutos para el mismo usuario y perfil. Un token ya vencido responde `401` y no se puede renovar |
 | Mientras se usa la app | Un servicio del frontend (`servicios/sesion`) marca como uso los clics, las teclas, el scroll y los toques. Cada minuto, si hubo uso desde la última renovación, pide un token nuevo. Sin uso no renueva, así que la sesión vence sola |
 | En "Nueva publicación" | La pantalla renueva al entrar, cada 5 minutos y al volver a mostrar la pestaña, aunque no haya teclas: siempre quedan al menos 10 minutos de sesión |
+| Verificar la sesión | `POST /auth/autorizar` (con token válido) devuelve los datos actuales del usuario, sin la clave, leídos de la base. Responde `401` si falta el token, es inválido o venció, y `401` con `USUARIO_NO_AUTORIZADO` si el usuario ya no existe o está deshabilitado. No entrega un token nuevo |
 | Duración máxima | Cada token lleva `inicio`, la hora del ingreso, y se conserva al renovar. Pasadas **12 horas** desde el ingreso, `refrescar` responde `401` con el código `SESION_VENCIDA` y hay que ingresar de nuevo |
 
 **Borrador de una publicación.** Todo lo que se escribe en "Nueva publicación" se guarda solo en el navegador (`localStorage`, clave `borrador:<id del usuario>`), con una pausa de 0,8 segundos después de la última tecla, al salir de la pantalla, al ocultar o cerrar la pestaña y al recargar. Al volver a entrar se recupera con un aviso y la opción de descartarlo; al publicar se borra.
@@ -182,7 +183,7 @@ La sesión usa un token JWT que dura **15 minutos** y se renueva mientras se usa
 - Lo que se lee del almacenamiento se valida otra vez (tipos, medidas, máximos, solo dígitos en la ficha), porque `localStorage` se puede modificar a mano.
 - Si la sesión ya venció, la pantalla avisa, mantiene el borrador y ofrece "Ingresar de nuevo".
 
-**Tests:** `backend/test/refrescar.e2e-spec.ts` (renovación, duración, `inicio` constante, tope de 12 horas, tokens vencidos o firmados con otra clave), `servicios/sesion/sesion.spec.ts`, `servicios/borrador/borrador.spec.ts`, `servicios/fotos-borrador/fotos-borrador.spec.ts` y `pages/nueva-publicacion/nueva-publicacion.spec.ts`.
+**Tests:** `backend/test/autorizar.e2e-spec.ts` (datos actuales, sin clave, usuario inexistente o deshabilitado, tokens inválidos), `backend/test/refrescar.e2e-spec.ts` (renovación, duración, `inicio` constante, tope de 12 horas, tokens vencidos o firmados con otra clave), `servicios/sesion/sesion.spec.ts`, `servicios/borrador/borrador.spec.ts`, `servicios/fotos-borrador/fotos-borrador.spec.ts` y `pages/nueva-publicacion/nueva-publicacion.spec.ts`.
 
 ---
 

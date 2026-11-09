@@ -42,6 +42,13 @@ export class AuthController {
     return this.authService.ingresar(dto);
   }
 
+  @Post('autorizar')
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
+  autorizar(@Req() solicitud: SolicitudAutenticada) {
+    return this.authService.autorizar(solicitud.usuario);
+  }
+
   @Post('refrescar')
   @UseGuards(AuthGuard)
   @HttpCode(200)
