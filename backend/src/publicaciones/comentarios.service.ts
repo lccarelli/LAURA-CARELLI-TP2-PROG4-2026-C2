@@ -101,7 +101,7 @@ export class ComentariosService {
     usuarioId: string,
     dto: EditarComentarioDto,
   ) {
-    await this.buscarPublicacionActiva(publicacionId);
+    const publicacion = await this.buscarPublicacionActiva(publicacionId);
 
     const comentario = await this.comentarioModel
       .findOne({ _id: comentarioId, publicacion: publicacionId })
@@ -140,6 +140,8 @@ export class ComentariosService {
         id_publicacion: publicacionId,
         id_usuario: usuarioId,
         nombre_usuario: comentario.usuario.nombreUsuario,
+        id_autor: String(publicacion.usuario._id),
+        nombre_autor: publicacion.usuario.nombreUsuario,
       },
     );
     return modificado;

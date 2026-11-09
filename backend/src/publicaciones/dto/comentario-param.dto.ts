@@ -2,7 +2,7 @@ import { IsMongoId } from 'class-validator';
 
 export class ComentarioParamDto {
   @IsMongoId()
-  id: string;
+  publicacionId: string;
 
   @IsMongoId()
   comentarioId: string;

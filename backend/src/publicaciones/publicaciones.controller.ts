@@ -114,14 +114,14 @@ export class PublicacionesController {
     return this.comentariosService.crear(id, solicitud.usuario.id, dto);
   }
 
-  @Put(':id/comentarios/:comentarioId')
+  @Put(':publicacionId/comentarios/:comentarioId')
   editarComentario(
-    @Param() { id, comentarioId }: ComentarioParamDto,
+    @Param() { publicacionId, comentarioId }: ComentarioParamDto,
     @Body() dto: EditarComentarioDto,
     @Req() solicitud: SolicitudAutenticada,
   ) {
     return this.comentariosService.editar(
-      id,
+      publicacionId,
       comentarioId,
       solicitud.usuario.id,
       dto,

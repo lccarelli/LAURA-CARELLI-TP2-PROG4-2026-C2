@@ -309,6 +309,8 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
         id_publicacion: publicacionId,
         id_usuario: usuarioId,
         nombre_usuario: 'laura_c',
+        id_autor: usuarioId,
+        nombre_autor: 'laura_c',
       });
       vi.restoreAllMocks();
     });

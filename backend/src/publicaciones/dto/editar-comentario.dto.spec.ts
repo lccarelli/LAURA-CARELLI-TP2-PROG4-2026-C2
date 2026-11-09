@@ -39,7 +39,7 @@ describe('ComentarioParamDto', () => {
   it('[O] acepta dos ids con formato de ObjectId', async () => {
     expect(
       await camposInvalidos(ComentarioParamDto, {
-        id: valido,
+        publicacionId: valido,
         comentarioId: valido,
       }),
     ).toEqual([]);
@@ -48,19 +48,19 @@ describe('ComentarioParamDto', () => {
   it('[E] rechaza cada uno por separado si no es un id', async () => {
     expect(
       await camposInvalidos(ComentarioParamDto, {
-        id: 'abc',
+        publicacionId: 'abc',
         comentarioId: valido,
       }),
-    ).toEqual(['id']);
+    ).toEqual(['publicacionId']);
     expect(
       await camposInvalidos(ComentarioParamDto, {
-        id: valido,
+        publicacionId: valido,
         comentarioId: '123',
       }),
     ).toEqual(['comentarioId']);
     expect(await camposInvalidos(ComentarioParamDto, {})).toEqual([
       'comentarioId',
-      'id',
+      'publicacionId',
     ]);
   });
 });
