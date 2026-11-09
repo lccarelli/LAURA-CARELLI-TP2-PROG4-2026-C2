@@ -7,6 +7,7 @@ import { Publicacion } from '../src/publicaciones/schemas/publicacion.schema.js'
 import { crearApp, limpiarBase } from './ayudas/app.js';
 import { cargarComentarios } from './ayudas/comentarios.js';
 import { registrarYObtenerSesion } from './ayudas/datos.js';
+import { capturarLogs } from './ayudas/logs.js';
 import { sembrarPublicaciones } from './ayudas/publicaciones.js';
 import { tokenDeAdministrador } from './ayudas/sesiones.js';
 
@@ -288,15 +289,7 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
 
   describe('logs', () => {
     it('[O] deja una línea comentario_modificado con quién lo editó', async () => {
-      const lineas: Record<string, unknown>[] = [];
-      vi.spyOn(process.stdout, 'write').mockImplementation((texto) => {
-        for (const linea of String(texto).split('\n')) {
-          if (linea.startsWith('{')) {
-            lineas.push(JSON.parse(linea) as Record<string, unknown>);
-          }
-        }
-        return true;
-      });
+      const lineas = capturarLogs();
 
       await editar().expect(200);
 
@@ -316,15 +309,7 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
     });
 
     it('[B] si el mensaje no cambia, no deja línea de modificación', async () => {
-      const lineas: Record<string, unknown>[] = [];
-      vi.spyOn(process.stdout, 'write').mockImplementation((texto) => {
-        for (const linea of String(texto).split('\n')) {
-          if (linea.startsWith('{')) {
-            lineas.push(JSON.parse(linea) as Record<string, unknown>);
-          }
-        }
-        return true;
-      });
+      const lineas = capturarLogs();
 
       await editar({ mensaje: 'Comentario 1' }).expect(200);
 
