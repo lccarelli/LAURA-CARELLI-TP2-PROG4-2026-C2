@@ -77,6 +77,33 @@ describe('DetallePublicacion', () => {
     expect(seccion.textContent).toContain('Me salió riquísimo');
   });
 
+  it('[O] al publicar un comentario, el contador de la publicación sube en uno', async () => {
+    await abrir(publicacionDePrueba(1));
+    http
+      .expectOne((p) => p.url === `${URL}/id1/comentarios` && p.method === 'GET')
+      .flush({ datos: [], offset: 0, limit: 10, hayMas: false });
+    await actualizar();
+    expect(fixture.nativeElement.querySelector('[aria-label="2 comentarios"]')).not.toBeNull();
+
+    const campo = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    campo.value = 'Muy rico';
+    campo.dispatchEvent(new Event('input'));
+    await actualizar();
+    (fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement).click();
+    http.expectOne({ method: 'POST', url: `${URL}/id1/comentarios` }).flush({
+      _id: 'c1',
+      publicacion: 'id1',
+      usuario: { _id: 'u1', nombre: 'Laura', apellido: 'Carelli', nombreUsuario: 'laura_c' },
+      mensaje: 'Muy rico',
+      fecha: '2026-10-22T15:30:00.000Z',
+      modificado: false,
+    });
+    await actualizar();
+
+    expect(fixture.nativeElement.querySelector('[aria-label="3 comentarios"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('[aria-label="2 comentarios"]')).toBeNull();
+  });
+
   it('[E] si la publicación no carga, no pide comentarios', async () => {
     http
       .expectOne({ method: 'GET', url: `${URL}/id1` })

@@ -3,6 +3,50 @@
     {{ 'comentarios.titulo' | translate }}
   </h3>
 
+  <form class="formulario-comentario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+    <div class="entrada-comentario">
+      @if (auth.usuario(); as usuario) {
+        <img
+          class="avatar-comentario"
+          [src]="urlImagen(usuario.imagenPerfil)"
+          [alt]="'comun.foto_de' | translate: { nombre: usuario.nombreUsuario }"
+        />
+      }
+      <div class="entrada-campo">
+        <textarea
+          class="campo campo-comentario"
+          rows="3"
+          formControlName="mensaje"
+          [placeholder]="'comentarios.placeholder' | translate"
+          [attr.aria-label]="'comentarios.etiqueta' | translate"
+        ></textarea>
+        @if (mensajeDeError(); as mensaje) {
+          <span class="mensaje-error">{{ mensaje }}</span>
+        }
+      </div>
+    </div>
+    <div class="pie-comentario">
+      <span
+        class="meta"
+        [class.contador-excedido]="formulario.controls.mensaje.value.length > maximo"
+      >
+        {{
+          'comentarios.contador'
+            | translate: { n: formulario.controls.mensaje.value.length, max: maximo }
+        }}
+      </span>
+      <button type="submit" class="boton-principal" [disabled]="enviando()">
+        {{ (enviando() ? 'comentarios.enviando' : 'comentarios.boton') | translate }}
+      </button>
+    </div>
+  </form>
+
+  @if (errorAlComentar(); as mensaje) {
+    <app-aviso titulo="comentarios.error_comentar" (cerrar)="errorAlComentar.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+
   @if (mensajeError(); as mensaje) {
     <app-aviso titulo="comentarios.error_cargar" (cerrar)="mensajeError.set(null)">{{
       mensaje | translate

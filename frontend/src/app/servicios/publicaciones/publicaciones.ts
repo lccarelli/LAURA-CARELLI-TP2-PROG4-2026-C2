@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { PaginaComentarios } from '../../interfaces/comentario';
+import { Comentario, PaginaComentarios } from '../../interfaces/comentario';
 import { OrdenPublicaciones, PaginaPublicaciones, Publicacion } from '../../interfaces/publicacion';
 
 @Service()
@@ -26,6 +26,13 @@ export class PublicacionesApi {
     return this.http.get<PaginaComentarios>(
       `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}/comentarios`,
       { params: { offset, limit } },
+    );
+  }
+
+  comentar(id: string, mensaje: string) {
+    return this.http.post<Comentario>(
+      `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}/comentarios`,
+      { mensaje },
     );
   }
 

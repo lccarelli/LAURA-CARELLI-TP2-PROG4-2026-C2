@@ -178,7 +178,13 @@
     "titulo": "Comments",
     "vacio": "There are no comments yet",
     "ver_mas": "Show more comments",
-    "error_cargar": "Comments could not be loaded"
+    "error_cargar": "Comments could not be loaded",
+    "placeholder": "Write a comment",
+    "etiqueta": "Your comment",
+    "boton": "Comment",
+    "enviando": "Sending…",
+    "contador": "{{n}} / {{max}}",
+    "error_comentar": "The comment could not be posted"
   },
   "borrador": {
     "titulo": "We recovered your draft",

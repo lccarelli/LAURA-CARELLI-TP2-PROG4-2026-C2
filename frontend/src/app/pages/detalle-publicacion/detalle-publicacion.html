@@ -146,7 +146,7 @@
           </ol>
         }
 
-        <app-comentarios [publicacionId]="publicacion._id" />
+        <app-comentarios [publicacionId]="publicacion._id" (creado)="sumarComentario()" />
       </div>
     </article>
   }

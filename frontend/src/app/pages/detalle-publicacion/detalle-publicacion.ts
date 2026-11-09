@@ -90,6 +90,12 @@ export class DetallePublicacion implements OnInit {
     return '$'.repeat(cantidad);
   }
 
+  protected sumarComentario() {
+    this.publicacion.update((actual) =>
+      actual ? { ...actual, cantidadComentarios: actual.cantidadComentarios + 1 } : actual,
+    );
+  }
+
   protected cerrar() {
     this.router.navigate(['/publicaciones']);
   }
