@@ -7,9 +7,10 @@ import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
+import { Icono } from '../icono/icono';
 
 @Component({
-  imports: [RouterLink, TranslatePipe],
+  imports: [RouterLink, TranslatePipe, Icono],
   selector: 'app-tarjeta-publicacion',
   templateUrl: './tarjeta-publicacion.html',
   host: { class: 'pin-contenedor' },

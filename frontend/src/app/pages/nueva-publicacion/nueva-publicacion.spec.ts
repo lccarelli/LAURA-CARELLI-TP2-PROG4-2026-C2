@@ -4,27 +4,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { Publicacion } from '../../interfaces/publicacion';
-import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
 import { FotosBorrador } from '../../servicios/fotos-borrador/fotos-borrador';
 import { Borrador } from '../../servicios/borrador/borrador';
 import { NuevaPublicacion } from './nueva-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
+import { usuarioDePrueba } from '../../../testing/usuario';
 
 const URL = `${environment.API_URL}/publicaciones`;
 const REFRESCAR = `${environment.API_URL}/auth/refrescar`;
-
-const usuarioPrueba: Usuario = {
-  _id: 'u1',
-  nombre: 'Laura',
-  apellido: 'Carelli',
-  correo: 'laura@correo.com',
-  nombreUsuario: 'laura_c',
-  fechaNacimiento: '1990-05-20T00:00:00.000Z',
-  descripcion: '',
-  perfil: 'usuario',
-  habilitado: true,
-};
 
 const publicacion = (numero: number): Publicacion => ({
   _id: `id${numero}`,
@@ -62,7 +50,7 @@ describe('NuevaPublicacion', () => {
     navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true) as never;
     http = TestBed.inject(HttpTestingController);
     TestBed.inject(Auth).token.set('token-inicial');
-    TestBed.inject(Auth).usuario.set(usuarioPrueba);
+    TestBed.inject(Auth).usuario.set(usuarioDePrueba);
     fixture = TestBed.createComponent(NuevaPublicacion);
     await fixture.whenStable();
   });
@@ -1552,7 +1540,7 @@ describe('NuevaPublicacion', () => {
         pasos: [],
         conFotos: false,
       });
-      TestBed.inject(Auth).usuario.set({ ...usuarioPrueba, _id: 'u2' });
+      TestBed.inject(Auth).usuario.set({ ...usuarioDePrueba, _id: 'u2' });
 
       const otra = TestBed.createComponent(NuevaPublicacion);
       otra.detectChanges();

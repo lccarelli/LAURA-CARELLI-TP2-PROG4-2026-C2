@@ -4,10 +4,12 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Aviso } from '../../componentes/aviso/aviso';
+import { Comentarios } from '../../componentes/comentarios/comentarios';
 import { Ingrediente, Paso, Publicacion, UNIDADES } from '../../interfaces/publicacion';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
+import { Icono } from '../../componentes/icono/icono';
 
 const enteroEnRango = (valor: unknown, maximo: number) =>
   typeof valor === 'number' && Number.isInteger(valor) && valor >= 1 && valor <= maximo
@@ -30,7 +32,7 @@ const esIngrediente = (valor: unknown): valor is Ingrediente => {
 };
 
 @Component({
-  imports: [DatePipe, RouterLink, Aviso, TranslatePipe],
+  imports: [DatePipe, RouterLink, Aviso, Comentarios, TranslatePipe, Icono],
   selector: 'app-detalle-publicacion',
   templateUrl: './detalle-publicacion.html',
   host: { '(document:keydown.escape)': 'cerrar()' },

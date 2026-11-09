@@ -759,6 +759,10 @@ body {
     @apply size-5 shrink-0;
   }
 
+  app-icono {
+    @apply contents;
+  }
+
   .avatar {
     @apply size-11 shrink-0 rounded-full object-cover;
   }
@@ -783,8 +787,20 @@ body {
     @apply border-t border-linea/25 px-3 py-2;
   }
 
+  .comentarios {
+    @apply flex flex-col gap-4;
+  }
+
+  .lista-comentarios {
+    @apply flex flex-col gap-5;
+  }
+
   .comentario {
-    @apply border-l-2 border-linea-fuerte pl-4;
+    @apply flex flex-col gap-1 border-l-2 border-linea-fuerte pl-4;
+  }
+
+  .comentario-autor {
+    @apply font-sans text-sm font-semibold text-tinta;
   }
 
   .titulo-seccion {
