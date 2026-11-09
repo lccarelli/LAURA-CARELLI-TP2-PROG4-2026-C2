@@ -199,7 +199,7 @@ describe('Publicaciones', () => {
   });
 
   describe('eliminar desde la lista', () => {
-    const dueña: Usuario = {
+    const autor: Usuario = {
       _id: 'u1',
       nombre: 'Laura',
       apellido: 'Carelli',
@@ -220,7 +220,7 @@ describe('Publicaciones', () => {
     };
 
     it('[O] al eliminar una publicación desaparece de la lista sin recargar', async () => {
-      TestBed.inject(Auth).usuario.set(dueña);
+      TestBed.inject(Auth).usuario.set(autor);
       pedir(0).flush(pagina(1, 3, false));
       await actualizar();
 
@@ -236,7 +236,7 @@ describe('Publicaciones', () => {
     });
 
     it('[S] la siguiente página sigue pidiéndose con el offset correcto después de eliminar', async () => {
-      TestBed.inject(Auth).usuario.set(dueña);
+      TestBed.inject(Auth).usuario.set(autor);
       pedir(0).flush(pagina(1, 10, true));
       await actualizar();
       await eliminarLaPrimera();
@@ -251,7 +251,7 @@ describe('Publicaciones', () => {
     });
 
     it('[E] si el servidor no deja eliminarla, la publicación sigue en la lista', async () => {
-      TestBed.inject(Auth).usuario.set(dueña);
+      TestBed.inject(Auth).usuario.set(autor);
       pedir(0).flush(pagina(1, 2, false));
       await actualizar();
 
