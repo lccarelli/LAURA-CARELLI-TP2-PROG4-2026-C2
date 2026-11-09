@@ -36,6 +36,13 @@ export class PublicacionesApi {
     );
   }
 
+  editarComentario(id: string, comentarioId: string, mensaje: string) {
+    return this.http.put<Comentario>(
+      `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}/comentarios/${encodeURIComponent(comentarioId)}`,
+      { mensaje },
+    );
+  }
+
   darMeGusta(id: string) {
     return this.http.post<{ meGusta: boolean; cantidadMeGusta: number }>(
       `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}/megusta`,

@@ -26,15 +26,7 @@
       </div>
     </div>
     <div class="pie-comentario">
-      <span
-        class="meta"
-        [class.contador-excedido]="formulario.controls.mensaje.value.length > maximo"
-      >
-        {{
-          'comentarios.contador'
-            | translate: { n: formulario.controls.mensaje.value.length, max: maximo }
-        }}
-      </span>
+      <app-contador-texto [cantidad]="formulario.controls.mensaje.value.length" [maximo]="maximo" />
       <button type="submit" class="boton-principal" [disabled]="enviando()">
         {{ (enviando() ? 'comentarios.enviando' : 'comentarios.boton') | translate }}
       </button>
@@ -57,18 +49,11 @@
     <ul class="lista-comentarios">
       @for (comentario of comentarios(); track comentario._id) {
         <li class="comentario">
-          <header class="flex items-center gap-2">
-            <img
-              class="avatar-chico"
-              [src]="urlImagen(comentario.usuario.imagenPerfil)"
-              [alt]="'comun.foto_de' | translate: { nombre: comentario.usuario.nombreUsuario }"
-            />
-            <span class="comentario-autor">&#64;{{ comentario.usuario.nombreUsuario }}</span>
-            <span class="detalle-publicacion">
-              {{ comentario.fecha | date: ('formatos.fecha_hora' | translate) }}
-            </span>
-          </header>
-          <p class="texto-publicacion whitespace-pre-line">{{ comentario.mensaje }}</p>
+          <app-item-comentario
+            [comentario]="comentario"
+            [publicacionId]="publicacionId()"
+            (modificado)="reemplazar($event)"
+          />
         </li>
       }
     </ul>

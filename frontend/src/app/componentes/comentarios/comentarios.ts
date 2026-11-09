@@ -1,18 +1,20 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { DatePipe } from '@angular/common';
 import { Component, inject, input, OnDestroy, OnInit, output, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { Comentario, MAXIMO_COMENTARIO } from '../../interfaces/comentario';
 import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
+import { errorDeComentario, VALIDADORES_COMENTARIO } from '../../utilidades/comentario';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
 import { Aviso } from '../aviso/aviso';
+import { ItemComentario } from '../item-comentario/item-comentario';
+import { ContadorTexto } from '../contador-texto/contador-texto';
 
 @Component({
-  imports: [DatePipe, ReactiveFormsModule, Aviso, TranslatePipe],
+  imports: [ReactiveFormsModule, Aviso, ContadorTexto, ItemComentario, TranslatePipe],
   selector: 'app-comentarios',
   templateUrl: './comentarios.html',
 })
@@ -29,10 +31,7 @@ export class Comentarios implements OnInit, OnDestroy {
 
   readonly maximo = MAXIMO_COMENTARIO;
   readonly formulario = this.formBuilder.nonNullable.group({
-    mensaje: [
-      '',
-      [Validators.required, Validators.pattern(/\S/), Validators.maxLength(MAXIMO_COMENTARIO)],
-    ],
+    mensaje: ['', VALIDADORES_COMENTARIO],
   });
   readonly enviando = signal(false);
   readonly errorAlComentar = signal<string | null>(null);
@@ -53,18 +52,14 @@ export class Comentarios implements OnInit, OnDestroy {
     this.pedido?.unsubscribe();
   }
 
-  mensajeDeError(): string | null {
-    const control = this.formulario.controls.mensaje;
-    if (!control.touched) {
-      return null;
-    }
-    if (control.errors?.['required'] || control.errors?.['pattern']) {
-      return this.traductor.instant('comun.obligatorio');
-    }
-    if (control.errors?.['maxlength']) {
-      return this.traductor.instant('validacion.maximo', { n: this.maximo });
-    }
-    return null;
+  mensajeDeError() {
+    return errorDeComentario(this.formulario.controls.mensaje, this.traductor);
+  }
+
+  reemplazar(editado: Comentario) {
+    this.comentarios.update((actuales) =>
+      actuales.map((comentario) => (comentario._id === editado._id ? editado : comentario)),
+    );
   }
 
   enviar() {
