@@ -6,7 +6,10 @@ import { Comentario } from '../src/publicaciones/schemas/comentario.schema.js';
 import { Publicacion } from '../src/publicaciones/schemas/publicacion.schema.js';
 import { crearApp, limpiarBase } from './ayudas/app.js';
 import { cargarComentarios } from './ayudas/comentarios.js';
-import { registrarYObtenerSesion } from './ayudas/datos.js';
+import {
+  registrarOtraPersona,
+  registrarYObtenerSesion,
+} from './ayudas/datos.js';
 import { capturarLogs } from './ayudas/logs.js';
 import { sembrarPublicaciones } from './ayudas/publicaciones.js';
 import { tokenDeAdministrador } from './ayudas/sesiones.js';
@@ -20,8 +23,10 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
   let publicacionId: string;
   let comentarioId: string;
 
+  const mensajeEditado = { mensaje: 'Editado' };
+
   const editar = (
-    cuerpo: unknown = { mensaje: 'Editado' },
+    body: unknown = mensajeEditado,
     ids: { publicacion?: string; comentario?: string } = {},
     tokenUsado: string | null = token,
   ) => {
@@ -31,16 +36,10 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
     if (tokenUsado) {
       solicitud.set('Authorization', `Bearer ${tokenUsado}`);
     }
-    return solicitud.send(cuerpo as object);
+    return solicitud.send(body as object);
   };
 
   const guardado = async () => (await comentarios.findById(comentarioId))!;
-
-  const otraPersona = () =>
-    registrarYObtenerSesion(app, {
-      correo: 'juan@correo.com',
-      nombreUsuario: 'juan_p',
-    });
 
   beforeAll(async () => {
     app = await crearApp();
@@ -51,8 +50,8 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
   beforeEach(async () => {
     await limpiarBase(app);
     const sesion = await registrarYObtenerSesion(app);
-    token = sesion.token;
     usuarioId = sesion.usuario._id;
+    token = sesion.token;
     publicacionId = (await sembrarPublicaciones(app, usuarioId, 1))[0].id;
     comentarioId = (
       await cargarComentarios(app, publicacionId, usuarioId, 1)
@@ -161,7 +160,7 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
 
   describe('lo que no se puede', () => {
     it('[E] editar el comentario de otra persona responde 403 COMENTARIO_AJENO y no cambia nada', async () => {
-      const otra = await otraPersona();
+      const otra = await registrarOtraPersona(app);
 
       const { body } = await editar(
         { mensaje: 'Intruso' },
@@ -176,7 +175,7 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
     });
 
     it('[E] ni siquiera un administrador edita el comentario de otra persona', async () => {
-      const otra = await otraPersona();
+      const otra = await registrarOtraPersona(app);
 
       await editar(
         { mensaje: 'Del admin' },
@@ -270,7 +269,7 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
     });
 
     it('[S] no se puede mandar el autor, la fecha ni modificado en el cuerpo', async () => {
-      const otra = await otraPersona();
+      const otra = await registrarOtraPersona(app);
 
       for (const extra of [
         { usuario: otra.usuario._id },
