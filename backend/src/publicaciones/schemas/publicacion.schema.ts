@@ -79,6 +79,9 @@ export class Publicacion {
   @Prop()
   imagen?: string;
 
+  @Prop({ default: true })
+  activa: boolean;
+
   @Prop({ default: 0 })
   cantidadMeGusta: number;
 
@@ -90,4 +93,6 @@ export class Publicacion {
 }
 
 export const PublicacionSchema = SchemaFactory.createForClass(Publicacion);
-PublicacionSchema.index({ fecha: -1, _id: -1 });
+PublicacionSchema.index({ activa: 1, fecha: -1, _id: -1 });
+PublicacionSchema.index({ activa: 1, cantidadMeGusta: -1, fecha: -1, _id: -1 });
+PublicacionSchema.index({ usuario: 1, activa: 1, fecha: -1, _id: -1 });

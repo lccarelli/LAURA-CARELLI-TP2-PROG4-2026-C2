@@ -8,7 +8,8 @@
     "foto_de": "Foto de {{nombre}}",
     "ver_clave": "Mostrar clave",
     "ocultar_clave": "Ocultar clave",
-    "cerrar": "Cerrar"
+    "cerrar": "Cerrar",
+    "reintentar": "Reintentar"
   },
   "formatos": {
     "fecha": "dd/MM/yyyy",
@@ -121,7 +122,6 @@
     "mensaje_experiencia": "Tu experiencia",
     "me_gusta": "{{n}} me gusta",
     "comentarios": "{{n}} comentarios",
-    "invitacion": "¿Qué querés compartir hoy?",
     "ficha_mas": "Aumentar {{campo}}",
     "ficha_menos": "Disminuir {{campo}}",
     "tiempo_horas": "{{n}} h",
@@ -155,7 +155,24 @@
     "campo_calorias_unidades": "Calorías por unidad",
     "paso_titulo": "Título del paso (opcional)",
     "paso_foto_maximo_paso": "Cada paso admite hasta {{n}} fotos",
-    "rinde_pregunta": "¿Qué rinde la receta?"
+    "rinde_pregunta": "¿Qué rinde la receta?",
+    "me_gusta_dar": "Dar me gusta ({{n}})",
+    "me_gusta_quitar": "Quitar me gusta ({{n}})",
+    "eliminar": "Eliminar publicación",
+    "eliminar_pregunta": "¿Eliminar?",
+    "eliminar_si": "Sí",
+    "eliminar_no": "No",
+    "eliminando": "Eliminando...",
+    "ordenar_por": "Ordenar por",
+    "orden_fecha": "Más recientes",
+    "orden_megusta": "Más me gusta",
+    "eliminando_corto": "…",
+    "eliminar_si_aria": "Sí, eliminar la publicación",
+    "eliminar_no_aria": "No eliminar, cancelar",
+    "eliminar_aviso": "No se puede deshacer",
+    "paso_foto_primera": "Agregar foto",
+    "paso_foto_primera_aria": "Agregar una foto al paso {{n}}",
+    "paso_foto_otra": "Agregar otra foto"
   },
   "borrador": {
     "titulo": "Recuperamos tu borrador",
@@ -166,7 +183,11 @@
   "perfil": {
     "correo": "Correo",
     "fecha_nacimiento": "Fecha de nacimiento",
-    "descripcion": "Descripción"
+    "descripcion": "Descripción",
+    "ultimas_publicaciones": "Mis últimas publicaciones",
+    "error_publicaciones": "No pudimos cargar tus publicaciones",
+    "sin_publicaciones": "Todavía no publicaste nada.",
+    "publicar_primera": "Crear mi primera publicación"
   },
   "roles": {
     "usuario": "usuario",
@@ -201,7 +222,10 @@
     "SESION_VENCIDA": "Tu sesión llegó a su duración máxima. Ingresá de nuevo.",
     "TOKEN_AUSENTE": "Tenés que ingresar para hacer esto.",
     "TOKEN_INVALIDO": "Tu sesión no es válida o venció. Ingresá de nuevo.",
-    "DEMASIADAS_SOLICITUDES": "Hiciste demasiadas solicitudes seguidas. Esperá un momento e intentá de nuevo."
+    "DEMASIADAS_SOLICITUDES": "Hiciste demasiadas solicitudes seguidas. Esperá un momento e intentá de nuevo.",
+    "PUBLICACION_AJENA": "Sólo podés eliminar tus propias publicaciones.",
+    "ME_GUSTA_REPETIDO": "Ya le diste me gusta a esta publicación.",
+    "ME_GUSTA_INEXISTENTE": "No le habías dado me gusta a esta publicación."
   },
   "tipos": {
     "receta": "Receta",

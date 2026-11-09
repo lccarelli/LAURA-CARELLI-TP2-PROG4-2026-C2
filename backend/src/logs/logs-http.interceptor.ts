@@ -65,6 +65,7 @@ export class LogsHttpInterceptor implements NestInterceptor {
         latencia_ms: Date.now() - momentoDeInicio,
         ip: solicitud.ip,
         id_usuario: solicitud.usuario?.id,
+        nombre_usuario: solicitud.usuario?.nombreUsuario,
       },
     );
   }

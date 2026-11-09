@@ -40,6 +40,10 @@ export async function crearApp(conLimites = false): Promise<INestApplication> {
   const app = modulo.createNestApplication();
   aplicarValidacionGlobal(app);
   await app.init();
+  const conexion = app.get<Connection>(getConnectionToken());
+  await Promise.all(
+    Object.values(conexion.models).map((modelo) => modelo.init()),
+  );
   return app;
 }
 

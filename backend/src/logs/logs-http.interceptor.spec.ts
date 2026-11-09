@@ -10,7 +10,10 @@ import { lastValueFrom, of, throwError } from 'rxjs';
 import { LoggerFactory } from './logs.factory.js';
 import { LogsHttpInterceptor } from './logs-http.interceptor.js';
 
-function contexto(estado = 200, usuario?: { id: string }) {
+function contexto(
+  estado = 200,
+  usuario?: { id: string; nombreUsuario?: string },
+) {
   const solicitud = {
     method: 'GET',
     originalUrl: '/publicaciones?offset=0',
@@ -77,6 +80,24 @@ describe('LogsHttpInterceptor', () => {
       estado_http: 201,
       id_usuario: 'abc123',
     });
+  });
+
+  it('[M] con el nombre de usuario en el token la línea también lo lleva', async () => {
+    const { ejecucion } = contexto(201, {
+      id: 'abc123',
+      nombreUsuario: 'laura_c',
+    });
+    await lastValueFrom(interceptor.intercept(ejecucion, respondeBien));
+    expect(lineas()[0]).toMatchObject({
+      id_usuario: 'abc123',
+      nombre_usuario: 'laura_c',
+    });
+  });
+
+  it('[B] un token anterior, sin nombre de usuario, no deja el campo en la línea', async () => {
+    const { ejecucion } = contexto(201, { id: 'abc123' });
+    await lastValueFrom(interceptor.intercept(ejecucion, respondeBien));
+    expect(lineas()[0]).not.toHaveProperty('nombre_usuario');
   });
 
   it('[B] un 404 se registra como advertencia', async () => {

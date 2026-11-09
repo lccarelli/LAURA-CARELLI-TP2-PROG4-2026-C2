@@ -70,4 +70,24 @@ describe('GET /publicaciones/:id', () => {
   it('[E] sin sesión responde 401', async () => {
     await obtener('64b64b64b64b64b64b64b64b', '').expect(401);
   });
+
+  it('[E] una publicación dada de baja responde 404 PUBLICACION_NO_ENCONTRADA', async () => {
+    const [creada] = await sembrarPublicaciones(app, usuarioId, 1);
+    await request(app.getHttpServer())
+      .delete(`/publicaciones/${creada.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204);
+
+    const { body } = await obtener(creada.id).expect(404);
+
+    expect(body.codigo).toBe('PUBLICACION_NO_ENCONTRADA');
+  });
+
+  it('[I] trae meGusta en falso mientras no se dio me gusta', async () => {
+    const [creada] = await sembrarPublicaciones(app, usuarioId, 1);
+
+    const { body } = await obtener(creada.id).expect(200);
+
+    expect(body.meGusta).toBe(false);
+  });
 });

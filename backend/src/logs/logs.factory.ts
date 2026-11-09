@@ -2,12 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { Campos, Nivel, emitirLog } from './logger-global.js';
 
 export const EVENTOS_DE_LOG = {
+  EVENTO_ME_GUSTA_NO_REGISTRADO: 'evento_me_gusta_no_registrado',
   IMAGEN_BORRADA: 'imagen_borrada',
   IMAGEN_SUBIDA: 'imagen_subida',
   INGRESO_CORRECTO: 'ingreso_correcto',
   INGRESO_FALLIDO: 'ingreso_fallido',
+  ME_GUSTA_DADO: 'me_gusta_dado',
+  ME_GUSTA_QUITADO: 'me_gusta_quitado',
   LIMITE_SUPERADO: 'limite_superado',
   PUBLICACION_CREADA: 'publicacion_creada',
+  PUBLICACION_ELIMINADA: 'publicacion_eliminada',
   SERVIDOR_INICIADO: 'servidor_iniciado',
   SOLICITUD_EXITOSA: 'solicitud_exitosa',
   SOLICITUD_FALLIDA: 'solicitud_fallida',

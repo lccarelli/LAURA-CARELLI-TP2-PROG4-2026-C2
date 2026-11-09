@@ -15,45 +15,114 @@
       />
       &#64;{{ publicacion().usuario.nombreUsuario }}
     </span>
-    <span class="metricas">
-      <span
-        class="metrica"
-        [attr.aria-label]="
-          'publicaciones.me_gusta' | translate: { n: publicacion().cantidadMeGusta }
-        "
-      >
-        <svg
-          class="icono-chico"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
-        </svg>
-        <span aria-hidden="true">{{ publicacion().cantidadMeGusta }}</span>
-      </span>
-      <span
-        class="metrica"
-        [attr.aria-label]="
-          'publicaciones.comentarios' | translate: { n: publicacion().cantidadComentarios }
-        "
-      >
-        <svg
-          class="icono-chico"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M4 5h16v11H9l-5 4V5z" />
-        </svg>
-        <span aria-hidden="true">{{ publicacion().cantidadComentarios }}</span>
-      </span>
-    </span>
   </span>
 </a>
+
+@if (confirmando()) {
+  <div
+    class="pin-confirmar"
+    role="group"
+    [attr.aria-labelledby]="'confirmar-' + publicacion()._id"
+    [attr.title]="'publicaciones.eliminar_aviso' | translate"
+  >
+    <span class="pin-confirmar-texto" [id]="'confirmar-' + publicacion()._id">
+      {{ 'publicaciones.eliminar_pregunta' | translate }}
+    </span>
+    <button
+      type="button"
+      class="boton-mini boton-mini-peligro"
+      [disabled]="enviando()"
+      [attr.aria-label]="
+        (enviando() ? 'publicaciones.eliminando' : 'publicaciones.eliminar_si_aria') | translate
+      "
+      (click)="eliminar()"
+    >
+      {{
+        (enviando() ? 'publicaciones.eliminando_corto' : 'publicaciones.eliminar_si') | translate
+      }}
+    </button>
+    <button
+      type="button"
+      class="boton-mini"
+      [disabled]="enviando()"
+      [attr.aria-label]="'publicaciones.eliminar_no_aria' | translate"
+      (click)="cancelar()"
+    >
+      {{ 'publicaciones.eliminar_no' | translate }}
+    </button>
+  </div>
+} @else {
+  <div class="pin-acciones">
+    <button
+      type="button"
+      class="metrica boton-metrica"
+      [class.activa]="meGusta().dado"
+      [disabled]="enviando()"
+      [attr.aria-pressed]="meGusta().dado"
+      [attr.aria-label]="
+        (meGusta().dado ? 'publicaciones.me_gusta_quitar' : 'publicaciones.me_gusta_dar')
+          | translate: { n: meGusta().cantidad }
+      "
+      (click)="alternarMeGusta()"
+    >
+      <svg
+        class="icono-chico"
+        viewBox="0 0 24 24"
+        [attr.fill]="meGusta().dado ? 'currentColor' : 'none'"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+      </svg>
+      <span aria-hidden="true">{{ meGusta().cantidad }}</span>
+    </button>
+
+    <span
+      class="metrica"
+      [attr.aria-label]="
+        'publicaciones.comentarios' | translate: { n: publicacion().cantidadComentarios }
+      "
+    >
+      <svg
+        class="icono-chico"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M4 5h16v11H9l-5 4V5z" />
+      </svg>
+      <span aria-hidden="true">{{ publicacion().cantidadComentarios }}</span>
+    </span>
+
+    @if (puedeEliminar() && !confirmando()) {
+      <button
+        type="button"
+        class="boton-metrica boton-eliminar"
+        [attr.aria-label]="'publicaciones.eliminar' | translate"
+        (click)="pedirConfirmacion()"
+      >
+        <svg
+          class="icono-chico"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3" />
+        </svg>
+      </button>
+    }
+  </div>
+}
+
+@if (mensajeError(); as mensaje) {
+  <p class="mensaje-error pin-error" role="alert">{{ mensaje | translate }}</p>
+}

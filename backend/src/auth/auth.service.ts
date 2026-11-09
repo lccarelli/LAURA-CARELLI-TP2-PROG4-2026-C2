@@ -69,6 +69,7 @@ export class AuthService {
     });
     this.logger.info(EVENTOS_DE_LOG.USUARIO_REGISTRADO, 'Usuario registrado', {
       id_usuario: String(usuario!._id),
+      nombre_usuario: usuario!.nombreUsuario,
       perfil,
     });
     return { token: this.generarToken(usuario!), usuario };
@@ -93,6 +94,7 @@ export class AuthService {
 
     this.logger.info(EVENTOS_DE_LOG.INGRESO_CORRECTO, 'Ingreso correcto', {
       id_usuario: String(encontrado._id),
+      nombre_usuario: encontrado.nombreUsuario,
     });
 
     const { clave: _clave, ...usuario } = encontrado;
@@ -108,6 +110,7 @@ export class AuthService {
       return {
         id: payload.sub as string,
         perfil: payload.perfil as string,
+        nombreUsuario: payload.nombreUsuario as string | undefined,
         inicio: (payload.inicio ?? payload.iat) as number,
       };
     } catch (error) {
@@ -121,13 +124,18 @@ export class AuthService {
     }
   }
 
-  refrescar(usuario: { id: string; perfil: string; inicio: number }) {
+  refrescar(usuario: {
+    id: string;
+    perfil: string;
+    nombreUsuario?: string;
+    inicio: number;
+  }) {
     const ahora = Math.floor(Date.now() / 1000);
     if (ahora - usuario.inicio > this.config.duracionMaximaSesionSegundos) {
       this.logger.advertir(
         EVENTOS_DE_LOG.SESION_VENCIDA,
         'La sesión alcanzó su duración máxima',
-        { id_usuario: usuario.id },
+        { id_usuario: usuario.id, nombre_usuario: usuario.nombreUsuario },
       );
       throw new UnauthorizedException({
         message: 'La sesión alcanzó su duración máxima',
@@ -137,21 +145,31 @@ export class AuthService {
 
     this.logger.info(EVENTOS_DE_LOG.TOKEN_REFRESCADO, 'Token refrescado', {
       id_usuario: usuario.id,
+      nombre_usuario: usuario.nombreUsuario,
     });
     return {
       token: this.generarToken(
-        { _id: usuario.id, perfil: usuario.perfil },
+        {
+          _id: usuario.id,
+          perfil: usuario.perfil,
+          nombreUsuario: usuario.nombreUsuario,
+        },
         usuario.inicio,
       ),
     };
   }
 
   private generarToken(
-    usuario: { _id: unknown; perfil: string },
+    usuario: { _id: unknown; perfil: string; nombreUsuario?: string },
     inicio = Math.floor(Date.now() / 1000),
   ) {
     return jwt.sign(
-      { sub: String(usuario._id), perfil: usuario.perfil, inicio },
+      {
+        sub: String(usuario._id),
+        perfil: usuario.perfil,
+        nombreUsuario: usuario.nombreUsuario,
+        inicio,
+      },
       this.config.secretoJwt,
       { expiresIn: this.config.expiraJwt },
     );
