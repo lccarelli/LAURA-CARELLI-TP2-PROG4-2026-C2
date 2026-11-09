@@ -183,7 +183,12 @@ describe('PublicacionesApi', () => {
     api.darMeGusta('a/b?c').subscribe();
     api.eliminar('a/b?c').subscribe();
 
-    http.expectOne(`${URL}/a%2Fb%3Fc/megusta`).flush({});
-    http.expectOne(`${URL}/a%2Fb%3Fc`).flush(null);
+    const megusta = http.expectOne(`${URL}/a%2Fb%3Fc/megusta`);
+    const baja = http.expectOne(`${URL}/a%2Fb%3Fc`);
+
+    expect(megusta.request.method).toBe('POST');
+    expect(baja.request.method).toBe('DELETE');
+    megusta.flush({});
+    baja.flush(null);
   });
 });

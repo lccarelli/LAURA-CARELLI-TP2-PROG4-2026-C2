@@ -223,7 +223,7 @@ describe('Sesion al iniciar la aplicación', () => {
   it('[I] con token no despierta al servidor: la validación ya lo hace', () => {
     iniciarConToken('vigente');
 
-    http.expectNone(SALUD);
+    expect(http.match(SALUD)).toHaveLength(0);
     http.expectOne(AUTORIZAR).flush({ usuario: {} });
   });
 });
