@@ -11,6 +11,9 @@
     "cerrar": "Cerrar",
     "reintentar": "Reintentar"
   },
+  "carga": {
+    "despertando": "El servidor se está despertando. Puede tardar hasta un minuto."
+  },
   "formatos": {
     "fecha": "dd/MM/yyyy",
     "fecha_hora": "dd/MM/yyyy HH:mm"

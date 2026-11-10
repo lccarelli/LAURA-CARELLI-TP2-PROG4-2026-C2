@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { Auth } from '../auth/auth';
 import { Sesion } from './sesion';
@@ -130,5 +131,99 @@ describe('Sesion', () => {
     vi.advanceTimersByTime(5 * MINUTO);
 
     expect(pedidos()).toHaveLength(0);
+  });
+});
+
+describe('Sesion al iniciar la aplicación', () => {
+  const AUTORIZAR = `${environment.API_URL}/auth/autorizar`;
+  const SALUD = `${environment.API_URL}/health`;
+  let http: HttpTestingController;
+  let auth: Auth;
+  let sesion: Sesion;
+  let irA: ReturnType<typeof vi.spyOn>;
+
+  const iniciarConToken = (token: string | null) => {
+    auth.token.set(token);
+    sesion.iniciar();
+  };
+  const rechazar = (status: number) =>
+    http.expectOne(AUTORIZAR).flush({ codigo: 'TOKEN_INVALIDO' }, { status, statusText: 'Error' });
+
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    http = TestBed.inject(HttpTestingController);
+    auth = TestBed.inject(Auth);
+    sesion = TestBed.inject(Sesion);
+    irA = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+  });
+
+  afterEach(() => TestBed.resetTestingModule());
+
+  it('[Z] sin token no valida nada y no muestra la pantalla de carga', () => {
+    iniciarConToken(null);
+
+    http.expectNone(AUTORIZAR);
+    expect(sesion.verificando()).toBe(false);
+  });
+
+  it('[O] con token valida la sesión y muestra la pantalla de carga hasta que responde', () => {
+    iniciarConToken('vigente');
+    expect(sesion.verificando()).toBe(true);
+
+    http.expectOne(AUTORIZAR).flush({ usuario: { _id: '1', nombre: 'Laura' } });
+
+    expect(sesion.verificando()).toBe(false);
+    expect(auth.token()).toBe('vigente');
+    expect(irA).not.toHaveBeenCalled();
+  });
+
+  it('[E] si el token venció (401) cierra la sesión y lleva al login', () => {
+    localStorage.setItem('token', 'vencido');
+    iniciarConToken('vencido');
+
+    rechazar(401);
+
+    expect(sesion.verificando()).toBe(false);
+    expect(auth.token()).toBeNull();
+    expect(localStorage.getItem('token')).toBeNull();
+    expect(irA).toHaveBeenCalledWith('/login');
+  });
+
+  it.each([0, 500, 503])('[E] si el servidor falla (%i) no cierra la sesión', (status) => {
+    iniciarConToken('vigente');
+
+    rechazar(status);
+
+    expect(sesion.verificando()).toBe(false);
+    expect(auth.token()).toBe('vigente');
+    expect(irA).not.toHaveBeenCalled();
+  });
+
+  it('[S] sin token despierta al servidor en segundo plano, sin pantalla de carga', () => {
+    iniciarConToken(null);
+
+    const pedido = http.expectOne(SALUD);
+
+    expect(sesion.verificando()).toBe(false);
+    pedido.flush({ status: 'ok' });
+  });
+
+  it('[E] si despertar al servidor falla, no pasa nada', () => {
+    iniciarConToken(null);
+
+    http.expectOne(SALUD).error(new ProgressEvent('error'));
+
+    expect(sesion.verificando()).toBe(false);
+    expect(irA).not.toHaveBeenCalled();
+  });
+
+  it('[I] con token no despierta al servidor: la validación ya lo hace', () => {
+    iniciarConToken('vigente');
+
+    expect(http.match(SALUD)).toHaveLength(0);
+    http.expectOne(AUTORIZAR).flush({ usuario: {} });
   });
 });

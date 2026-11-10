@@ -3,6 +3,7 @@ import { Component, inject, input, OnDestroy, OnInit, output, signal } from '@an
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
+import { CubreplatoLoading } from '../cubreplato-loading/cubreplato-loading';
 import { Comentario, MAXIMO_COMENTARIO } from '../../interfaces/comentario';
 import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
@@ -14,7 +15,14 @@ import { ItemComentario } from '../item-comentario/item-comentario';
 import { ContadorTexto } from '../contador-texto/contador-texto';
 
 @Component({
-  imports: [ReactiveFormsModule, Aviso, ContadorTexto, ItemComentario, TranslatePipe],
+  imports: [
+    CubreplatoLoading,
+    ReactiveFormsModule,
+    Aviso,
+    ContadorTexto,
+    ItemComentario,
+    TranslatePipe,
+  ],
   selector: 'app-comentarios',
   templateUrl: './comentarios.html',
 })

@@ -11,6 +11,9 @@
     "cerrar": "Close",
     "reintentar": "Try again"
   },
+  "carga": {
+    "despertando": "The server is waking up. This can take up to a minute."
+  },
   "formatos": {
     "fecha": "MM/dd/yyyy",
     "fecha_hora": "MM/dd/yyyy hh:mm a"

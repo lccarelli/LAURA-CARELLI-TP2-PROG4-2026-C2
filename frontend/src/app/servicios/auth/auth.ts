@@ -30,6 +30,16 @@ export class Auth {
       .pipe(tap(({ token }) => this.guardarToken(token)));
   }
 
+  autorizar() {
+    return this.http
+      .post<{ usuario: Usuario }>(`${environment.API_URL}/auth/autorizar`, {})
+      .pipe(tap(({ usuario }) => this.guardarUsuario(usuario)));
+  }
+
+  despertarServidor() {
+    return this.http.get(`${environment.API_URL}/health`);
+  }
+
   salir() {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
@@ -38,9 +48,13 @@ export class Auth {
   }
 
   private guardarSesion(sesion: Sesion) {
-    localStorage.setItem('usuario', JSON.stringify(sesion.usuario));
-    this.usuario.set(sesion.usuario);
+    this.guardarUsuario(sesion.usuario);
     this.guardarToken(sesion.token);
+  }
+
+  private guardarUsuario(usuario: Usuario) {
+    localStorage.setItem('usuario', JSON.stringify(usuario));
+    this.usuario.set(usuario);
   }
 
   private guardarToken(token: string) {
