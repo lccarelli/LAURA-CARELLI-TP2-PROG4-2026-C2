@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
+import { comentarioDePrueba as comentario } from '../../../testing/comentario';
 import { usuarioDePrueba } from '../../../testing/usuario';
 import { Comentario } from '../../interfaces/comentario';
 import { Usuario } from '../../interfaces/usuario';
@@ -10,16 +11,6 @@ import { Auth } from '../../servicios/auth/auth';
 import { ItemComentario } from './item-comentario';
 
 const URL = `${environment.API_URL}/publicaciones/p1/comentarios/c1`;
-
-const comentario = (cambios?: Partial<Comentario>): Comentario => ({
-  _id: 'c1',
-  publicacion: 'p1',
-  usuario: { _id: 'u1', nombre: 'Laura', apellido: 'Carelli', nombreUsuario: 'laura_c' },
-  mensaje: 'Me salió riquísimo',
-  fecha: '2026-10-22T15:30:00.000Z',
-  modificado: false,
-  ...cambios,
-});
 
 describe('ItemComentario', () => {
   let fixture: ComponentFixture<ItemComentario>;

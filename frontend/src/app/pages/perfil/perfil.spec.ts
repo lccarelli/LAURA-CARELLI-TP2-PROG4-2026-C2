@@ -8,6 +8,7 @@ import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
 import { Idioma } from '../../servicios/idioma/idioma';
 import { Perfil } from './perfil';
+import { comentarioDePrueba } from '../../../testing/comentario';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 
 const usuario: Usuario = {
@@ -249,6 +250,58 @@ describe('Perfil', () => {
       expect(texto()).not.toContain('Título 1');
       expect(texto()).toContain('Título 4');
       expect(tarjetas()).toHaveLength(3);
+    });
+
+    it('[O] debajo de cada publicación pide y muestra sus últimos comentarios', async () => {
+      await mostrar(usuario);
+      pedido().flush(pagina(2));
+      await actualizar();
+
+      const comentarios = http.match(
+        (solicitud) =>
+          /\/publicaciones\/id\d\/comentarios$/.test(solicitud.url) &&
+          solicitud.params.get('limit') === '2',
+      );
+      expect(comentarios.map((solicitud) => solicitud.request.url.split('/')[4])).toEqual([
+        'id1',
+        'id2',
+      ]);
+      comentarios[0].flush({
+        datos: [comentarioDePrueba({ mensaje: 'Qué buena receta' })],
+        offset: 0,
+        limit: 2,
+        hayMas: false,
+      });
+      await actualizar();
+
+      expect(fixture.nativeElement.querySelectorAll('app-ultimos-comentarios')).toHaveLength(2);
+      expect(texto()).toContain('Qué buena receta');
+    });
+
+    it('[B] una publicación sin comentarios no hace ningún pedido de comentarios', async () => {
+      await mostrar(usuario);
+      const sinComentarios = { ...pagina(1) };
+      sinComentarios.datos = [{ ...publicacion(1), cantidadComentarios: 0 }];
+      pedido().flush(sinComentarios);
+      await actualizar();
+
+      expect(http.match((solicitud) => solicitud.url.endsWith('/comentarios'))).toHaveLength(0);
+      expect(texto()).toContain('Todavía no tiene comentarios');
+    });
+
+    it('[E] si fallan los comentarios de una publicación, las demás se siguen viendo', async () => {
+      await mostrar(usuario);
+      pedido().flush(pagina(2));
+      await actualizar();
+      const [primera, segunda] = http.match((solicitud) => solicitud.url.endsWith('/comentarios'));
+
+      primera.flush({ codigo: 'X' }, { status: 500, statusText: 'Error' });
+      segunda.flush({ datos: [comentarioDePrueba()], offset: 0, limit: 2, hayMas: false });
+      await actualizar();
+
+      expect(tarjetas()).toHaveLength(2);
+      expect(fixture.nativeElement.querySelectorAll('app-aviso')).toHaveLength(1);
+      expect(texto()).toContain('Me salió riquísimo');
     });
 
     it('[S] al salir de la pantalla cancela el pedido pendiente', async () => {

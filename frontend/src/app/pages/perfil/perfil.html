@@ -49,9 +49,15 @@
       <app-cubreplato-loading />
     }
 
-    <div class="muro">
+    <div class="flex flex-col gap-6">
       @for (publicacion of publicaciones(); track publicacion._id) {
-        <app-tarjeta-publicacion [publicacion]="publicacion" (eliminada)="cargar()" />
+        <article class="publicacion-perfil">
+          <app-tarjeta-publicacion [publicacion]="publicacion" (eliminada)="cargar()" />
+          <app-ultimos-comentarios
+            [publicacionId]="publicacion._id"
+            [cantidad]="publicacion.cantidadComentarios"
+          />
+        </article>
       }
     </div>
 

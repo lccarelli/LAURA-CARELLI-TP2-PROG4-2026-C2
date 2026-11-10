@@ -212,7 +212,11 @@
     "ultimas_publicaciones": "Mis últimas publicaciones",
     "error_publicaciones": "No pudimos cargar tus publicaciones",
     "sin_publicaciones": "Todavía no publicaste nada.",
-    "publicar_primera": "Crear mi primera publicación"
+    "publicar_primera": "Crear mi primera publicación",
+    "ultimos_comentarios": "Últimos comentarios",
+    "sin_comentarios": "Todavía no tiene comentarios.",
+    "error_comentarios": "No se pudieron cargar los comentarios",
+    "ver_comentarios": "Ver todos los comentarios ({{n}})"
   },
   "roles": {
     "usuario": "usuario",
