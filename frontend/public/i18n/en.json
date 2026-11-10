@@ -212,7 +212,11 @@
     "ultimas_publicaciones": "My latest posts",
     "error_publicaciones": "We could not load your posts",
     "sin_publicaciones": "You have not posted anything yet.",
-    "publicar_primera": "Create my first post"
+    "publicar_primera": "Create my first post",
+    "ultimos_comentarios": "Latest comments",
+    "sin_comentarios": "No comments yet.",
+    "error_comentarios": "Could not load the comments",
+    "ver_comentarios": "See all comments ({{n}})"
   },
   "roles": {
     "usuario": "user",

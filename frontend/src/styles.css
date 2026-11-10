@@ -840,6 +840,14 @@ body {
     @apply font-sans text-sm font-semibold text-tinta;
   }
 
+  .comentario-texto {
+    @apply line-clamp-3 text-sm break-words whitespace-pre-line text-tinta;
+  }
+
+  .publicacion-perfil {
+    @apply grid items-start gap-4 md:grid-cols-[16rem_1fr];
+  }
+
   .titulo-seccion {
     @apply font-serif text-2xl font-semibold text-tinta;
   }
