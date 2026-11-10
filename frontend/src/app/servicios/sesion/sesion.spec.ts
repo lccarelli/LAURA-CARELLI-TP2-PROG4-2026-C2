@@ -1,8 +1,10 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { sesionVencidaInterceptor } from '../../interceptores/sesion-vencida-interceptor';
+import { tokenInterceptor } from '../../interceptores/token-interceptor';
 import { Auth } from '../auth/auth';
 import { Sesion } from './sesion';
 
@@ -152,7 +154,10 @@ describe('Sesion al iniciar la aplicación', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(withInterceptors([tokenInterceptor, sesionVencidaInterceptor])),
+        provideHttpClientTesting(),
+      ],
     });
     http = TestBed.inject(HttpTestingController);
     auth = TestBed.inject(Auth);
