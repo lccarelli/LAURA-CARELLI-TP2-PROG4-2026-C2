@@ -75,7 +75,7 @@ describe('NuevaPublicacion', () => {
     it('[Z] con el formulario vacío no envía nada y marca los campos', async () => {
       await enviar();
 
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       expect(fixture.componentInstance.mensajeDeError('titulo')).toBe('Este campo es obligatorio');
       expect(fixture.componentInstance.mensajeDeError('mensaje')).toBe('Este campo es obligatorio');
     });
@@ -176,11 +176,11 @@ describe('NuevaPublicacion', () => {
 
       cargarIngredientes([{ nombre: 'Harina', cantidad: null, unidad: 'g' }]);
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
 
       cargarIngredientes([{ nombre: '  ', cantidad: 3, unidad: 'g' }]);
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
     });
 
     describe('mensajes del ingrediente', () => {
@@ -260,12 +260,12 @@ describe('NuevaPublicacion', () => {
       for (const cantidad of [0, -1, 0.255, 100001]) {
         cargarIngredientes([{ nombre: 'Harina', cantidad, unidad: 'g' }]);
         await enviar();
-        http.expectNone({ method: 'POST', url: URL });
+        expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       }
 
       cargarIngredientes([{ nombre: 'Harina', cantidad: 0.25, unidad: 'kg' }]);
       await enviar();
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
 
     it('[I] se pueden agregar y quitar ingredientes, hasta 40', async () => {
@@ -337,13 +337,13 @@ describe('NuevaPublicacion', () => {
       for (const valor of malos) {
         fixture.componentInstance.formulario.patchValue({ porciones: valor });
         await enviar();
-        http.expectNone({ method: 'POST', url: URL });
+        expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
         expect(fixture.componentInstance.mensajeDeError('porciones'), valor).toContain('entero');
       }
 
       fixture.componentInstance.formulario.patchValue({ porciones: '100' });
       await enviar();
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
 
     it('[B] el tiempo llega hasta 10080 y las calorías hasta 10000', async () => {
@@ -352,18 +352,18 @@ describe('NuevaPublicacion', () => {
         tiempoMinutos: '10081',
       });
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
 
       fixture.componentInstance.formulario.patchValue({
         tiempoMinutos: '10080',
         calorias: '10001',
       });
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
 
       fixture.componentInstance.formulario.patchValue({ calorias: '10000' });
       await enviar();
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
 
     it('[I] los campos numéricos de la ficha descartan lo que no es un dígito al escribir', async () => {
@@ -971,7 +971,7 @@ describe('NuevaPublicacion', () => {
 
         await enviar();
 
-        http.expectNone({ method: 'POST', url: URL });
+        expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
         expect(fixture.nativeElement.textContent).toContain('Escribí la descripción de este paso');
       });
 
@@ -1027,7 +1027,7 @@ describe('NuevaPublicacion', () => {
 
         await enviar();
 
-        http.expectNone({ method: 'POST', url: URL });
+        expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
         expect(fixture.nativeElement.textContent).toContain('Escribí la descripción de este paso');
       });
 
@@ -1126,7 +1126,7 @@ describe('NuevaPublicacion', () => {
       fixture.componentInstance.formulario.patchValue(formularioValido);
       cargarPasos(['a'.repeat(2001)]);
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       expect(fixture.componentInstance.pasos.at(0).controls.texto.invalid).toBe(true);
 
       cargarPasos(['a'.repeat(2000)]);
@@ -1178,23 +1178,23 @@ describe('NuevaPublicacion', () => {
     it('[B] un título de 55 caracteres envía y uno de 56 no', async () => {
       fixture.componentInstance.formulario.patchValue({ titulo: 'a'.repeat(56), mensaje: 'x' });
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       expect(fixture.componentInstance.mensajeDeError('titulo')).toContain('55');
 
       fixture.componentInstance.formulario.patchValue({ titulo: 'a'.repeat(55), mensaje: 'x' });
       await enviar();
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
 
     it('[B] un mensaje de 2000 caracteres envía y uno de 2001 no', async () => {
       fixture.componentInstance.formulario.patchValue({ titulo: 'x', mensaje: 'a'.repeat(2001) });
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       expect(fixture.componentInstance.mensajeDeError('mensaje')).toContain('2000');
 
       fixture.componentInstance.formulario.patchValue({ titulo: 'x', mensaje: 'a'.repeat(2000) });
       await enviar();
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
 
     it('[E] una imagen inválida muestra el error y bloquea el envío', async () => {
@@ -1205,7 +1205,7 @@ describe('NuevaPublicacion', () => {
 
       await enviar();
 
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       expect(fixture.componentInstance.errorImagen()).toBe('imagen.tipo');
     });
 
@@ -1232,7 +1232,7 @@ describe('NuevaPublicacion', () => {
       await enviar();
       await enviar();
 
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
   });
 

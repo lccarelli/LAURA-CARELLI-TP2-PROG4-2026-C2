@@ -233,7 +233,10 @@ describe('Publicaciones', () => {
 
       botonVerMas()!.click();
 
-      pedir(9).flush(pagina(11, 1, false));
+      const siguiente = pedir(9);
+
+      expect(siguiente.request.params.get('offset')).toBe('9');
+      siguiente.flush(pagina(11, 1, false));
     });
 
     it('[E] si el servidor no deja eliminarla, la publicación sigue en la lista', async () => {

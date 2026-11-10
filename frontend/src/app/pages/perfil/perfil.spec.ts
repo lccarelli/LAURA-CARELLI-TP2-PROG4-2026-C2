@@ -147,7 +147,10 @@ describe('Perfil', () => {
     it('[O] pide sólo las 3 más recientes de la persona de la sesión', async () => {
       await mostrar(usuario);
 
-      pedido().flush(pagina(3));
+      const solicitud = pedido();
+
+      expect(solicitud.request.method).toBe('GET');
+      solicitud.flush(pagina(3));
     });
 
     it('[O] las muestra con la misma tarjeta, con sus me gusta y su cantidad de comentarios', async () => {
@@ -222,7 +225,7 @@ describe('Perfil', () => {
     it('[Z] sin sesión no pide nada', async () => {
       await mostrar(null);
 
-      http.expectNone((solicitud) => solicitud.url === URL);
+      expect(http.match((solicitud) => solicitud.url === URL)).toHaveLength(0);
     });
 
     it('[S] al eliminar una de las tres, vuelve a pedir para traer la siguiente más reciente', async () => {
