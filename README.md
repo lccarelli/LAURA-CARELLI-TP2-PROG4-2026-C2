@@ -58,7 +58,8 @@ El plan gratis de Render duerme el backend tras unos minutos sin uso: el primera
 | Tailwind  | 4.1.x                         |
 | Vitest    | 4.x                           |
 | Oxlint    | backend                       |
-| ESLint    | frontend, con `angular-eslint` 22 |
+| ESLint    | frontend con `angular-eslint` 22; backend sólo con las reglas de Sonar |
+| `eslint-plugin-sonarjs` | frontend y backend: las mismas reglas que SonarCloud |
 | Prettier  | 3.x                           |
 
 ---
@@ -109,7 +110,7 @@ docker compose up --build
 | `npm run test:cov`   | Tests de unidad con cobertura         |
 | `npm run test:e2e`   | Tests de API contra Mongo             |
 | `npm run test:e2e:cov` | Tests de API con cobertura          |
-| `npm run lint`       | Oxlint sobre `src/` y `test/`         |
+| `npm run lint`       | Oxlint y ESLint (reglas de Sonar) sobre `src/` y `test/` |
 | `npm run format`     | Prettier da formateo                  |
 
 | Comando (frontend) | Qué hace                      |
@@ -118,7 +119,7 @@ docker compose up --build
 | `npm run build`    | Build de producción a `dist/` |
 | `npm test`         | Tests en modo watch           |
 | `npm run test:cov` | Tests con cobertura           |
-| `npm run lint`     | ESLint sobre TypeScript y templates |
+| `npm run lint`     | ESLint sobre TypeScript y templates, con las reglas de Sonar |
 
 ---
 
@@ -126,7 +127,7 @@ docker compose up --build
 
 | Hook         | Qué hace                                                                         |
 | ------------ | -------------------------------------------------------------------------------- |
-| `pre-commit` | `lint-staged`: Oxlint y Prettier en `backend/`, ESLint y Prettier en `frontend/` |
+| `pre-commit` | `lint-staged`: Oxlint, ESLint y Prettier en `backend/`; ESLint y Prettier en `frontend/` |
 | `commit-msg` | `commitlint`: tipos `feat`, `fix`, `docs`, `refactor`, `test`, `chore`           |
 | `pre-push`   | Bloquea el push directo a `main`                                                 |
 
