@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { Auth } from '../../servicios/auth/auth';
 import { Login } from './login';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 
@@ -121,5 +122,52 @@ describe('Login', () => {
     await enviar();
 
     expect(http.match(URL)).toHaveLength(1);
+  });
+
+  describe('aviso de sesión cerrada', () => {
+    const aviso = () => fixture.nativeElement.querySelector('app-aviso') as HTMLElement | null;
+    const cerrarSesionPor = async (motivo: string | null) => {
+      TestBed.inject(Auth).motivoDeSalida.set(motivo);
+      await fixture.whenStable();
+    };
+
+    it('[Z] si se llegó sin que se cerrara la sesión, no hay aviso', () => {
+      expect(aviso()).toBeNull();
+    });
+
+    it('[O] si la sesión se cerró por un 401, explica el motivo', async () => {
+      await cerrarSesionPor('api.SESION_VENCIDA');
+
+      expect(aviso()?.textContent).toContain('Sesión cerrada');
+      expect(aviso()?.textContent).toContain('Tu sesión llegó a su duración máxima');
+    });
+
+    it('[I] es un aviso informativo, no de error', async () => {
+      await cerrarSesionPor('api.TOKEN_INVALIDO');
+
+      expect(aviso()?.querySelector('.aviso-info')).not.toBeNull();
+    });
+
+    it('[S] se puede cerrar', async () => {
+      await cerrarSesionPor('api.TOKEN_INVALIDO');
+
+      (aviso()?.querySelector('button') as HTMLButtonElement).click();
+      await fixture.whenStable();
+
+      expect(aviso()).toBeNull();
+    });
+
+    it('[S] sigue ahí si el primer intento de ingresar falla', async () => {
+      await cerrarSesionPor('api.TOKEN_INVALIDO');
+      componente.formulario.setValue({ identificador: 'laura_c', clave: 'Mala1234' });
+
+      await enviar();
+      http
+        .expectOne(URL)
+        .flush({ codigo: 'CREDENCIALES_INVALIDAS' }, { status: 401, statusText: 'Unauthorized' });
+      await fixture.whenStable();
+
+      expect(fixture.nativeElement.querySelectorAll('app-aviso')).toHaveLength(2);
+    });
   });
 });

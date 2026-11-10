@@ -189,6 +189,41 @@ describe('Auth', () => {
     });
   });
 
+  describe('motivo de salida', () => {
+    it('[Z] al iniciar no hay motivo', () => {
+      const { auth } = crearAuth();
+
+      expect(auth.motivoDeSalida()).toBeNull();
+    });
+
+    it('[O] salir con un motivo lo guarda para mostrarlo en el login', () => {
+      const { auth } = crearAuth();
+
+      auth.salir('api.SESION_VENCIDA');
+
+      expect(auth.motivoDeSalida()).toBe('api.SESION_VENCIDA');
+    });
+
+    it('[I] salir sin motivo, como al apretar Salir, no deja ninguno', () => {
+      const { auth } = crearAuth();
+      auth.salir('api.SESION_VENCIDA');
+
+      auth.salir();
+
+      expect(auth.motivoDeSalida()).toBeNull();
+    });
+
+    it('[S] al ingresar de nuevo el motivo se borra', () => {
+      const { auth, http } = crearAuth();
+      auth.salir('api.SESION_VENCIDA');
+
+      auth.ingresar('laura_c', 'Clave1234').subscribe();
+      http.expectOne(`${environment.API_URL}/auth/ingresar`).flush(sesion);
+
+      expect(auth.motivoDeSalida()).toBeNull();
+    });
+  });
+
   describe('salir', () => {
     it('[Z] salir sin sesión no falla', () => {
       const { auth } = crearAuth();

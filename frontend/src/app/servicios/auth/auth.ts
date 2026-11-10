@@ -11,6 +11,7 @@ export class Auth {
 
   readonly token = signal<string | null>(localStorage.getItem('token'));
   readonly usuario = signal<Usuario | null>(this.leerUsuario());
+  readonly motivoDeSalida = signal<string | null>(null);
 
   registro(datos: FormData) {
     return this.http
@@ -40,14 +41,16 @@ export class Auth {
     return this.http.get(`${environment.API_URL}/health`);
   }
 
-  salir() {
+  salir(motivo: string | null = null) {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     this.token.set(null);
     this.usuario.set(null);
+    this.motivoDeSalida.set(motivo);
   }
 
   private guardarSesion(sesion: Sesion) {
+    this.motivoDeSalida.set(null);
     this.guardarUsuario(sesion.usuario);
     this.guardarToken(sesion.token);
   }

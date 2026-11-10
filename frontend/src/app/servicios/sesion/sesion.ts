@@ -1,7 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { DestroyRef, inject, Service, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
 import { finalize, interval } from 'rxjs';
 import { Auth } from '../auth/auth';
 
@@ -11,7 +10,6 @@ const EVENTOS_DE_ACTIVIDAD = ['pointerdown', 'keydown', 'scroll', 'touchstart'] 
 @Service()
 export class Sesion {
   private auth = inject(Auth);
-  private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   readonly verificando = signal(false);
   private ultimaActividad = -1;
@@ -47,14 +45,7 @@ export class Sesion {
     this.auth
       .autorizar()
       .pipe(finalize(() => this.verificando.set(false)))
-      .subscribe({
-        error: (error: HttpErrorResponse) => {
-          if (error.status === 401) {
-            this.auth.salir();
-            this.router.navigateByUrl('/login');
-          }
-        },
-      });
+      .subscribe({ error: () => undefined });
   }
 
   revisar() {

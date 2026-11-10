@@ -4,6 +4,15 @@
   <div class="acceso-formulario">
     <h1 class="titulo">{{ 'login.titulo' | translate }}</h1>
 
+    @if (motivoDeSalida(); as motivo) {
+      <app-aviso
+        titulo="login.sesion_cerrada_titulo"
+        [info]="true"
+        (cerrar)="motivoDeSalida.set(null)"
+        >{{ motivo | translate }}</app-aviso
+      >
+    }
+
     @if (mensajeError(); as mensaje) {
       <app-aviso titulo="login.error_titulo" (cerrar)="mensajeError.set(null)">{{
         mensaje | translate

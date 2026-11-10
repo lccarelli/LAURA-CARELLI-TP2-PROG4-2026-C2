@@ -56,7 +56,8 @@
     "boton_enviando": "Ingresando…",
     "sin_cuenta": "¿No tenés cuenta?",
     "registrarme": "Registrarme",
-    "error_titulo": "No se pudo ingresar"
+    "error_titulo": "No se pudo ingresar",
+    "sesion_cerrada_titulo": "Sesión cerrada"
   },
   "registro": {
     "titulo": "Crear cuenta",
@@ -246,6 +247,7 @@
     "SESION_VENCIDA": "Tu sesión llegó a su duración máxima. Ingresá de nuevo.",
     "TOKEN_AUSENTE": "Tenés que ingresar para hacer esto.",
     "TOKEN_INVALIDO": "Tu sesión no es válida o venció. Ingresá de nuevo.",
+    "USUARIO_NO_AUTORIZADO": "Tu usuario no está habilitado o ya no existe. Ingresá de nuevo.",
     "DEMASIADAS_SOLICITUDES": "Hiciste demasiadas solicitudes seguidas. Esperá un momento e intentá de nuevo.",
     "PUBLICACION_AJENA": "Sólo podés eliminar tus propias publicaciones.",
     "ME_GUSTA_REPETIDO": "Ya le diste me gusta a esta publicación.",
