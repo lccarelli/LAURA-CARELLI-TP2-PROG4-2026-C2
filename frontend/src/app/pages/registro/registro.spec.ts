@@ -193,6 +193,6 @@ describe('Registro', () => {
     await enviar();
     await enviar();
 
-    http.expectOne(URL);
+    expect(http.match(URL)).toHaveLength(1);
   });
 });

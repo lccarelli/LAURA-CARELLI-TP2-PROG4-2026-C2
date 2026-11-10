@@ -2,6 +2,7 @@ const eslint = require('@eslint/js');
 const { defineConfig } = require('eslint/config');
 const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
+const sonarjs = require('eslint-plugin-sonarjs');
 
 module.exports = defineConfig([
   {
@@ -11,6 +12,7 @@ module.exports = defineConfig([
       tseslint.configs.recommended,
       tseslint.configs.stylistic,
       angular.configs.tsRecommended,
+      sonarjs.configs.recommended,
     ],
     processor: angular.processInlineTemplates,
     rules: {
@@ -31,6 +33,14 @@ module.exports = defineConfig([
         },
       ],
     },
+  },
+  {
+    files: ['**/*.spec.ts'],
+    rules: { 'sonarjs/regex-complexity': 'off' },
+  },
+  {
+    files: ['src/app/interceptores/reintento-interceptor.ts'],
+    rules: { 'sonarjs/pseudo-random': 'off' },
   },
   {
     files: ['**/*.html'],

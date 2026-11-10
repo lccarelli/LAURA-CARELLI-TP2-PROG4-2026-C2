@@ -39,8 +39,9 @@ describe('CloudinaryCliente', () => {
 
   describe('configuración', () => {
     it('[O] configura Cloudinary una sola vez con las tres credenciales', () => {
-      new CloudinaryCliente(config);
+      const cliente = new CloudinaryCliente(config);
 
+      expect(cliente).toBeInstanceOf(CloudinaryCliente);
       expect(cloudinary.config).toHaveBeenCalledTimes(1);
       expect(cloudinary.config).toHaveBeenCalledWith({
         api_key: 'clave',

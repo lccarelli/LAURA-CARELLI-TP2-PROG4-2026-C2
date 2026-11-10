@@ -235,13 +235,7 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
     entrada.value = '';
     let error: string | null = null;
     for (const archivo of archivos) {
-      error =
-        validarImagen(archivo) ??
-        (this.fotosDe(paso).length >= MAXIMO_FOTOS_POR_PASO
-          ? 'publicaciones.paso_foto_maximo_paso'
-          : this.totalFotosDePasos() >= MAXIMO_FOTOS_PASOS
-            ? 'publicaciones.paso_foto_maximo'
-            : null);
+      error = this.errorDeFotoPaso(paso, archivo);
       if (error) {
         break;
       }
@@ -256,6 +250,17 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
       }
       return nuevos;
     });
+  }
+
+  private errorDeFotoPaso(paso: AbstractControl, archivo: File) {
+    const error = validarImagen(archivo);
+    if (error) {
+      return error;
+    }
+    if (this.fotosDe(paso).length >= MAXIMO_FOTOS_POR_PASO) {
+      return 'publicaciones.paso_foto_maximo_paso';
+    }
+    return this.totalFotosDePasos() >= MAXIMO_FOTOS_PASOS ? 'publicaciones.paso_foto_maximo' : null;
   }
 
   private colocarFotoPaso(paso: AbstractControl, archivo: File) {
@@ -726,27 +731,7 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
 
     const { titulo, mensaje, porciones, tiempoMinutos, calorias } = this.formulario.getRawValue();
     const datos = new FormData();
-    const pasos: { titulo?: string; texto: string; fotos?: number[] }[] = [];
-    let fotosEnviadas = 0;
-    for (const control of this.pasos.controls) {
-      const { titulo: tituloDelPaso, texto: textoDelPaso } = control.getRawValue();
-      const texto = textoDelPaso.trim();
-      if (!texto) {
-        continue;
-      }
-      const paso: { titulo?: string; texto: string; fotos?: number[] } = { texto };
-      if (tituloDelPaso.trim()) {
-        paso.titulo = tituloDelPaso.trim();
-      }
-      const fotos = this.llevaLista() ? this.fotosDe(control) : [];
-      if (fotos.length) {
-        paso.fotos = fotos.map(({ archivo }) => {
-          datos.append('imagenesPasos', archivo);
-          return fotosEnviadas++;
-        });
-      }
-      pasos.push(paso);
-    }
+    const pasos = this.armarPasos(datos);
     const ingredientes = this.ingredientesCargados();
     datos.append('tipo', this.tipo());
     datos.append('titulo', titulo.trim());
@@ -758,15 +743,7 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
       datos.append('pasos', JSON.stringify(pasos));
     }
     if (this.llevaLista()) {
-      const ficha = { porciones, tiempoMinutos, calorias, costo: this.costo()?.toString() ?? '' };
-      if (porciones.trim()) {
-        datos.append('tipoRinde', this.tipoRinde());
-      }
-      for (const [campo, valor] of Object.entries(ficha)) {
-        if (valor.trim()) {
-          datos.append(campo, valor.trim());
-        }
-      }
+      this.agregarFicha(datos, { porciones, tiempoMinutos, calorias });
     }
     const imagen = this.imagen();
     if (imagen) {
@@ -786,5 +763,45 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
         this.mensajeError.set(mensajeDeApi(error));
       },
     });
+  }
+
+  private armarPasos(datos: FormData) {
+    const pasos: { titulo?: string; texto: string; fotos?: number[] }[] = [];
+    let fotosEnviadas = 0;
+    for (const control of this.pasos.controls) {
+      const { titulo, texto: textoDelPaso } = control.getRawValue();
+      const texto = textoDelPaso.trim();
+      if (!texto) {
+        continue;
+      }
+      const paso: { titulo?: string; texto: string; fotos?: number[] } = { texto };
+      if (titulo.trim()) {
+        paso.titulo = titulo.trim();
+      }
+      const fotos = this.llevaLista() ? this.fotosDe(control) : [];
+      if (fotos.length) {
+        paso.fotos = fotos.map(({ archivo }) => {
+          datos.append('imagenesPasos', archivo);
+          return fotosEnviadas++;
+        });
+      }
+      pasos.push(paso);
+    }
+    return pasos;
+  }
+
+  private agregarFicha(
+    datos: FormData,
+    medidas: { porciones: string; tiempoMinutos: string; calorias: string },
+  ) {
+    const ficha = { ...medidas, costo: this.costo()?.toString() ?? '' };
+    if (medidas.porciones.trim()) {
+      datos.append('tipoRinde', this.tipoRinde());
+    }
+    for (const [campo, valor] of Object.entries(ficha)) {
+      if (valor.trim()) {
+        datos.append(campo, valor.trim());
+      }
+    }
   }
 }

@@ -1,4 +1,4 @@
 {
-  "*.ts": ["oxlint --fix", "prettier --write"],
+  "*.ts": ["oxlint --fix", "eslint --no-warn-ignored", "prettier --write"],
   "*.{json,md}": ["prettier --write"]
 }

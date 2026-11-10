@@ -167,10 +167,9 @@ describe('TarjetaPublicacion', () => {
       fixture.componentInstance['alternarMeGusta']();
       await actualizar();
 
-      http.expectOne({ method: 'POST', url: `${URL}/1/megusta` }).flush({
-        meGusta: true,
-        cantidadMeGusta: 8,
-      });
+      const pedidos = http.match({ method: 'POST', url: `${URL}/1/megusta` });
+      expect(pedidos).toHaveLength(1);
+      pedidos[0].flush({ meGusta: true, cantidadMeGusta: 8 });
       http.verify();
     });
 

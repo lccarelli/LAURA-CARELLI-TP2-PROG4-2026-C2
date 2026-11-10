@@ -78,11 +78,11 @@ describe('reintentoInterceptor', () => {
 
     fallar(503);
     await vi.advanceTimersByTimeAsync(499);
-    controlador.expectNone(URL);
+    expect(controlador.match(URL)).toHaveLength(0);
     await vi.advanceTimersByTimeAsync(1);
     fallar(503);
     await vi.advanceTimersByTimeAsync(999);
-    controlador.expectNone(URL);
+    expect(controlador.match(URL)).toHaveLength(0);
     await vi.advanceTimersByTimeAsync(1);
     controlador.expectOne(URL).flush({ ok: true });
   });
