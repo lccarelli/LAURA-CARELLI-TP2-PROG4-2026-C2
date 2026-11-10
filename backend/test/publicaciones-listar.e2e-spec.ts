@@ -107,15 +107,15 @@ describe('GET /publicaciones', () => {
       );
       expect(ids).toHaveLength(12);
       expect(new Set(ids).size).toBe(12);
-      expect([...ids].sort().reverse()).toEqual(ids);
+      expect([...ids].sort((a, b) => b.localeCompare(a))).toEqual(ids);
     });
   });
 
   describe('orden y filtros', () => {
     const modelo = () =>
       app.get<Model<Publicacion>>(getModelToken(Publicacion.name));
-    const titulos = (cuerpo: { datos: { titulo: string }[] }) =>
-      cuerpo.datos.map(({ titulo }) => titulo);
+    const titulos = (body: { datos: { titulo: string }[] }) =>
+      body.datos.map(({ titulo }) => titulo);
     const darMeGusta = (id: string, cantidad: number) =>
       modelo().updateOne({ _id: id }, { cantidadMeGusta: cantidad });
     const otraPersona = () =>
@@ -302,7 +302,7 @@ describe('GET /publicaciones', () => {
     it('[I] responde con datos, offset, limit y hayMas', async () => {
       const { body } = await listar('?offset=2&limit=5').expect(200);
 
-      expect(Object.keys(body).sort()).toEqual([
+      expect(Object.keys(body).sort((a, b) => a.localeCompare(b))).toEqual([
         'datos',
         'hayMas',
         'limit',

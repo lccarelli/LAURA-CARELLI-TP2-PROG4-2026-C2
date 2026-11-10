@@ -7,8 +7,8 @@ import { registrar, usuarioValido } from './ayudas/datos.js';
 describe('POST /auth/ingresar', () => {
   let app: INestApplication;
 
-  const ingresar = (cuerpo: object) =>
-    request(app.getHttpServer()).post('/auth/ingresar').send(cuerpo);
+  const ingresar = (body: object) =>
+    request(app.getHttpServer()).post('/auth/ingresar').send(body);
 
   beforeAll(async () => {
     app = await crearApp();
@@ -56,7 +56,9 @@ describe('POST /auth/ingresar', () => {
         clave: 'Clave1234',
       }).expect(200);
 
-      expect(Object.keys(body.usuario).sort()).toEqual([
+      expect(
+        Object.keys(body.usuario).sort((a, b) => a.localeCompare(b)),
+      ).toEqual([
         '_id',
         'apellido',
         'correo',

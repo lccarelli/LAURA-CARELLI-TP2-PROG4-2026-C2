@@ -186,7 +186,7 @@ describe('POST /publicaciones/:id/comentarios', () => {
       expect(await cantidad()).toBe(0);
     });
 
-    it('[B] vacío, sólo espacios o sin cuerpo responden 400', async () => {
+    it('[B] vacío, sólo espacios o sin body responden 400', async () => {
       await comentar({ mensaje: '' }).expect(400);
       await comentar({ mensaje: '    ' }).expect(400);
       await comentar({}).expect(400);
@@ -246,7 +246,7 @@ describe('POST /publicaciones/:id/comentarios', () => {
       expect(await comentarios.countDocuments()).toBe(0);
     });
 
-    it('[S] no se puede mandar el autor, la fecha ni modificado en el cuerpo', async () => {
+    it('[S] no se puede mandar el autor, la fecha ni modificado en el body', async () => {
       const otra = await otraPersona();
 
       for (const extra of [

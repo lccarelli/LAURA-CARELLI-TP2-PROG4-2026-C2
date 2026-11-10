@@ -118,11 +118,11 @@ describe('Registro', () => {
     componente.imagen.set(new File(['x'], 'foto.png', { type: 'image/png' }));
 
     await enviar();
-    const cuerpo = http.expectOne(URL).request.body as FormData;
+    const body = http.expectOne(URL).request.body as FormData;
 
-    expect(cuerpo.has('repetirClave')).toBe(false);
-    expect(cuerpo.get('correo')).toBe('laura@correo.com');
-    expect((cuerpo.get('imagen') as File).name).toBe('foto.png');
+    expect(body.has('repetirClave')).toBe(false);
+    expect(body.get('correo')).toBe('laura@correo.com');
+    expect((body.get('imagen') as File).name).toBe('foto.png');
   });
 
   it('[I] descarta los espacios alrededor del texto pero no de la clave', async () => {
@@ -134,9 +134,9 @@ describe('Registro', () => {
     });
 
     await enviar();
-    const cuerpo = http.expectOne(URL).request.body as FormData;
+    const body = http.expectOne(URL).request.body as FormData;
 
-    expect(cuerpo.get('nombre')).toBe('Laura');
+    expect(body.get('nombre')).toBe('Laura');
   });
 
   it('[B] claves que no coinciden bloquean el envío y avisan', async () => {

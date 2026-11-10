@@ -1,11 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { mensajeDeApi } from './errores';
 
-const error = (status: number, cuerpo?: unknown) =>
-  new HttpErrorResponse({ status, error: cuerpo });
+const error = (status: number, body?: unknown) => new HttpErrorResponse({ status, error: body });
 
 describe('mensajeDeApi', () => {
-  it('[Z] un error sin cuerpo da la clave del mensaje general', () => {
+  it('[Z] un error sin body da la clave del mensaje general', () => {
     expect(mensajeDeApi(error(500))).toBe('errores.inesperado');
   });
 
@@ -13,7 +12,7 @@ describe('mensajeDeApi', () => {
     expect(mensajeDeApi(error(409, { codigo: 'CORREO_REPETIDO' }))).toBe('api.CORREO_REPETIDO');
   });
 
-  it('[M] un cuerpo con mensajes pero sin código da la clave del mensaje general', () => {
+  it('[M] un body con mensajes pero sin código da la clave del mensaje general', () => {
     expect(mensajeDeApi(error(400, { message: ['uno', 'dos'] }))).toBe('errores.inesperado');
   });
 

@@ -2,8 +2,8 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CrearComentarioDto } from './crear-comentario.dto.js';
 
-async function camposInvalidos(cuerpo: Record<string, unknown>) {
-  const errores = await validate(plainToInstance(CrearComentarioDto, cuerpo));
+async function camposInvalidos(body: Record<string, unknown>) {
+  const errores = await validate(plainToInstance(CrearComentarioDto, body));
   return errores.map((error) => error.property);
 }
 

@@ -852,6 +852,22 @@ body {
     @apply font-serif text-2xl font-semibold text-tinta;
   }
 
+  .fondo-modal {
+    @apply fixed inset-0 z-[60] grid place-items-center bg-tinta/50 p-4;
+  }
+
+  .modal {
+    @apply flex w-full max-w-md flex-col gap-4 rounded-2xl bg-hoja p-6 text-tinta shadow-flota;
+  }
+
+  .modal-tiempo {
+    @apply text-center font-serif text-4xl font-semibold text-primario;
+  }
+
+  .modal-acciones {
+    @apply grid grid-cols-2 gap-3;
+  }
+
   .estado-vacio {
     @apply text-center text-suave;
   }

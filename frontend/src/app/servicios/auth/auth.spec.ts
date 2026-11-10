@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
 import { Sesion } from '../../interfaces/sesion';
+import { tokenQueVenceEn } from '../../../testing/token';
 import { Auth } from './auth';
 
 const sesion: Sesion = {
@@ -221,6 +222,53 @@ describe('Auth', () => {
       http.expectOne(`${environment.API_URL}/auth/ingresar`).flush(sesion);
 
       expect(auth.motivoDeSalida()).toBeNull();
+    });
+  });
+
+  describe('vencimiento', () => {
+    it('[Z] sin token no hay vencimiento', () => {
+      const { auth } = crearAuth();
+
+      expect(auth.vencimiento()).toBeNull();
+    });
+
+    it('[O] lee el vencimiento del token en milisegundos', () => {
+      const { auth } = crearAuth();
+      const ahora = Date.now();
+
+      auth.token.set(tokenQueVenceEn(900, ahora));
+
+      expect(auth.vencimiento()).toBe(Math.floor(ahora / 1000) * 1000 + 900 * 1000);
+    });
+
+    it.each(['no-es-un-token', 'a.b.c', 'a..c', 'a.e30.c'])(
+      '[E] un token que no se puede leer (%s) no tiene vencimiento',
+      (token) => {
+        const { auth } = crearAuth();
+
+        auth.token.set(token);
+
+        expect(auth.vencimiento()).toBeNull();
+      },
+    );
+
+    it('[S] al cambiar el token cambia el vencimiento', () => {
+      const { auth } = crearAuth();
+      auth.token.set(tokenQueVenceEn(60));
+      const primero = auth.vencimiento();
+
+      auth.token.set(tokenQueVenceEn(900));
+
+      expect(auth.vencimiento()).toBeGreaterThan(primero ?? 0);
+    });
+
+    it('[S] al salir ya no hay vencimiento', () => {
+      const { auth } = crearAuth();
+      auth.token.set(tokenQueVenceEn(60));
+
+      auth.salir();
+
+      expect(auth.vencimiento()).toBeNull();
     });
   });
 

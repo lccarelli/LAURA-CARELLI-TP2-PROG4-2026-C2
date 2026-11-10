@@ -7,6 +7,7 @@ import { PaginaPublicaciones, Publicacion } from '../../interfaces/publicacion';
 import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
 import { Idioma } from '../../servicios/idioma/idioma';
+import { COMENTARIOS_EN_EL_PERFIL } from '../../componentes/ultimos-comentarios/ultimos-comentarios';
 import { Perfil } from './perfil';
 import { comentarioDePrueba } from '../../../testing/comentario';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
@@ -260,7 +261,7 @@ describe('Perfil', () => {
       const comentarios = http.match(
         (solicitud) =>
           /\/publicaciones\/id\d\/comentarios$/.test(solicitud.url) &&
-          solicitud.params.get('limit') === '2',
+          solicitud.params.get('limit') === String(COMENTARIOS_EN_EL_PERFIL),
       );
       expect(comentarios.map((solicitud) => solicitud.request.url.split('/')[4])).toEqual([
         'id1',
@@ -269,7 +270,7 @@ describe('Perfil', () => {
       comentarios[0].flush({
         datos: [comentarioDePrueba({ mensaje: 'Qué buena receta' })],
         offset: 0,
-        limit: 2,
+        limit: COMENTARIOS_EN_EL_PERFIL,
         hayMas: false,
       });
       await actualizar();
@@ -296,7 +297,12 @@ describe('Perfil', () => {
       const [primera, segunda] = http.match((solicitud) => solicitud.url.endsWith('/comentarios'));
 
       primera.flush({ codigo: 'X' }, { status: 500, statusText: 'Error' });
-      segunda.flush({ datos: [comentarioDePrueba()], offset: 0, limit: 2, hayMas: false });
+      segunda.flush({
+        datos: [comentarioDePrueba()],
+        offset: 0,
+        limit: COMENTARIOS_EN_EL_PERFIL,
+        hayMas: false,
+      });
       await actualizar();
 
       expect(tarjetas()).toHaveLength(2);
