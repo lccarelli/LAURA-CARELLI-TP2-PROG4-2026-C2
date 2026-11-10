@@ -104,7 +104,9 @@ describe('me gusta de una publicación', () => {
     it('[B] dos pedidos a la vez del mismo usuario: uno da 201, el otro 409, y suma uno solo', async () => {
       const respuestas = await Promise.all([dar(), dar()]);
 
-      expect(respuestas.map(({ status }) => status).sort()).toEqual([201, 409]);
+      expect(
+        respuestas.map(({ status }) => status).sort((a, b) => a - b),
+      ).toEqual([201, 409]);
       expect(await cantidad()).toBe(1);
       expect(await megusta.countDocuments()).toBe(1);
     });
@@ -136,7 +138,7 @@ describe('me gusta de una publicación', () => {
       expect(ajeno.body.datos[0].cantidadMeGusta).toBe(1);
     });
 
-    it('[I] la persona sale del token: un usuario en el cuerpo se ignora', async () => {
+    it('[I] la persona sale del token: un usuario en el body se ignora', async () => {
       const otra = await otraPersona();
 
       await dar().send({ usuario: otra.usuario._id }).expect(201);

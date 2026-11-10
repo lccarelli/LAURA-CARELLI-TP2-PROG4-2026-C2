@@ -93,8 +93,8 @@ function normalizar(valor: unknown): BorradorPublicacion | null {
       if (typeof paso === 'string') {
         return { titulo: '', texto: texto(paso, 2000) };
       }
-      const { titulo, texto: cuerpo } = objeto(paso);
-      return { titulo: texto(titulo, 80), texto: texto(cuerpo, 2000) };
+      const { titulo, texto: body } = objeto(paso);
+      return { titulo: texto(titulo, 80), texto: texto(body, 2000) };
     }),
     conFotos: crudo['conFotos'] === true,
   };

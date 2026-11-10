@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Service, signal } from '@angular/core';
+import { computed, inject, Service, signal } from '@angular/core';
 import { tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Sesion } from '../../interfaces/sesion';
@@ -12,6 +12,7 @@ export class Auth {
   readonly token = signal<string | null>(localStorage.getItem('token'));
   readonly usuario = signal<Usuario | null>(this.leerUsuario());
   readonly motivoDeSalida = signal<string | null>(null);
+  readonly vencimiento = computed(() => this.leerVencimiento(this.token()));
 
   registro(datos: FormData) {
     return this.http
@@ -63,6 +64,16 @@ export class Auth {
   private guardarToken(token: string) {
     localStorage.setItem('token', token);
     this.token.set(token);
+  }
+
+  private leerVencimiento(token: string | null): number | null {
+    try {
+      const body = token?.split('.')[1]?.replaceAll('-', '+').replaceAll('_', '/');
+      const { exp } = JSON.parse(atob(body ?? ''));
+      return typeof exp === 'number' ? exp * 1000 : null;
+    } catch {
+      return null;
+    }
   }
 
   private leerUsuario(): Usuario | null {

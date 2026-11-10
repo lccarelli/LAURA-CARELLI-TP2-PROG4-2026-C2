@@ -149,7 +149,7 @@ describe('PublicacionesApi', () => {
     solicitud.flush({});
   });
 
-  it('[O] darMeGusta envía un POST sin cuerpo a la publicación y devuelve la cantidad', () => {
+  it('[O] darMeGusta envía un POST sin body a la publicación y devuelve la cantidad', () => {
     let respuesta: unknown;
     api.darMeGusta('abc123').subscribe((r) => (respuesta = r));
 

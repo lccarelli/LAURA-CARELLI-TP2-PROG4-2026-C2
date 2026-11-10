@@ -18,8 +18,8 @@ describe('sesionVencidaInterceptor', () => {
 
   const pedir = (ruta: string, metodo: 'get' | 'post' = 'get') =>
     http.request(metodo, `${API}${ruta}`).subscribe({ error: () => undefined });
-  const rechazar = (ruta: string, cuerpo: object | null = { codigo: 'TOKEN_INVALIDO' }) =>
-    controlador.expectOne(`${API}${ruta}`).flush(cuerpo, VENCIDO);
+  const rechazar = (ruta: string, body: object | null = { codigo: 'TOKEN_INVALIDO' }) =>
+    controlador.expectOne(`${API}${ruta}`).flush(body, VENCIDO);
 
   beforeEach(() => {
     localStorage.clear();

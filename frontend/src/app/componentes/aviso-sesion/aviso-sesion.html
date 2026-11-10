@@ -1,0 +1,26 @@
+<div class="fondo-modal">
+  <div
+    class="modal"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="aviso-sesion-titulo"
+    aria-describedby="aviso-sesion-texto"
+  >
+    <h2 id="aviso-sesion-titulo" class="titulo-seccion">{{ 'sesion.titulo' | translate }}</h2>
+    <p id="aviso-sesion-texto">{{ 'sesion.texto' | translate }}</p>
+    <p class="modal-tiempo">{{ tiempo() }}</p>
+    <div class="modal-acciones">
+      <button type="button" class="boton-secundario" (click)="sesion.cerrar()">
+        {{ 'sesion.cerrar' | translate }}
+      </button>
+      <button
+        type="button"
+        class="boton-principal"
+        [disabled]="sesion.extendiendo()"
+        (click)="sesion.extender()"
+      >
+        {{ (sesion.extendiendo() ? 'sesion.extendiendo' : 'sesion.extender') | translate }}
+      </button>
+    </div>
+  </div>
+</div>

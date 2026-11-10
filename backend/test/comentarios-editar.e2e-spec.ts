@@ -24,10 +24,11 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
   let comentarioId: string;
 
   const mensajeEditado = { mensaje: 'Editado' };
+  const sinIds: { publicacion?: string; comentario?: string } = {};
 
   const editar = (
     body: unknown = mensajeEditado,
-    ids: { publicacion?: string; comentario?: string } = {},
+    ids = sinIds,
     tokenUsado: string | null = token,
   ) => {
     const solicitud = request(app.getHttpServer()).put(
@@ -242,13 +243,13 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
 
   describe('validación', () => {
     it('[B] vacío, sólo espacios, sin mensaje o de 501 caracteres responden 400 y no cambian nada', async () => {
-      for (const cuerpo of [
+      for (const body of [
         { mensaje: '' },
         { mensaje: '   ' },
         {},
         { mensaje: 'a'.repeat(501) },
       ]) {
-        await editar(cuerpo).expect(400);
+        await editar(body).expect(400);
       }
 
       expect((await guardado()).mensaje).toBe('Comentario 1');
@@ -268,7 +269,7 @@ describe('PUT /publicaciones/:id/comentarios/:comentarioId', () => {
       expect((await guardado()).mensaje).toBe('Comentario 1');
     });
 
-    it('[S] no se puede mandar el autor, la fecha ni modificado en el cuerpo', async () => {
+    it('[S] no se puede mandar el autor, la fecha ni modificado en el body', async () => {
       const otra = await registrarOtraPersona(app);
 
       for (const extra of [

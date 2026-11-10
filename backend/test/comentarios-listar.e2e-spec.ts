@@ -30,8 +30,8 @@ describe('GET /publicaciones/:id/comentarios', () => {
     return solicitud;
   };
 
-  const mensajes = (cuerpo: { datos: Comentario[] }) =>
-    cuerpo.datos.map(({ mensaje }) => mensaje);
+  const mensajes = (body: { datos: Comentario[] }) =>
+    body.datos.map(({ mensaje }) => mensaje);
 
   beforeAll(async () => {
     app = await crearApp();

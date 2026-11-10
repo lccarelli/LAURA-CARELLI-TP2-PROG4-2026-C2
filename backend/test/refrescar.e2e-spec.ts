@@ -16,9 +16,10 @@ describe('POST /auth/refrescar', () => {
     }
     return solicitud;
   };
+  const vigencia: jwt.SignOptions = { expiresIn: '10m' };
   const firmar = (
     datos: Record<string, unknown>,
-    opciones: jwt.SignOptions = { expiresIn: '10m' },
+    opciones = vigencia,
     secreto = process.env.JWT_SECRET!,
   ) =>
     jwt.sign(
@@ -73,7 +74,7 @@ describe('POST /auth/refrescar', () => {
     expect(decodificar(actual).inicio).toBe(inicio);
   });
 
-  it('[I] el cuerpo del pedido no puede cambiar el perfil', async () => {
+  it('[I] el body del pedido no puede cambiar el perfil', async () => {
     const { body } = await refrescar()
       .send({ perfil: 'administrador', sub: 'otro' })
       .expect(200);
