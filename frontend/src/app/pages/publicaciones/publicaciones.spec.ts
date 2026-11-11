@@ -7,8 +7,7 @@ import { provideRouter } from '@angular/router';
 import { Auth } from '../../servicios/auth/auth';
 import { Publicaciones } from './publicaciones';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
-import { ESPERA_EN_VISTA_MS } from '../../directivas/en-vista/en-vista';
-import { simularObservador } from '../../../testing/observador';
+import { pruebasDeCargaAutomatica } from '../../../testing/carga-automatica';
 import { publicacionDePrueba } from '../../../testing/publicacion';
 import { usuarioDePrueba } from '../../../testing/usuario';
 
@@ -373,106 +372,12 @@ describe('Publicaciones', () => {
     });
   });
 
-  describe('carga automática al hacer scroll', () => {
-    let observador: ReturnType<typeof simularObservador>;
-    const pedidosDeLista = () => http.match((solicitud) => solicitud.url === URL);
-
-    const esperar = () => vi.advanceTimersByTime(ESPERA_EN_VISTA_MS);
-
-    beforeEach(() => {
-      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-      observador = simularObservador();
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-      vi.unstubAllGlobals();
-    });
-
-    it('[O] al quedarse a la vista el final de la lista pide la página siguiente sin tocar el botón', async () => {
-      pedir(0).flush(pagina(1, 10, true));
-      await actualizar();
-
-      observador.aparecer();
-      esperar();
-      pedir(10).flush(pagina(11, 2, false));
-      await actualizar();
-
-      expect(fixture.nativeElement.querySelectorAll('app-tarjeta-publicacion')).toHaveLength(12);
-    });
-
-    it('[S] sigue cargando páginas mientras el final siga a la vista', async () => {
-      pedir(0).flush(pagina(1, 10, true));
-      await actualizar();
-
-      observador.aparecer();
-      esperar();
-      pedir(10).flush(pagina(11, 10, true));
-      await actualizar();
-      observador.aparecer();
-      esperar();
-      pedir(20).flush(pagina(21, 5, false));
-      await actualizar();
-
-      expect(fixture.nativeElement.querySelectorAll('app-tarjeta-publicacion')).toHaveLength(25);
-    });
-
-    it('[O] antes de cargar, el botón Ver más se alcanza a ver', async () => {
-      pedir(0).flush(pagina(1, 10, true));
-      await actualizar();
-
-      vi.advanceTimersByTime(ESPERA_EN_VISTA_MS - 1);
-
-      expect(botonVerMas()).toBeDefined();
-      expect(pedidosDeLista()).toHaveLength(0);
-    });
-
-    it('[B] cuando no hay más páginas no queda nada que observar', async () => {
-      pedir(0).flush(pagina(1, 10, false));
-      await actualizar();
-
-      expect(observador.activos()).toHaveLength(0);
-    });
-
-    it('[S] el botón sigue funcionando con un clic', async () => {
-      pedir(0).flush(pagina(1, 10, true));
-      await actualizar();
-
-      botonVerMas()!.click();
-
-      expect(pedidosDeLista()).toHaveLength(1);
-    });
-
-    it('[E] si la carga falla no insiste sola: espera el clic', async () => {
-      pedir(0).flush(pagina(1, 10, true));
-      await actualizar();
-      observador.aparecer();
-      esperar();
-      pedir(10).flush({ codigo: 'TOKEN_INVALIDO' }, { status: 500, statusText: 'Error' });
-      await actualizar();
-
-      observador.aparecer();
-      esperar();
-
-      expect(pedidosDeLista()).toHaveLength(0);
-      expect(botonVerMas()).toBeDefined();
-    });
-
-    it('[E] después de un error, el clic vuelve a pedir y retoma la carga automática', async () => {
-      pedir(0).flush(pagina(1, 10, true));
-      await actualizar();
-      observador.aparecer();
-      esperar();
-      pedir(10).flush({ codigo: 'TOKEN_INVALIDO' }, { status: 500, statusText: 'Error' });
-      await actualizar();
-
-      botonVerMas()!.click();
-      pedir(10).flush(pagina(11, 10, true));
-      await actualizar();
-      observador.aparecer();
-      esperar();
-
-      expect(pedidosDeLista()).toHaveLength(1);
-    });
+  pruebasDeCargaAutomatica('la lista', {
+    pedir: (offset) => pedir(offset),
+    pedidos: () => http.match((solicitud) => solicitud.url === URL),
+    pagina: (desde, cantidad, hayMas) => pagina(desde, cantidad, hayMas),
+    cargados: () => fixture.nativeElement.querySelectorAll('app-tarjeta-publicacion').length,
+    botonVerMas: () => botonVerMas(),
+    actualizar: () => actualizar(),
   });
 });
