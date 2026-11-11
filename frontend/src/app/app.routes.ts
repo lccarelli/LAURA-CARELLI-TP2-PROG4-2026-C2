@@ -48,5 +48,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/dashboard-usuarios/dashboard-usuarios').then((m) => m.DashboardUsuarios),
   },
+  {
+    path: 'dashboard/usuarios/nuevo',
+    canActivate: [sesionGuard, adminGuard],
+    loadComponent: () => import('./pages/nuevo-usuario/nuevo-usuario').then((m) => m.NuevoUsuario),
+  },
   { path: '**', redirectTo: '' },
 ];

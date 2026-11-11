@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { pruebasDeCargaAutomatica } from '../../../testing/carga-automatica';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { usuarioDePrueba } from '../../../testing/usuario';
+import { Router, provideRouter } from '@angular/router';
 import { PaginaUsuarios, Usuario } from '../../interfaces/usuario';
 import { DashboardUsuarios } from './dashboard-usuarios';
 
@@ -60,7 +61,12 @@ describe('DashboardUsuarios', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DashboardUsuarios],
-      providers: [proveerIdiomaDePrueba(), provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        proveerIdiomaDePrueba(),
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
 
     http = TestBed.inject(HttpTestingController);
@@ -213,6 +219,69 @@ describe('DashboardUsuarios', () => {
     fixture.componentInstance.listado.cargarMas();
 
     expect(pedidos()).toHaveLength(1);
+  });
+
+  describe('crear un usuario', () => {
+    const enlaceCrear = () =>
+      fixture.nativeElement.querySelector(
+        'a[href="/dashboard/usuarios/nuevo"]',
+      ) as HTMLAnchorElement;
+
+    const abrirConAviso = async (creado: string) => {
+      pedir(0).flush(pagina(1, 0, false));
+      vi.spyOn(TestBed.inject(Router), 'currentNavigation').mockReturnValue({
+        extras: { state: { creado } },
+      } as never);
+      fixture = TestBed.createComponent(DashboardUsuarios);
+      await fixture.whenStable();
+      pedir(0).flush(pagina(1, 1, false));
+      await actualizar();
+    };
+
+    it('[I] el botón Crear usuario es un enlace a otra página, no abre un formulario acá', async () => {
+      await abrirCon([persona(1)]);
+
+      expect(enlaceCrear().textContent).toContain('Crear usuario');
+      expect(fixture.nativeElement.querySelector('form')).toBeNull();
+    });
+
+    it('[I] el botón está arriba, junto al título, antes de la tabla', async () => {
+      await abrirCon([persona(1)]);
+
+      const encabezado = fixture.nativeElement.querySelector('.encabezado-pagina') as HTMLElement;
+
+      expect(encabezado.contains(enlaceCrear())).toBe(true);
+      expect(encabezado.querySelector('h1')!.textContent).toContain('Usuarios');
+    });
+
+    it('[Z] sin haber creado a nadie no muestra ningún aviso de creación', async () => {
+      await abrirCon([persona(1)]);
+
+      expect(texto()).not.toContain('Usuario creado');
+    });
+
+    it('[O] al volver de crear a alguien avisa con su nombre de usuario', async () => {
+      await abrirConAviso('nueva_p');
+
+      expect(texto()).toContain('Usuario creado');
+      expect(texto()).toContain('@nueva_p');
+    });
+
+    it('[S] el aviso de creación se puede cerrar', async () => {
+      await abrirConAviso('nueva_p');
+
+      (fixture.nativeElement.querySelector('app-aviso .boton-icono') as HTMLButtonElement).click();
+      await actualizar();
+
+      expect(texto()).not.toContain('Usuario creado');
+    });
+
+    it('[S] el aviso de creación avisa como estado, no como error', async () => {
+      await abrirConAviso('nueva_p');
+
+      expect(fixture.nativeElement.querySelector('.aviso-info[role="status"]')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+    });
   });
 
   pruebasDeCargaAutomatica('los usuarios', {

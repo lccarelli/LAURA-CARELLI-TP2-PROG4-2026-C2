@@ -231,7 +231,18 @@
     "deshabilitado": "Disabled",
     "vacio": "There are no users yet",
     "ver_mas": "Show more users",
-    "error_cargar": "Users could not be loaded"
+    "error_cargar": "Users could not be loaded",
+    "crear": "Create user",
+    "nuevo": "New user",
+    "crear_boton": "Create user",
+    "crear_enviando": "Creating user…",
+    "cancelar": "Cancel",
+    "perfil_usuario": "User",
+    "perfil_administrador": "Administrator",
+    "creado": "User created",
+    "creado_detalle": "They can now log in as @{{nombreUsuario}}.",
+    "error_crear": "The user could not be created",
+    "volver": "← Back to users"
   },
   "roles": {
     "usuario": "user",

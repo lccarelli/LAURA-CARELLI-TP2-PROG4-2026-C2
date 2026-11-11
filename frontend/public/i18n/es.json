@@ -231,7 +231,18 @@
     "deshabilitado": "Deshabilitado",
     "vacio": "Todavía no hay usuarios",
     "ver_mas": "Ver más usuarios",
-    "error_cargar": "No se pudieron cargar los usuarios"
+    "error_cargar": "No se pudieron cargar los usuarios",
+    "crear": "Crear usuario",
+    "nuevo": "Nuevo usuario",
+    "crear_boton": "Crear usuario",
+    "crear_enviando": "Creando usuario…",
+    "cancelar": "Cancelar",
+    "perfil_usuario": "Usuario",
+    "perfil_administrador": "Administrador",
+    "creado": "Usuario creado",
+    "creado_detalle": "Ya puede ingresar como @{{nombreUsuario}}.",
+    "error_crear": "No se pudo crear el usuario",
+    "volver": "← Volver a usuarios"
   },
   "roles": {
     "usuario": "usuario",

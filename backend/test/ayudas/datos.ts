@@ -28,12 +28,13 @@ export function usuarioValido(cambios: Record<string, string> = {}) {
   };
 }
 
-export function registrar(
-  app: INestApplication,
-  datos: Record<string, string> = usuarioValido(),
-  archivo?: { contenido: Buffer; nombre: string; tipo: string },
+type Archivo = { contenido: Buffer; nombre: string; tipo: string };
+
+function enviarFormulario(
+  solicitud: request.Test,
+  datos: Record<string, string>,
+  archivo?: Archivo,
 ) {
-  const solicitud = request(app.getHttpServer()).post('/auth/registro');
   for (const [campo, valor] of Object.entries(datos)) {
     solicitud.field(campo, valor);
   }
@@ -46,9 +47,36 @@ export function registrar(
   return solicitud;
 }
 
+export function registrar(
+  app: INestApplication,
+  datos: Record<string, string> = usuarioValido(),
+  archivo?: Archivo,
+) {
+  return enviarFormulario(
+    request(app.getHttpServer()).post('/auth/registro'),
+    datos,
+    archivo,
+  );
+}
+
+export function crearUsuario(
+  app: INestApplication,
+  token: string,
+  datos: Record<string, string> = usuarioValido({ perfil: 'usuario' }),
+  archivo?: Archivo,
+) {
+  return enviarFormulario(
+    request(app.getHttpServer())
+      .post('/usuarios')
+      .set('Authorization', `Bearer ${token}`),
+    datos,
+    archivo,
+  );
+}
+
 export async function registrarYObtenerSesion(
   app: INestApplication,
-  cambios: Record<string, string> = {},
+  cambios?: Record<string, string>,
 ) {
   const respuesta = await registrar(app, usuarioValido(cambios)).expect(201);
   return respuesta.body as {

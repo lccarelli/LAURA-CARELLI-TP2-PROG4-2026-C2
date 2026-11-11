@@ -3,7 +3,6 @@ import { ConfigType } from '@nestjs/config';
 import jwt from 'jsonwebtoken';
 import { LoggerFactory } from '../logs/logs.factory.js';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
-import { ImagenesService } from '../imagenes/imagenes.service.js';
 import { authConfig } from './auth.config.js';
 import { AuthGuard } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
@@ -28,7 +27,6 @@ describe('AuthGuard', () => {
   const authService = new AuthService(
     config,
     {} as UsuariosService,
-    {} as ImagenesService,
     loggerFactory,
   );
   const guard = new AuthGuard(authService, loggerFactory);

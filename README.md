@@ -246,7 +246,9 @@ Sólo para personas con perfil administrador (el correo de `ADMIN_EMAIL` queda c
 
 - **Enlace "Administración"** en la barra, visible sólo para administradores, que lleva a `/dashboard/usuarios`.
 - **Listado** con foto, nombre, usuario, correo, perfil y estado (habilitado o deshabilitado), de a 10, con el botón "Ver más" que se acciona solo al llegar al final con el scroll.
-- **Protección:** la ruta `/dashboard/usuarios` saca de ahí a quien no es administrador (a las publicaciones, o al login si no hay sesión). En la API, `GET /usuarios?offset&limit` responde 403 `NO_ES_ADMINISTRADOR` con el token de una persona común y 401 sin token. El listado nunca incluye la clave.
+- **Crear usuario:** el botón "Crear usuario" del listado lleva a su propia página, `/dashboard/usuarios/nuevo`, con las mismas validaciones del registro (nombre, apellido, correo, usuario, clave repetida, fecha de nacimiento, descripción y foto opcional) y **dos radio buttons**, "Usuario" y "Administrador". Al crear, vuelve al listado con un aviso y la persona aparece primera. Si el correo o el usuario ya existen se avisa en la misma página, sin perder lo escrito. El formulario es el mismo componente que usa el registro, que no ofrece elegir perfil.
+- **Protección:** las rutas `/dashboard/usuarios` y `/dashboard/usuarios/nuevo` sacan de ahí a quien no es administrador (a las publicaciones, o al login si no hay sesión). En la API, `GET /usuarios?offset&limit` y `POST /usuarios` responden 403 `NO_ES_ADMINISTRADOR` con el token de una persona común y 401 sin token. El listado y el alta nunca devuelven la clave.
+- **API de alta** (`POST /usuarios`, `multipart/form-data`): los datos del registro más `perfil` (`usuario` o `administrador`) e `imagen` opcional. Responde 201 con el usuario creado, **sin token** (la sesión sigue siendo la del administrador), 409 `CORREO_REPETIDO` o `USUARIO_REPETIDO`, y 400 por datos inválidos (incluido un perfil que no existe). Cada alta deja un log `usuario_creado` con quién la hizo.
 
 ### Pantalla de carga
 
@@ -317,6 +319,7 @@ Toda línea que corresponde a una persona trae su `id_usuario` **y** su `nombre_
 | Evento                    | Campos de negocio                                                                                   |
 | ------------------------- | --------------------------------------------------------------------------------------------------- |
 | `usuario_registrado`      | `id_usuario`, `nombre_usuario`, `perfil`                                                            |
+| `usuario_creado`          | `id_usuario`, `nombre_usuario`, `perfil`, `id_administrador`                                        |
 | `ingreso_correcto`        | `id_usuario`, `nombre_usuario`                                                                      |
 | `publicacion_creada`      | `id_publicacion`, `id_usuario`, `nombre_usuario`, `tipo`                                            |
 | `publicacion_eliminada`   | `id_publicacion`, `id_usuario`, `nombre_usuario`, `id_autor`, `nombre_autor`, `por_administrador`   |

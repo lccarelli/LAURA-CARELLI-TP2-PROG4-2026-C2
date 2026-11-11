@@ -425,6 +425,10 @@ body {
     @apply mx-auto flex w-full max-w-lg flex-col gap-4 p-4;
   }
 
+  .pagina-amplia {
+    @apply mx-auto flex w-full flex-col gap-4 p-4 md:w-[70%];
+  }
+
   .pagina-formulario {
     @apply mx-auto flex min-h-[75vh] w-full max-w-lg items-center p-4;
   }
@@ -649,6 +653,22 @@ body {
 
   .formulario-pagina fieldset:not(:first-child) {
     @apply border-t border-linea-fuerte/40 pt-5;
+  }
+
+  .encabezado-pagina {
+    @apply flex flex-wrap items-center justify-between gap-3;
+  }
+
+  .grupo-radio {
+    @apply flex flex-wrap gap-x-6 gap-y-2;
+  }
+
+  .opcion-radio {
+    @apply inline-flex cursor-pointer items-center gap-2 text-sm font-medium;
+  }
+
+  .opcion-radio input {
+    @apply size-4 cursor-pointer accent-barra;
   }
 
   .fila-campos {
