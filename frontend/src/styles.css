@@ -509,6 +509,10 @@ body {
     @apply gap-6 text-base text-tinta;
   }
 
+  .metricas-detalle .boton-metrica {
+    @apply min-h-10 text-base;
+  }
+
   .metricas-detalle .icono-chico {
     @apply size-6;
   }
@@ -868,6 +872,26 @@ body {
     @apply grid grid-cols-2 gap-3;
   }
 
+  .ver-mas {
+    @apply flex flex-col items-center gap-2;
+  }
+
+  .boton-ver-mas {
+    @apply relative w-full overflow-hidden;
+  }
+
+  .boton-ver-mas-relleno {
+    @apply absolute inset-0 origin-left scale-x-0 bg-primario/30;
+  }
+
+  .boton-ver-mas.esperando .boton-ver-mas-relleno {
+    @apply motion-safe:animate-[llenar-espera_1.5s_linear_forwards];
+  }
+
+  .boton-ver-mas-texto {
+    @apply relative;
+  }
+
   .estado-vacio {
     @apply text-center text-suave;
   }
@@ -903,6 +927,15 @@ body {
 
   .grafico {
     @apply relative min-h-64 w-full;
+  }
+}
+
+@keyframes llenar-espera {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
   }
 }
 

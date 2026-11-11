@@ -6,6 +6,8 @@ import { environment } from '../../../environments/environment';
 import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
 import { Publicacion } from '../../interfaces/publicacion';
+import { By } from '@angular/platform-browser';
+import { BotonMeGusta } from '../boton-me-gusta/boton-me-gusta';
 import { TarjetaPublicacion } from './tarjeta-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 
@@ -164,7 +166,7 @@ describe('TarjetaPublicacion', () => {
       await crear(base);
 
       botonMeGusta().click();
-      fixture.componentInstance['alternarMeGusta']();
+      fixture.debugElement.query(By.directive(BotonMeGusta)).componentInstance['alternar']();
       await actualizar();
 
       const pedidos = http.match({ method: 'POST', url: `${URL}/1/megusta` });

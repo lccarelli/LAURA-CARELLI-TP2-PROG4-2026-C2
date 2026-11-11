@@ -1,0 +1,15 @@
+<button
+  type="button"
+  class="metrica boton-metrica"
+  [class.activa]="estado().meGustaDado"
+  [disabled]="enviando()"
+  [attr.aria-pressed]="estado().meGustaDado"
+  [attr.aria-label]="
+    (estado().meGustaDado ? 'publicaciones.me_gusta_quitar' : 'publicaciones.me_gusta_dar')
+      | translate: { n: estado().cantidadMeGusta }
+  "
+  (click)="alternar()"
+>
+  <app-icono nombre="corazon" [chico]="true" [relleno]="estado().meGustaDado" />
+  <span aria-hidden="true">{{ estado().cantidadMeGusta }}</span>
+</button>
