@@ -1,4 +1,5 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Aviso } from '../../componentes/aviso/aviso';
 import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
@@ -9,7 +10,7 @@ import { urlImagen } from '../../utilidades/imagen';
 import { ListadoPaginado } from '../../utilidades/listado-paginado';
 
 @Component({
-  imports: [Aviso, CubreplatoLoading, VerMas, TranslatePipe],
+  imports: [Aviso, CubreplatoLoading, RouterLink, VerMas, TranslatePipe],
   selector: 'app-dashboard-usuarios',
   templateUrl: './dashboard-usuarios.html',
 })
@@ -18,6 +19,9 @@ export class DashboardUsuarios implements OnInit, OnDestroy {
 
   readonly urlImagen = urlImagen;
   readonly listado = new ListadoPaginado<Usuario>((offset) => this.api.listar(offset));
+  readonly creado = signal<string | null>(
+    inject(Router).currentNavigation()?.extras.state?.['creado'] ?? null,
+  );
 
   ngOnInit() {
     this.listado.cargarMas();

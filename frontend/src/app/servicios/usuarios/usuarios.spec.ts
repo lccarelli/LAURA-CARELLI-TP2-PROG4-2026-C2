@@ -49,4 +49,29 @@ describe('UsuariosApi', () => {
     expect(fallo).toHaveBeenCalledTimes(1);
     expect(fallo.mock.calls[0][0].status).toBe(403);
   });
+
+  it('[O] crear manda el formulario por POST y devuelve al usuario creado', () => {
+    const datos = new FormData();
+    datos.append('nombreUsuario', 'nueva_p');
+    const creado = vi.fn();
+    api.crear(datos).subscribe(creado);
+
+    const solicitud = http.expectOne(URL);
+
+    expect(solicitud.request.method).toBe('POST');
+    expect(solicitud.request.body).toBe(datos);
+    solicitud.flush({ _id: 'u9', nombreUsuario: 'nueva_p' });
+    expect(creado).toHaveBeenCalledWith({ _id: 'u9', nombreUsuario: 'nueva_p' });
+  });
+
+  it('[E] crear con un correo repetido deja pasar el 409 de la API', () => {
+    const fallo = vi.fn();
+    api.crear(new FormData()).subscribe({ error: fallo });
+
+    http
+      .expectOne(URL)
+      .flush({ codigo: 'CORREO_REPETIDO' }, { status: 409, statusText: 'Conflict' });
+
+    expect(fallo.mock.calls[0][0].status).toBe(409);
+  });
 });

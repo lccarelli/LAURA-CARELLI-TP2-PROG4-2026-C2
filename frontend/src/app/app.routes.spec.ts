@@ -85,6 +85,28 @@ describe('rutas', () => {
       expect(TestBed.inject(Router).url).toBe('/publicaciones');
     });
 
+    it('[E] sin sesión, la página para crear un usuario lleva al login', async () => {
+      await RouterTestingHarness.create('/dashboard/usuarios/nuevo');
+
+      expect(TestBed.inject(Router).url).toBe('/login');
+    });
+
+    it('[E] una persona común no entra a crear usuarios y vuelve a las publicaciones', async () => {
+      ingresarComo('usuario');
+
+      await RouterTestingHarness.create('/dashboard/usuarios/nuevo');
+
+      expect(TestBed.inject(Router).url).toBe('/publicaciones');
+    });
+
+    it('[O] un administrador ve la página para crear un usuario', async () => {
+      ingresarComo('administrador');
+
+      const harness = await RouterTestingHarness.create('/dashboard/usuarios/nuevo');
+
+      expect(harness.routeNativeElement?.tagName).toBe('APP-NUEVO-USUARIO');
+    });
+
     it('[O] un administrador ve el listado de usuarios', async () => {
       ingresarComo('administrador');
 

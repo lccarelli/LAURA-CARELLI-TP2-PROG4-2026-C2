@@ -1,5 +1,16 @@
 <section class="pagina-ancha">
-  <h1 class="titulo">{{ 'usuarios.titulo' | translate }}</h1>
+  <div class="encabezado-pagina">
+    <h1 class="titulo">{{ 'usuarios.titulo' | translate }}</h1>
+    <a class="boton-principal" routerLink="/dashboard/usuarios/nuevo">{{
+      'usuarios.crear' | translate
+    }}</a>
+  </div>
+
+  @if (creado(); as nombreUsuario) {
+    <app-aviso titulo="usuarios.creado" [info]="true" (cerrar)="creado.set(null)">{{
+      'usuarios.creado_detalle' | translate: { nombreUsuario }
+    }}</app-aviso>
+  }
 
   @if (listado.mensajeError(); as mensaje) {
     <app-aviso titulo="usuarios.error_cargar" (cerrar)="listado.mensajeError.set(null)">{{
