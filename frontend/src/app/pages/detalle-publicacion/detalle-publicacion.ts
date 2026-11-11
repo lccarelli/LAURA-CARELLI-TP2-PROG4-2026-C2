@@ -7,10 +7,13 @@ import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubrepla
 import { Aviso } from '../../componentes/aviso/aviso';
 import { BotonMeGusta } from '../../componentes/boton-me-gusta/boton-me-gusta';
 import { Comentarios } from '../../componentes/comentarios/comentarios';
+import { EliminarPublicacion } from '../../componentes/eliminar-publicacion/eliminar-publicacion';
 import { Ingrediente, Paso, Publicacion, UNIDADES } from '../../interfaces/publicacion';
+import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
+import { puedeEliminarPublicacion } from '../../utilidades/permisos';
 import { Icono } from '../../componentes/icono/icono';
 
 const enteroEnRango = (valor: unknown, maximo: number) =>
@@ -37,6 +40,7 @@ const esIngrediente = (valor: unknown): valor is Ingrediente => {
   imports: [
     BotonMeGusta,
     CubreplatoLoading,
+    EliminarPublicacion,
     DatePipe,
     RouterLink,
     Aviso,
@@ -52,11 +56,17 @@ export class DetallePublicacion implements OnInit {
   private api = inject(PublicacionesApi);
   private ruta = inject(ActivatedRoute);
   private router = inject(Router);
+  private auth = inject(Auth);
 
   readonly publicacion = signal<Publicacion | null>(null);
   readonly cargando = signal(true);
   readonly mensajeError = signal<string | null>(null);
-  protected readonly errorMeGusta = signal<string | null>(null);
+  protected readonly errorDeAccion = signal<string | null>(null);
+
+  protected readonly puedeEliminar = computed(() => {
+    const publicacion = this.publicacion();
+    return publicacion !== null && puedeEliminarPublicacion(this.auth.usuario(), publicacion);
+  });
 
   protected readonly ingredientes = computed(() => {
     const lista = this.publicacion()?.ingredientes;

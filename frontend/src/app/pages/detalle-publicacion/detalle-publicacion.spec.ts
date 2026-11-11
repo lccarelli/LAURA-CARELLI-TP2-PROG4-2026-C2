@@ -4,6 +4,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { Publicacion } from '../../interfaces/publicacion';
+import { Usuario } from '../../interfaces/usuario';
+import { Auth } from '../../servicios/auth/auth';
+import { usuarioDePrueba } from '../../../testing/usuario';
 import { DetallePublicacion } from './detalle-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { publicacionDePrueba } from '../../../testing/publicacion';
@@ -382,6 +385,105 @@ describe('DetallePublicacion', () => {
         'Tu sesión no es válida o venció',
       );
       expect(botonMeGusta().getAttribute('aria-label')).toBe('Dar me gusta (7)');
+    });
+  });
+
+  describe('eliminar', () => {
+    const entrar = (usuario: Usuario | null) => TestBed.inject(Auth).usuario.set(usuario);
+    const otraPersona: Usuario = { ...usuarioDePrueba, _id: 'u2', nombreUsuario: 'ana_g' };
+    const administrador: Usuario = { ...otraPersona, perfil: 'administrador' };
+    const abrirYMostrar = async () => {
+      await abrir(publicacionDePrueba(1));
+      http
+        .expectOne((p) => p.url === `${URL}/id1/comentarios` && p.method === 'GET')
+        .flush({ datos: [], offset: 0, limit: 10, hayMas: false });
+      await actualizar();
+    };
+    const botonEliminar = () =>
+      fixture.nativeElement.querySelector('app-eliminar-publicacion button') as HTMLButtonElement;
+    const botonesDeEliminar = () =>
+      Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'app-eliminar-publicacion button',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+
+    it('[Z] sin sesión no ofrece eliminar', async () => {
+      entrar(null);
+      await abrirYMostrar();
+
+      expect(botonEliminar()).toBeNull();
+    });
+
+    it('[O] quien publicó ve el botón para eliminar su publicación', async () => {
+      entrar(usuarioDePrueba);
+      await abrirYMostrar();
+
+      expect(botonEliminar().textContent).toContain('Eliminar publicación');
+    });
+
+    it('[S] una persona con perfil administrador lo ve en la publicación de otra', async () => {
+      entrar(administrador);
+      await abrirYMostrar();
+
+      expect(botonEliminar().textContent).toContain('Eliminar publicación');
+    });
+
+    it('[E] una persona común no lo ve en la publicación de otra', async () => {
+      entrar(otraPersona);
+      await abrirYMostrar();
+
+      expect(botonEliminar()).toBeNull();
+    });
+
+    it('[O] confirmar elimina la publicación y vuelve al listado', async () => {
+      entrar(administrador);
+      await abrirYMostrar();
+      const navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+      botonEliminar().click();
+      await actualizar();
+      botonesDeEliminar()[0].click();
+      http
+        .expectOne({ method: 'DELETE', url: `${URL}/id1` })
+        .flush(null, { status: 204, statusText: 'No Content' });
+      await actualizar();
+
+      expect(navegar).toHaveBeenCalledWith(['/publicaciones']);
+    });
+
+    it('[O] cancelar no elimina ni sale de la página', async () => {
+      entrar(administrador);
+      await abrirYMostrar();
+      const navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+      botonEliminar().click();
+      await actualizar();
+      botonesDeEliminar()[1].click();
+      await actualizar();
+
+      http.expectNone({ method: 'DELETE', url: `${URL}/id1` });
+      expect(navegar).not.toHaveBeenCalled();
+      expect(botonEliminar().textContent).toContain('Eliminar publicación');
+    });
+
+    it('[E] si el servidor no deja eliminarla, avisa en la página y se queda', async () => {
+      entrar(usuarioDePrueba);
+      await abrirYMostrar();
+      const navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+      botonEliminar().click();
+      await actualizar();
+      botonesDeEliminar()[0].click();
+      http
+        .expectOne({ method: 'DELETE', url: `${URL}/id1` })
+        .flush({ codigo: 'TOKEN_INVALIDO' }, { status: 401, statusText: 'Unauthorized' });
+      await actualizar();
+
+      expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent).toContain(
+        'Tu sesión no es válida o venció',
+      );
+      expect(navegar).not.toHaveBeenCalled();
     });
   });
 });
