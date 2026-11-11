@@ -473,6 +473,18 @@ body {
     @apply ml-auto;
   }
 
+  .eliminar-publicacion {
+    @apply flex flex-wrap items-center gap-3 rounded-2xl border border-error/25 bg-error/5 p-3;
+  }
+
+  .eliminar-publicacion-pregunta {
+    @apply mr-auto font-medium text-error;
+  }
+
+  .eliminar-publicacion-aviso {
+    @apply block text-sm font-normal text-suave;
+  }
+
   .pin-confirmar {
     @apply flex items-center gap-2 border-t border-error/25 bg-error/5 px-3 py-2;
   }

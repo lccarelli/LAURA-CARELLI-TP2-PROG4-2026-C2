@@ -7,6 +7,7 @@ import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
+import { puedeEliminarPublicacion } from '../../utilidades/permisos';
 import { BotonMeGusta } from '../boton-me-gusta/boton-me-gusta';
 import { Icono } from '../icono/icono';
 
@@ -27,13 +28,9 @@ export class TarjetaPublicacion {
   protected readonly confirmando = signal(false);
   protected readonly mensajeError = signal<string | null>(null);
 
-  protected readonly puedeEliminar = computed(() => {
-    const usuario = this.auth.usuario();
-    return (
-      usuario !== null &&
-      (usuario.perfil === 'administrador' || usuario._id === this.publicacion().usuario._id)
-    );
-  });
+  protected readonly puedeEliminar = computed(() =>
+    puedeEliminarPublicacion(this.auth.usuario(), this.publicacion()),
+  );
 
   protected urlImagen = urlImagen;
 

@@ -51,7 +51,7 @@
             [publicacionId]="publicacion._id"
             [meGustaDado]="publicacion.meGusta ?? false"
             [cantidadMeGusta]="publicacion.cantidadMeGusta"
-            (fallo)="errorMeGusta.set($event)"
+            (fallo)="errorDeAccion.set($event)"
           />
           <span
             class="metrica"
@@ -63,7 +63,14 @@
             <span aria-hidden="true">{{ publicacion.cantidadComentarios }}</span>
           </span>
         </span>
-        @if (errorMeGusta(); as mensaje) {
+        @if (puedeEliminar()) {
+          <app-eliminar-publicacion
+            [publicacionId]="publicacion._id"
+            (publicacionEliminada)="cerrar()"
+            (publicacionFallada)="errorDeAccion.set($event)"
+          />
+        }
+        @if (errorDeAccion(); as mensaje) {
           <p class="mensaje-error" role="alert">{{ mensaje | translate }}</p>
         }
         @let ficha = this.ficha();

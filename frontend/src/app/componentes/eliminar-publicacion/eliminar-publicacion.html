@@ -1,0 +1,32 @@
+@if (confirmando()) {
+  <div class="eliminar-publicacion" role="group" aria-labelledby="confirmar-eliminar-publicacion">
+    <span id="confirmar-eliminar-publicacion" class="eliminar-publicacion-pregunta">
+      {{ 'publicaciones.eliminar_pregunta' | translate }}
+      <span class="eliminar-publicacion-aviso">{{
+        'publicaciones.eliminar_aviso' | translate
+      }}</span>
+    </span>
+    <button
+      type="button"
+      class="boton-peligro"
+      [disabled]="enviando()"
+      [attr.aria-label]="'publicaciones.eliminar_si_aria' | translate"
+      (click)="eliminar()"
+    >
+      {{ (enviando() ? 'publicaciones.eliminando' : 'publicaciones.eliminar_si') | translate }}
+    </button>
+    <button
+      type="button"
+      class="boton-secundario"
+      [disabled]="enviando()"
+      [attr.aria-label]="'publicaciones.eliminar_no_aria' | translate"
+      (click)="cancelar()"
+    >
+      {{ 'publicaciones.eliminar_no' | translate }}
+    </button>
+  </div>
+} @else {
+  <button type="button" class="boton-peligro" (click)="pedirConfirmacion()">
+    {{ 'publicaciones.eliminar' | translate }}
+  </button>
+}
