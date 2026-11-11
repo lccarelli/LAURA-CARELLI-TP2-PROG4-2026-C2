@@ -39,9 +39,11 @@
   }
 
   @if (hayMas() && !cargando()) {
-    <button type="button" class="boton-secundario w-full" (click)="cargarMas()">
-      {{ 'publicaciones.ver_mas' | translate }}
-    </button>
+    <app-ver-mas
+      texto="publicaciones.ver_mas"
+      [automatico]="!fallaLaCarga()"
+      (cargar)="cargarMas()"
+    />
   }
 </section>
 

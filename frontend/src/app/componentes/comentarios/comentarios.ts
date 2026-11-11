@@ -3,6 +3,7 @@ import { Component, inject, input, OnDestroy, OnInit, output, signal } from '@an
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
+import { VerMas } from '../ver-mas/ver-mas';
 import { CubreplatoLoading } from '../cubreplato-loading/cubreplato-loading';
 import { Comentario, MAXIMO_COMENTARIO } from '../../interfaces/comentario';
 import { Auth } from '../../servicios/auth/auth';
@@ -16,6 +17,7 @@ import { ContadorTexto } from '../contador-texto/contador-texto';
 
 @Component({
   imports: [
+    VerMas,
     CubreplatoLoading,
     ReactiveFormsModule,
     Aviso,
