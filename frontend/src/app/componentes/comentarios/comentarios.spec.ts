@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
+import { pruebasDeCargaAutomatica } from '../../../testing/carga-automatica';
 import { usuarioDePrueba } from '../../../testing/usuario';
 import { Auth } from '../../servicios/auth/auth';
 import { Comentario, PaginaComentarios } from '../../interfaces/comentario';
@@ -451,5 +452,14 @@ describe('Comentarios', () => {
 
       expect(conBoton).toEqual([true, false]);
     });
+  });
+
+  pruebasDeCargaAutomatica('los comentarios', {
+    pedir: (offset) => pedir(offset),
+    pedidos: () => http.match((solicitud) => solicitud.url === URL),
+    pagina: (desde, cantidad, hayMas) => pagina(desde, cantidad, hayMas),
+    cargados: () => items().length,
+    botonVerMas: () => botonVerMas(),
+    actualizar: () => actualizar(),
   });
 });

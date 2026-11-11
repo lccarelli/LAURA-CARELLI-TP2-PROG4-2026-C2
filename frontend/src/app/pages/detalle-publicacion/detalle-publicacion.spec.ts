@@ -321,4 +321,67 @@ describe('DetallePublicacion', () => {
     expect(fixture.nativeElement.querySelectorAll('.numero-paso')).toHaveLength(2);
     expect(fixture.nativeElement.textContent).toContain('Untar');
   });
+
+  describe('me gusta', () => {
+    const botonMeGusta = () =>
+      fixture.nativeElement.querySelector('app-boton-me-gusta button') as HTMLButtonElement;
+    const sinComentarios = async () => {
+      http
+        .expectOne((p) => p.url === `${URL}/id1/comentarios` && p.method === 'GET')
+        .flush({ datos: [], offset: 0, limit: 10, hayMas: false });
+      await actualizar();
+    };
+
+    it('[O] dentro de la publicación hay un botón para dar me gusta, con la cantidad', async () => {
+      await abrir({ ...publicacionDePrueba(1), cantidadMeGusta: 7, meGusta: false });
+      await sinComentarios();
+
+      expect(botonMeGusta().getAttribute('aria-label')).toBe('Dar me gusta (7)');
+      expect(botonMeGusta().getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it('[O] dar me gusta pide POST y muestra la cantidad nueva y el botón marcado', async () => {
+      await abrir({ ...publicacionDePrueba(1), cantidadMeGusta: 7, meGusta: false });
+      await sinComentarios();
+
+      botonMeGusta().click();
+      http
+        .expectOne({ method: 'POST', url: `${URL}/id1/megusta` })
+        .flush({ meGusta: true, cantidadMeGusta: 8 });
+      await actualizar();
+
+      expect(botonMeGusta().getAttribute('aria-label')).toBe('Quitar me gusta (8)');
+      expect(botonMeGusta().getAttribute('aria-pressed')).toBe('true');
+    });
+
+    it('[S] si ya había dado me gusta, el botón sale marcado y quitarlo pide DELETE', async () => {
+      await abrir({ ...publicacionDePrueba(1), cantidadMeGusta: 7, meGusta: true });
+      await sinComentarios();
+      expect(botonMeGusta().getAttribute('aria-pressed')).toBe('true');
+
+      botonMeGusta().click();
+      http
+        .expectOne({ method: 'DELETE', url: `${URL}/id1/megusta` })
+        .flush(null, { status: 204, statusText: 'No Content' });
+      await actualizar();
+
+      expect(botonMeGusta().getAttribute('aria-label')).toBe('Dar me gusta (6)');
+    });
+
+    it('[E] si falla, muestra el aviso en la página y deja la cantidad como estaba', async () => {
+      await abrir({ ...publicacionDePrueba(1), cantidadMeGusta: 7, meGusta: false });
+      await sinComentarios();
+
+      botonMeGusta().click();
+      http
+        .expectOne({ method: 'POST', url: `${URL}/id1/megusta` })
+        .flush({ codigo: 'TOKEN_INVALIDO' }, { status: 401, statusText: 'Unauthorized' });
+      await actualizar();
+
+      expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent).toContain(
+        'Tu sesión no es válida o venció',
+      );
+      expect(botonMeGusta().getAttribute('aria-label')).toBe('Dar me gusta (7)');
+    });
+  });
 });

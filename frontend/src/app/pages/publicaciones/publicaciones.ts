@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { VerMas } from '../../componentes/ver-mas/ver-mas';
 import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
 import { Aviso } from '../../componentes/aviso/aviso';
 import { TarjetaPublicacion } from '../../componentes/tarjeta-publicacion/tarjeta-publicacion';
@@ -11,7 +12,7 @@ import { mensajeDeApi } from '../../utilidades/errores';
 import { Subscription } from 'rxjs';
 
 @Component({
-  imports: [CubreplatoLoading, RouterLink, Aviso, TarjetaPublicacion, TranslatePipe],
+  imports: [VerMas, CubreplatoLoading, RouterLink, Aviso, TarjetaPublicacion, TranslatePipe],
   selector: 'app-publicaciones',
   templateUrl: './publicaciones.html',
 })

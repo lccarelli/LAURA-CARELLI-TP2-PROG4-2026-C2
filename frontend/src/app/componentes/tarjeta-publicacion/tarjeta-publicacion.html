@@ -53,21 +53,12 @@
   </div>
 } @else {
   <div class="pin-acciones">
-    <button
-      type="button"
-      class="metrica boton-metrica"
-      [class.activa]="meGusta().dado"
-      [disabled]="enviando()"
-      [attr.aria-pressed]="meGusta().dado"
-      [attr.aria-label]="
-        (meGusta().dado ? 'publicaciones.me_gusta_quitar' : 'publicaciones.me_gusta_dar')
-          | translate: { n: meGusta().cantidad }
-      "
-      (click)="alternarMeGusta()"
-    >
-      <app-icono nombre="corazon" [chico]="true" [relleno]="meGusta().dado" />
-      <span aria-hidden="true">{{ meGusta().cantidad }}</span>
-    </button>
+    <app-boton-me-gusta
+      [publicacionId]="publicacion()._id"
+      [meGustaDado]="publicacion().meGusta ?? false"
+      [cantidadMeGusta]="publicacion().cantidadMeGusta"
+      (fallo)="mensajeError.set($event)"
+    />
 
     <span
       class="metrica"

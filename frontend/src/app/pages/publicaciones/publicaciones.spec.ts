@@ -7,6 +7,7 @@ import { provideRouter } from '@angular/router';
 import { Auth } from '../../servicios/auth/auth';
 import { Publicaciones } from './publicaciones';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
+import { pruebasDeCargaAutomatica } from '../../../testing/carga-automatica';
 import { publicacionDePrueba } from '../../../testing/publicacion';
 import { usuarioDePrueba } from '../../../testing/usuario';
 
@@ -369,5 +370,14 @@ describe('Publicaciones', () => {
 
       expect(pendiente.cancelled).toBe(true);
     });
+  });
+
+  pruebasDeCargaAutomatica('la lista', {
+    pedir: (offset) => pedir(offset),
+    pedidos: () => http.match((solicitud) => solicitud.url === URL),
+    pagina: (desde, cantidad, hayMas) => pagina(desde, cantidad, hayMas),
+    cargados: () => fixture.nativeElement.querySelectorAll('app-tarjeta-publicacion').length,
+    botonVerMas: () => botonVerMas(),
+    actualizar: () => actualizar(),
   });
 });
