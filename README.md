@@ -27,7 +27,8 @@ TP2 de Programación IV.
 - [Hooks de git](#hooks-de-git)
 - [Variables de entorno](#variables-de-entorno)
 - [Pipeline y despliegue](#pipeline-y-despliegue)
-- [Sesión y borrador](#sesión-y-borrador)
+- [Funcionalidades](#funcionalidades)
+- [Sesión](#sesión)
 - [Logs](#logs)
 - [Estructura de carpetas](#estructura-de-carpetas)
 
@@ -165,26 +166,102 @@ La cobertura de cada ejecución queda en el resumen del job y como archivo desca
 
 ---
 
-## Sesión y borrador
+## Funcionalidades
 
-La sesión usa un token JWT que dura **15 minutos** y se renueva mientras se usa la aplicación. Vence 15 minutos después de que la persona deja de usarla.
+### Publicaciones y me gusta
 
-| Qué | Cómo funciona |
+- **Listado** (`/publicaciones`): tarjetas con imagen, tipo, título y autoría. Se ordena por más recientes o por más me gusta, 10 por página.
+- **Detalle** (`/publicaciones/:id`): la publicación completa con ficha, ingredientes, pasos con fotos y comentarios.
+- **Me gusta:** botón de corazón en la tarjeta y dentro del detalle. Se puede dar y quitar; el contador sube y baja al instante con lo que responde el servidor. Si el servidor dice que ya estaba dado (o ya estaba quitado), el botón se corrige solo, sin mostrar un error.
+- **Eliminar:** la autoría de la publicación o un perfil administrador la dan de baja desde la tarjeta, con confirmación.
+
+### Nueva publicación
+
+Pantalla `/publicaciones/nueva` (requiere sesión). Se elige un tipo y el formulario se adapta:
+
+| Tipo | Qué lleva |
 | --- | --- |
-| Renovación | `POST /auth/refrescar` (con token válido) devuelve un token nuevo de 15 minutos para el mismo usuario y perfil. Un token ya vencido responde `401` y no se puede renovar |
-| Mientras se usa la app | Un servicio del frontend (`servicios/sesion`) marca como uso los clics, las teclas, el scroll y los toques. Cada minuto, si hubo uso desde la última renovación, pide un token nuevo. Sin uso no renueva, así que la sesión vence sola |
-| En "Nueva publicación" | La pantalla renueva al entrar, cada 5 minutos y al volver a mostrar la pestaña, aunque no haya teclas: siempre quedan al menos 10 minutos de sesión |
-| Verificar la sesión | `POST /auth/autorizar` (con token válido) devuelve los datos actuales del usuario, sin la clave, leídos de la base. Responde `401` si falta el token, es inválido o venció, y `401` con `USUARIO_NO_AUTORIZADO` si el usuario ya no existe o está deshabilitado. No entrega un token nuevo |
-| Duración máxima | Cada token lleva `inicio`, la hora del ingreso, y se conserva al renovar. Pasadas **12 horas** desde el ingreso, `refrescar` responde `401` con el código `SESION_VENCIDA` y hay que ingresar de nuevo |
+| `receta` | Título, mensaje, portada, **ficha**, **ingredientes** y **pasos** |
+| `tip` | Título, mensaje y portada |
+| `experiencia` | Título, mensaje y portada |
 
-**Borrador de una publicación.** Todo lo que se escribe en "Nueva publicación" se guarda solo en el navegador (`localStorage`, clave `borrador:<id del usuario>`), con una pausa de 0,8 segundos después de la última tecla, al salir de la pantalla, al ocultar o cerrar la pestaña y al recargar. Al volver a entrar se recupera con un aviso y la opción de descartarlo; al publicar se borra.
+**Campos comunes**
 
-- Guarda tipo, título, mensaje, ficha, costo, ingredientes y pasos en `localStorage`. La foto de portada y las de los pasos van aparte, en IndexedDB (`banquete` / `fotos-borrador`): guarda los archivos tal cual, sin convertirlos a texto, así no choca con el límite de unos 5 MB de `localStorage`. Si el navegador no tiene IndexedDB, el borrador sigue funcionando sin fotos.
-- Cada usuario tiene el suyo; no se mezclan en un mismo navegador.
+| Campo | Regla |
+| --- | --- |
+| Título | Obligatorio, hasta 55 caracteres |
+| Mensaje | Obligatorio, hasta 2000 caracteres, con contador |
+| Portada | Opcional. JPG, PNG, WebP o GIF de hasta 2 MB. Se ve una vista previa y se puede quitar |
+
+**Ficha de la receta** (todo opcional)
+
+- **Rinde:** cantidad de porciones o de unidades (1 a 100).
+- **Tiempo:** de 1 a 10080 minutos (una semana), con botones rápidos de 15, 30, 45, 60, 90 y 120 minutos.
+- **Costo:** de 1 a 4 signos `$`.
+- **Calorías:** de 1 a 10000 kcal.
+- Porciones, tiempo y calorías tienen botones para sumar y restar.
+
+**Ingredientes** (hasta 40)
+
+- Cada fila tiene cantidad, unidad y nombre. Unidades: gramos, kilos, mililitros, litros, taza, cucharada, cucharadita, unidad, pizca y "a gusto".
+- Las unidades que admiten fracciones ofrecen ¼, ½ y ¾. "A gusto" no pide cantidad.
+- Una fila a medias se marca: sin nombre pero con cantidad, o con nombre pero sin cantidad (salvo "a gusto"). Una fila totalmente vacía se ignora al publicar.
+
+**Pasos** (hasta 40)
+
+- Cada paso tiene un título opcional (hasta 80 caracteres) y un texto de hasta 2000.
+- Se pueden **reordenar** arrastrándolos.
+- Cada paso admite hasta **5 fotos**, con un máximo de **20 en toda la receta**, con las mismas reglas de formato y peso que la portada.
+- Un paso con título o fotos pero sin texto cuenta como incompleto y bloquea la publicación. Un paso totalmente vacío se ignora.
+
+**Al publicar**
+
+1. Se validan todos los campos y se marcan los errores en cada uno.
+2. Se arma un `multipart/form-data` y se envía `POST /publicaciones`. Los ingredientes y los pasos viajan como JSON; la portada va como `imagen` y las fotos de los pasos como `imagenesPasos`.
+3. El backend valida otra vez (`whitelist`, `forbidNonWhitelisted`, largos, rangos y tipo de archivo) y sube las imágenes a Cloudinary.
+4. Mientras espera, el botón se bloquea. Si falla, el aviso aparece en la pantalla con el mensaje de la API en el idioma elegido. Si sale bien, borra el borrador y lleva al listado.
+
+**Borrador.** Todo lo que se escribe se guarda solo en el navegador, con una pausa de 0,8 segundos después de la última tecla, al salir de la pantalla, al ocultar o cerrar la pestaña y al recargar. Al volver a entrar se recupera con un aviso y la opción de descartarlo.
+
+- Guarda tipo, título, mensaje, ficha, costo, ingredientes y pasos en `localStorage` (clave `borrador:<id del usuario>`). La portada y las fotos de los pasos van aparte, en IndexedDB (`banquete` / `fotos-borrador`): guarda los archivos tal cual, sin convertirlos a texto, así no choca con el límite de unos 5 MB de `localStorage`. Si el navegador no tiene IndexedDB, el borrador sigue funcionando sin fotos.
+- Cada persona tiene el suyo; no se mezclan en un mismo navegador.
 - Lo que se lee del almacenamiento se valida otra vez (tipos, medidas, máximos, solo dígitos en la ficha), porque `localStorage` se puede modificar a mano.
 - Si la sesión ya venció, la pantalla avisa, mantiene el borrador y ofrece "Ingresar de nuevo".
 
-**Tests:** `backend/test/autorizar.e2e-spec.ts` (datos actuales, sin clave, usuario inexistente o deshabilitado, tokens inválidos), `backend/test/refrescar.e2e-spec.ts` (renovación, duración, `inicio` constante, tope de 12 horas, tokens vencidos o firmados con otra clave), `servicios/sesion/sesion.spec.ts`, `servicios/borrador/borrador.spec.ts`, `servicios/fotos-borrador/fotos-borrador.spec.ts` y `pages/nueva-publicacion/nueva-publicacion.spec.ts`.
+### Comentarios
+
+- Debajo de cada publicación. Del más reciente al más antiguo, **10 por página**.
+- **Escribir:** hasta 500 caracteres, con contador. El comentario nuevo aparece arriba sin recargar y el contador de la publicación sube.
+- **Editar:** solo la autoría del comentario (el backend responde `403 COMENTARIO_AJENO` si no). Se edita en el mismo lugar con "Guardar" y "Cancelar", y queda la etiqueta "editado". Mandar el mismo texto no lo marca como modificado.
+- **Estados:** cargando, vacío y error con "Reintentar". Los errores salen como aviso en la página, sin ventanas flotantes.
+- **Cargar más:** el botón "Ver más" se llena como una barra de progreso cuando queda a la vista; si se queda 1,5 segundos, carga la página siguiente sin hacer clic. También se puede apretar. Si una carga falla, no insiste sola: espera el clic. Lo mismo vale para el listado de publicaciones.
+
+### Mi perfil
+
+Las **últimas 3 publicaciones** de la persona, y debajo de cada una sus **3 comentarios más recientes** con un enlace "Ver todos los comentarios (N)" a la publicación. Cada una carga sus comentarios por separado: si falla una, las otras siguen viéndose.
+
+### Pantalla de carga
+
+Al abrir la aplicación con una sesión guardada se muestra una pantalla de carga (el cubreplato animado) mientras se llama a `POST /auth/autorizar`. Si el token es válido se actualizan los datos de la persona y se sigue en la dirección que se abrió; si no, se va al login. Si pasan más de 4 segundos aparece "El servidor se está despertando" (el plan gratis de Render tarda hasta un minuto). Sin sesión, la app despierta al servidor en segundo plano con `GET /health`. El mismo cubreplato se usa en todas las esperas de la aplicación.
+
+---
+
+## Sesión
+
+El token JWT dura **15 minutos**. Un aviso modal pregunta si se quiere extender a los **10 minutos** de haberse emitido, cuando faltan 5.
+
+| Qué | Cómo funciona |
+| --- | --- |
+| Aviso a los 10 minutos | El frontend lee el vencimiento (`exp`) del propio token y lo compara con la hora cada segundo. Cuando faltan 5 minutos aparece un modal con la cuenta regresiva. No depende de un temporizador de 10 minutos, así que no se atrasa en pestañas en segundo plano y sobrevive a recargar la página |
+| Extender sesión | `POST /auth/refrescar` devuelve un token nuevo de 15 minutos para la misma persona y perfil. El modal se cierra y vuelve a avisar 10 minutos después. Si falla la red, el modal sigue y se puede reintentar |
+| Cerrar sesión | Desde el modal: borra el token y lleva al login |
+| Si no se responde | Al llegar a cero se cierra la sesión y el login explica el motivo |
+| Si una petición devuelve 401 | Un interceptor cierra la sesión y lleva al login con el motivo, sin ventanas flotantes. Se ignoran los 401 de ingresar, registrar y refrescar (ahí significan credenciales inválidas) |
+| Verificar la sesión | `POST /auth/autorizar` devuelve los datos actuales de la persona, sin la clave, leídos de la base. Responde `401` si falta el token, es inválido o venció, y `401` con `USUARIO_NO_AUTORIZADO` si la persona ya no existe o está deshabilitada. No entrega un token nuevo |
+| Duración máxima | Cada token lleva `inicio`, la hora del ingreso, y se conserva al renovar. Pasadas **12 horas** desde el ingreso, `refrescar` responde `401` con `SESION_VENCIDA` y hay que ingresar de nuevo |
+| En "Nueva publicación" | Por excepción, esta pantalla renueva el token sola (al entrar, cada 5 minutos y al volver a mostrar la pestaña) para no perder lo que se está escribiendo; ahí el modal no aparece |
+
+**Tests:** `backend/test/autorizar.e2e-spec.ts` (datos actuales, sin clave, persona inexistente o deshabilitada, tokens inválidos), `backend/test/refrescar.e2e-spec.ts` (renovación, duración, `inicio` constante, tope de 12 horas, tokens vencidos o firmados con otra clave), `servicios/sesion/sesion.spec.ts` (aviso a los 10 minutos, extender, cerrar, vencimiento, red caída), `componentes/aviso-sesion/aviso-sesion.spec.ts`, `servicios/auth/auth.spec.ts` (lectura del vencimiento), `interceptores/sesion-vencida-interceptor.spec.ts`, `servicios/borrador/borrador.spec.ts`, `servicios/fotos-borrador/fotos-borrador.spec.ts` y `pages/nueva-publicacion/nueva-publicacion.spec.ts`.
 
 ---
 

@@ -24,7 +24,7 @@ const base: Publicacion = {
   cantidadComentarios: 2,
   titulo: 'Mi título',
   mensaje: 'Mi mensaje',
-  fecha: '2026-10-22T15:30:00.000Z',
+  fecha: '2026-10-22T15:30:00',
 };
 
 const URL = `${environment.API_URL}/publicaciones`;

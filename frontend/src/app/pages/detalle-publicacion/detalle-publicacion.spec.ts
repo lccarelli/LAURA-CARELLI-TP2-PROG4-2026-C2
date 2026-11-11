@@ -62,7 +62,7 @@ describe('DetallePublicacion', () => {
             publicacion: 'id1',
             usuario: { _id: 'u2', nombre: 'Ana', apellido: 'Gómez', nombreUsuario: 'ana_g' },
             mensaje: 'Me salió riquísimo',
-            fecha: '2026-10-22T15:30:00.000Z',
+            fecha: '2026-10-22T15:30:00',
             modificado: false,
           },
         ],
@@ -95,7 +95,7 @@ describe('DetallePublicacion', () => {
       publicacion: 'id1',
       usuario: { _id: 'u1', nombre: 'Laura', apellido: 'Carelli', nombreUsuario: 'laura_c' },
       mensaje: 'Muy rico',
-      fecha: '2026-10-22T15:30:00.000Z',
+      fecha: '2026-10-22T15:30:00',
       modificado: false,
     });
     await actualizar();
