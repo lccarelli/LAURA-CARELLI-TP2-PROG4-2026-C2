@@ -11,6 +11,6 @@ export const publicacionDePrueba = (
   cantidadComentarios: 2,
   titulo: `Título ${numero}`,
   mensaje: `Mensaje ${numero}`,
-  fecha: '2026-10-22T15:30:00.000Z',
+  fecha: '2026-10-22T15:30:00',
   ...cambios,
 });

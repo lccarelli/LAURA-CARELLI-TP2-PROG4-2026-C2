@@ -74,7 +74,7 @@ describe('ItemComentario', () => {
     });
 
     it('[I] si fue modificado muestra la marca (editado) con la fecha de la edición al pasar el mouse', async () => {
-      await abrir(comentario({ modificado: true, modificadoEn: '2026-10-23T10:00:00.000Z' }));
+      await abrir(comentario({ modificado: true, modificadoEn: '2026-10-23T07:00:00' }));
 
       const marca = fixture.nativeElement.querySelector('.marca-editado') as HTMLElement;
 
