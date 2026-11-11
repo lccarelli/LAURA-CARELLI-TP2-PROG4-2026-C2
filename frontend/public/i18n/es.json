@@ -248,10 +248,18 @@
     "deshabilitar_aria": "Deshabilitar a @{{nombreUsuario}}",
     "deshabilitar_titulo": "¿Deshabilitar a @{{nombreUsuario}}?",
     "deshabilitar_texto": "No va a poder ingresar a la aplicación mientras su cuenta esté deshabilitada.",
-    "deshabilitando": "Deshabilitando…",
-    "baja_hecha": "Usuario deshabilitado",
-    "baja_hecha_detalle": "@{{nombreUsuario}} ya no puede ingresar.",
-    "error_deshabilitar": "No se pudo deshabilitar al usuario"
+    "deshabilitar_enviando": "Deshabilitando…",
+    "deshabilitar_hecha": "Usuario deshabilitado",
+    "deshabilitar_hecha_detalle": "@{{nombreUsuario}} ya no puede ingresar.",
+    "error_deshabilitar": "No se pudo deshabilitar al usuario",
+    "habilitar": "Habilitar",
+    "habilitar_aria": "Habilitar a @{{nombreUsuario}}",
+    "habilitar_titulo": "¿Habilitar a @{{nombreUsuario}}?",
+    "habilitar_texto": "Va a poder ingresar de nuevo a la aplicación.",
+    "habilitar_enviando": "Habilitando…",
+    "habilitar_hecha": "Usuario habilitado",
+    "habilitar_hecha_detalle": "@{{nombreUsuario}} ya puede ingresar.",
+    "error_habilitar": "No se pudo habilitar al usuario"
   },
   "roles": {
     "usuario": "usuario",
@@ -295,7 +303,7 @@
     "COMENTARIO_NO_ENCONTRADO": "El comentario no existe.",
     "NO_ES_ADMINISTRADOR": "Esta sección es sólo para administradores.",
     "USUARIO_DESHABILITADO": "Tu usuario está deshabilitado. Contactá a un administrador.",
-    "DESHABILITAR_CUENTA_PROPIA": "No podés deshabilitar tu propia cuenta.",
+    "CUENTA_PROPIA": "No podés cambiar el estado de tu propia cuenta.",
     "USUARIO_NO_ENCONTRADO": "El usuario no existe."
   },
   "tipos": {

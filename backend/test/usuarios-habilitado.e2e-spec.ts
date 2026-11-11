@@ -11,7 +11,7 @@ import {
 import { capturarLogs } from './ayudas/logs.js';
 import { tokenDeAdministrador } from './ayudas/sesiones.js';
 
-describe('DELETE /usuarios/:id', () => {
+describe('PATCH /usuarios/:id', () => {
   let app: INestApplication;
   let usuarios: Model<Usuario>;
   let administradorId: string;
@@ -19,13 +19,24 @@ describe('DELETE /usuarios/:id', () => {
   let tokenComun: string;
   let personaId: string;
 
-  const deshabilitar = (id: string, token = tokenAdministrador) =>
+  const cambiar = (id: string, body: object, token = tokenAdministrador) =>
     request(app.getHttpServer())
-      .delete(`/usuarios/${id}`)
-      .set('Authorization', `Bearer ${token}`);
+      .patch(`/usuarios/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(body);
+
+  const deshabilitar = (id: string, token = tokenAdministrador) =>
+    cambiar(id, { habilitado: false }, token);
+  const habilitar = (id: string, token = tokenAdministrador) =>
+    cambiar(id, { habilitado: true }, token);
 
   const habilitadoDe = async (id: string) =>
     (await usuarios.findById(id).lean())!.habilitado;
+
+  const ingresar = (identificador: string, clave = 'Clave1234') =>
+    request(app.getHttpServer())
+      .post('/auth/ingresar')
+      .send({ identificador, clave });
 
   beforeAll(async () => {
     app = await crearApp();
@@ -50,16 +61,20 @@ describe('DELETE /usuarios/:id', () => {
     await app.close();
   });
 
-  describe('la baja', () => {
-    it('[O] un administrador deshabilita a otra persona y responde 204 sin body', async () => {
-      const { body } = await deshabilitar(personaId).expect(204);
+  describe('deshabilitar', () => {
+    it('[O] un administrador deshabilita a otra persona y responde 200 con ella ya deshabilitada', async () => {
+      const { body } = await deshabilitar(personaId).expect(200);
 
-      expect(body).toEqual({});
+      expect(body).toMatchObject({
+        _id: personaId,
+        nombreUsuario: 'juan_p',
+        habilitado: false,
+      });
       expect(await habilitadoDe(personaId)).toBe(false);
     });
 
     it('[S] es una baja lógica: la persona sigue en la base y en el listado, deshabilitada', async () => {
-      await deshabilitar(personaId).expect(204);
+      await deshabilitar(personaId).expect(200);
 
       const { body } = await request(app.getHttpServer())
         .get('/usuarios')
@@ -73,24 +88,30 @@ describe('DELETE /usuarios/:id', () => {
       expect(await usuarios.countDocuments()).toBe(2);
     });
 
+    it('[S] no devuelve la clave', async () => {
+      const { body } = await deshabilitar(personaId).expect(200);
+
+      expect(body).not.toHaveProperty('clave');
+    });
+
     it('[S] no toca a las demás personas', async () => {
-      await deshabilitar(personaId).expect(204);
+      await deshabilitar(personaId).expect(200);
 
       expect(await habilitadoDe(administradorId)).toBe(true);
     });
 
-    it('[S] deshabilitar dos veces responde 204 las dos', async () => {
-      await deshabilitar(personaId).expect(204);
+    it('[S] deshabilitar dos veces responde 200 las dos y deja el mismo estado', async () => {
+      await deshabilitar(personaId).expect(200);
 
-      await deshabilitar(personaId).expect(204);
+      const { body } = await deshabilitar(personaId).expect(200);
 
-      expect(await habilitadoDe(personaId)).toBe(false);
+      expect(body.habilitado).toBe(false);
     });
 
     it('[S] un administrador puede deshabilitar a otro administrador', async () => {
       await usuarios.updateOne({ _id: personaId }, { perfil: 'administrador' });
 
-      await deshabilitar(personaId).expect(204);
+      await deshabilitar(personaId).expect(200);
 
       expect(await habilitadoDe(personaId)).toBe(false);
     });
@@ -98,19 +119,68 @@ describe('DELETE /usuarios/:id', () => {
     it('[S] sus datos y su perfil no cambian', async () => {
       const antes = await usuarios.findById(personaId).lean();
 
-      await deshabilitar(personaId).expect(204);
+      await deshabilitar(personaId).expect(200);
 
       const despues = await usuarios.findById(personaId).lean();
       expect({ ...despues, habilitado: true }).toEqual(antes);
     });
   });
 
+  describe('habilitar', () => {
+    beforeEach(async () => {
+      await usuarios.updateOne({ _id: personaId }, { habilitado: false });
+    });
+
+    it('[O] un administrador habilita a una persona deshabilitada y responde 200 con ella ya habilitada', async () => {
+      const { body } = await habilitar(personaId).expect(200);
+
+      expect(body).toMatchObject({ _id: personaId, habilitado: true });
+      expect(await habilitadoDe(personaId)).toBe(true);
+    });
+
+    it('[S] habilitar a quien ya estaba habilitada responde 200 y no cambia nada', async () => {
+      await habilitar(personaId).expect(200);
+
+      await habilitar(personaId).expect(200);
+
+      expect(await habilitadoDe(personaId)).toBe(true);
+    });
+
+    it('[S] sus datos y su perfil no cambian', async () => {
+      const antes = await usuarios.findById(personaId).lean();
+
+      await habilitar(personaId).expect(200);
+
+      const despues = await usuarios.findById(personaId).lean();
+      expect({ ...despues, habilitado: false }).toEqual(antes);
+    });
+
+    it('[S] deshabilitar y habilitar de nuevo deja a la persona como estaba', async () => {
+      await habilitar(personaId).expect(200);
+      await deshabilitar(personaId).expect(200);
+      await ingresar('juan_p').expect(403);
+
+      await habilitar(personaId).expect(200);
+
+      await ingresar('juan_p').expect(200);
+    });
+  });
+
   describe('los límites', () => {
-    it('[E] no se puede deshabilitar la propia cuenta: responde 400 y sigue habilitada', async () => {
+    it('[E] no se puede deshabilitar la propia cuenta: responde 400 CUENTA_PROPIA y sigue habilitada', async () => {
       const { body } = await deshabilitar(administradorId).expect(400);
 
-      expect(body.codigo).toBe('DESHABILITAR_CUENTA_PROPIA');
+      expect(body.codigo).toBe('CUENTA_PROPIA');
       expect(await habilitadoDe(administradorId)).toBe(true);
+    });
+
+    it('[E] un administrador deshabilitado no puede habilitarse a sí mismo con su token vigente', async () => {
+      await usuarios.updateOne({ _id: administradorId }, { habilitado: false });
+
+      const { body } = await habilitar(administradorId).expect(400);
+
+      expect(body.codigo).toBe('CUENTA_PROPIA');
+      expect(await habilitadoDe(administradorId)).toBe(false);
     });
 
     it('[E] una persona que no existe responde 404 USUARIO_NO_ENCONTRADO', async () => {
@@ -128,8 +198,64 @@ describe('DELETE /usuarios/:id', () => {
     });
   });
 
+  describe('el body', () => {
+    it('[Z] sin body responde 400 DATOS_INVALIDOS y no cambia nada', async () => {
+      const { body } = await cambiar(personaId, {}).expect(400);
+
+      expect(body.codigo).toBe('DATOS_INVALIDOS');
+      expect(await habilitadoDe(personaId)).toBe(true);
+    });
+
+    it.each([['false'], ['true'], [0], [1], [null]])(
+      '[I] habilitado con el valor %j, que no es booleano, responde 400',
+      async (valor) => {
+        await cambiar(personaId, { habilitado: valor }).expect(400);
+
+        expect(await habilitadoDe(personaId)).toBe(true);
+      },
+    );
+
+    it('[I] un campo que no es habilitado responde 400 y no cambia nada', async () => {
+      await cambiar(personaId, {
+        habilitado: false,
+        perfil: 'administrador',
+      }).expect(400);
+
+      const guardada = await usuarios.findById(personaId).lean();
+      expect(guardada).toMatchObject({ habilitado: true, perfil: 'usuario' });
+    });
+
+    it('[I] no se puede cambiar otro dato por este endpoint', async () => {
+      await cambiar(personaId, { nombre: 'Otro' }).expect(400);
+
+      expect((await usuarios.findById(personaId).lean())!.nombre).toBe('Laura');
+    });
+  });
+
+  describe('las rutas anteriores', () => {
+    it('[I] ya no existe DELETE /usuarios/:id: deshabilitar es un PATCH', async () => {
+      await request(app.getHttpServer())
+        .delete(`/usuarios/${personaId}`)
+        .set('Authorization', `Bearer ${tokenAdministrador}`)
+        .expect(404);
+
+      expect(await habilitadoDe(personaId)).toBe(true);
+    });
+
+    it('[I] ya no existe POST /usuarios/:id/habilitar: habilitar es un PATCH', async () => {
+      await usuarios.updateOne({ _id: personaId }, { habilitado: false });
+
+      await request(app.getHttpServer())
+        .post(`/usuarios/${personaId}/habilitar`)
+        .set('Authorization', `Bearer ${tokenAdministrador}`)
+        .expect(404);
+
+      expect(await habilitadoDe(personaId)).toBe(false);
+    });
+  });
+
   describe('los permisos', () => {
-    it('[E] una persona común responde 403 NO_ES_ADMINISTRADOR y no deshabilita a nadie', async () => {
+    it('[E] una persona común responde 403 NO_ES_ADMINISTRADOR y no cambia a nadie', async () => {
       const { body } = await deshabilitar(administradorId, tokenComun).expect(
         403,
       );
@@ -138,15 +264,18 @@ describe('DELETE /usuarios/:id', () => {
       expect(await habilitadoDe(administradorId)).toBe(true);
     });
 
-    it('[E] una persona común no puede deshabilitarse a sí misma', async () => {
-      await deshabilitar(personaId, tokenComun).expect(403);
+    it('[E] una persona común no puede habilitar a nadie', async () => {
+      await usuarios.updateOne({ _id: administradorId }, { habilitado: false });
 
-      expect(await habilitadoDe(personaId)).toBe(true);
+      await habilitar(administradorId, tokenComun).expect(403);
+
+      expect(await habilitadoDe(administradorId)).toBe(false);
     });
 
     it('[E] sin token responde 401 TOKEN_AUSENTE', async () => {
       const { body } = await request(app.getHttpServer())
-        .delete(`/usuarios/${personaId}`)
+        .patch(`/usuarios/${personaId}`)
+        .send({ habilitado: false })
         .expect(401);
 
       expect(body.codigo).toBe('TOKEN_AUSENTE');
@@ -154,14 +283,9 @@ describe('DELETE /usuarios/:id', () => {
     });
   });
 
-  describe('después de la baja, quien fue deshabilitada', () => {
-    const ingresar = (identificador: string, clave = 'Clave1234') =>
-      request(app.getHttpServer())
-        .post('/auth/ingresar')
-        .send({ identificador, clave });
-
+  describe('después de deshabilitar, quien fue deshabilitada', () => {
     beforeEach(async () => {
-      await deshabilitar(personaId).expect(204);
+      await deshabilitar(personaId).expect(200);
     });
 
     it('[O] no ingresa con su correo y clave correctos: 403 USUARIO_DESHABILITADO', async () => {
@@ -225,6 +349,21 @@ describe('DELETE /usuarios/:id', () => {
     it('[S] quienes siguen habilitadas ingresan con normalidad', async () => {
       await ingresar('laura@correo.com').expect(200);
     });
+
+    it('[O] al habilitarla vuelve a ingresar con la misma clave y su token nuevo sirve para autorizar y refrescar', async () => {
+      await habilitar(personaId).expect(200);
+
+      const { body } = await ingresar('juan_p').expect(200);
+
+      await request(app.getHttpServer())
+        .post('/auth/autorizar')
+        .set('Authorization', `Bearer ${body.token}`)
+        .expect(200);
+      await request(app.getHttpServer())
+        .post('/auth/refrescar')
+        .set('Authorization', `Bearer ${body.token}`)
+        .expect(200);
+    });
   });
 
   describe('refrescar con perfil actualizado', () => {
@@ -247,7 +386,7 @@ describe('DELETE /usuarios/:id', () => {
     it('[S] registra quién deshabilitó a quién', async () => {
       const lineas = capturarLogs();
 
-      await deshabilitar(personaId).expect(204);
+      await deshabilitar(personaId).expect(200);
 
       expect(
         lineas.find((linea) => linea.evento === 'usuario_deshabilitado'),
@@ -257,11 +396,25 @@ describe('DELETE /usuarios/:id', () => {
       });
     });
 
-    it('[S] deshabilitar a quien ya lo estaba no vuelve a registrar la baja', async () => {
-      await deshabilitar(personaId).expect(204);
+    it('[S] registra quién habilitó a quién', async () => {
+      await usuarios.updateOne({ _id: personaId }, { habilitado: false });
       const lineas = capturarLogs();
 
-      await deshabilitar(personaId).expect(204);
+      await habilitar(personaId).expect(200);
+
+      expect(
+        lineas.find((linea) => linea.evento === 'usuario_habilitado'),
+      ).toMatchObject({
+        id_usuario: personaId,
+        id_administrador: administradorId,
+      });
+    });
+
+    it('[S] repetir el mismo estado no vuelve a registrar el cambio', async () => {
+      await deshabilitar(personaId).expect(200);
+      const lineas = capturarLogs();
+
+      await deshabilitar(personaId).expect(200);
 
       expect(
         lineas.filter((linea) => linea.evento === 'usuario_deshabilitado'),
@@ -269,13 +422,10 @@ describe('DELETE /usuarios/:id', () => {
     });
 
     it('[S] el ingreso rechazado queda registrado como advertencia, sin la clave', async () => {
-      await deshabilitar(personaId).expect(204);
+      await deshabilitar(personaId).expect(200);
       const lineas = capturarLogs();
 
-      await request(app.getHttpServer())
-        .post('/auth/ingresar')
-        .send({ identificador: 'juan_p', clave: 'Clave1234' })
-        .expect(403);
+      await ingresar('juan_p').expect(403);
 
       expect(
         lineas.find((linea) => linea.evento === 'ingreso_rechazado'),

@@ -12,15 +12,21 @@
     }}</app-aviso>
   }
 
-  @if (deshabilitado(); as nombreUsuario) {
-    <app-aviso titulo="usuarios.baja_hecha" [info]="true" (cerrar)="deshabilitado.set(null)">{{
-      'usuarios.baja_hecha_detalle' | translate: { nombreUsuario }
-    }}</app-aviso>
+  @if (hecho(); as listo) {
+    <app-aviso
+      [titulo]="'usuarios.' + listo.accion + '_hecha'"
+      [info]="true"
+      (cerrar)="hecho.set(null)"
+      >{{
+        'usuarios.' + listo.accion + '_hecha_detalle'
+          | translate: { nombreUsuario: listo.nombreUsuario }
+      }}</app-aviso
+    >
   }
 
-  @if (errorBaja(); as mensaje) {
-    <app-aviso titulo="usuarios.error_deshabilitar" (cerrar)="errorBaja.set(null)">{{
-      mensaje | translate
+  @if (error(); as fallo) {
+    <app-aviso [titulo]="'usuarios.error_' + fallo.accion" (cerrar)="error.set(null)">{{
+      fallo.mensaje | translate
     }}</app-aviso>
   }
 
@@ -75,9 +81,21 @@
                       'usuarios.deshabilitar_aria'
                         | translate: { nombreUsuario: usuario.nombreUsuario }
                     "
-                    (click)="pedirDeshabilitar(usuario)"
+                    (click)="pedir('deshabilitar', usuario)"
                   >
                     {{ 'usuarios.deshabilitar' | translate }}
+                  </button>
+                } @else if (!usuario.habilitado) {
+                  <button
+                    type="button"
+                    class="boton-secundario"
+                    [attr.aria-label]="
+                      'usuarios.habilitar_aria'
+                        | translate: { nombreUsuario: usuario.nombreUsuario }
+                    "
+                    (click)="pedir('habilitar', usuario)"
+                  >
+                    {{ 'usuarios.habilitar' | translate }}
                   </button>
                 }
               </td>
@@ -104,16 +122,17 @@
     />
   }
 
-  @if (porDeshabilitar(); as usuario) {
+  @if (pendiente(); as confirmacion) {
     <app-modal-confirmacion
-      titulo="usuarios.deshabilitar_titulo"
-      texto="usuarios.deshabilitar_texto"
-      confirmar="usuarios.deshabilitar"
-      confirmando="usuarios.deshabilitando"
-      [parametros]="{ nombreUsuario: usuario.nombreUsuario }"
-      [enviando]="deshabilitando()"
-      (confirmado)="confirmarDeshabilitar()"
-      (cancelado)="cancelarDeshabilitar()"
+      [titulo]="'usuarios.' + confirmacion.accion + '_titulo'"
+      [texto]="'usuarios.' + confirmacion.accion + '_texto'"
+      [confirmar]="'usuarios.' + confirmacion.accion"
+      [confirmando]="'usuarios.' + confirmacion.accion + '_enviando'"
+      [parametros]="{ nombreUsuario: confirmacion.usuario.nombreUsuario }"
+      [peligroso]="confirmacion.accion === 'deshabilitar'"
+      [enviando]="enviando()"
+      (confirmado)="confirmar()"
+      (cancelado)="cancelar()"
     />
   }
 </section>

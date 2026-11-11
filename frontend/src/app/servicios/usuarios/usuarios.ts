@@ -17,7 +17,9 @@ export class UsuariosApi {
     return this.http.post<Usuario>(`${environment.API_URL}/usuarios`, datos);
   }
 
-  deshabilitar(id: string) {
-    return this.http.delete<void>(`${environment.API_URL}/usuarios/${encodeURIComponent(id)}`);
+  actualizarHabilitado(id: string, habilitado: boolean) {
+    return this.http.patch<Usuario>(`${environment.API_URL}/usuarios/${encodeURIComponent(id)}`, {
+      habilitado,
+    });
   }
 }

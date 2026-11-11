@@ -1,10 +1,9 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
-  HttpCode,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -20,6 +19,7 @@ import { IdParamDto } from '../common/id-param.dto.js';
 import { PaginacionDto } from '../common/paginacion.dto.js';
 import { imagenOpcional } from '../imagenes/imagen-opcional.pipe.js';
 import { TAMANO_MAXIMO_IMAGEN } from '../imagenes/imagenes.constantes.js';
+import { ActualizarHabilitadoDto } from './dto/actualizar-habilitado.dto.js';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto.js';
 import { UsuariosService } from './usuarios.service.js';
 
@@ -49,12 +49,16 @@ export class UsuariosController {
     );
   }
 
-  @Delete(':id')
-  @HttpCode(204)
-  deshabilitar(
+  @Patch(':id')
+  actualizarHabilitado(
     @Param() { id }: IdParamDto,
+    @Body() { habilitado }: ActualizarHabilitadoDto,
     @Req() solicitud: SolicitudAutenticada,
   ) {
-    return this.usuariosService.deshabilitar(id, solicitud.usuario.id);
+    return this.usuariosService.actualizarHabilitado(
+      id,
+      habilitado,
+      solicitud.usuario.id,
+    );
   }
 }

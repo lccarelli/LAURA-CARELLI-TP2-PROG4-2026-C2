@@ -49,6 +49,19 @@ describe('DashboardUsuarios', () => {
       fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
     ).find((boton) => boton.textContent?.includes('Ver más'));
 
+  const modal = () => fixture.nativeElement.querySelector('app-modal-confirmacion');
+  const botonDe = (fila: number) => filas()[fila].querySelector('button') as HTMLButtonElement;
+  const botonDelModal = (texto: string) =>
+    Array.from(modal().querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find((boton) =>
+      boton.textContent?.includes(texto),
+    )!;
+
+  const pedidoDeCambio = (id: string) =>
+    http.expectOne((solicitud) => solicitud.method === 'PATCH' && solicitud.url === `${URL}/${id}`);
+  const pedidosDeCambio = () => http.match((solicitud) => solicitud.method === 'PATCH');
+  const terminarCambio = (numero: number, habilitado: boolean) =>
+    pedidoDeCambio(`u${numero}`).flush(persona(numero, { habilitado }));
+
   const actualizar = async () => {
     fixture.detectChanges();
     await fixture.whenStable();
@@ -287,19 +300,9 @@ describe('DashboardUsuarios', () => {
   });
 
   describe('deshabilitar un usuario', () => {
-    const modal = () => fixture.nativeElement.querySelector('app-modal-confirmacion');
     const botonesDeBaja = () =>
       Array.from(
         fixture.nativeElement.querySelectorAll('tbody button') as NodeListOf<HTMLButtonElement>,
-      );
-    const botonDe = (fila: number) => filas()[fila].querySelector('button') as HTMLButtonElement;
-    const botonDelModal = (texto: string) =>
-      Array.from(modal().querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find(
-        (boton) => boton.textContent?.includes(texto),
-      )!;
-    const pedidoDeBaja = (id: string) =>
-      http.expectOne(
-        (solicitud) => solicitud.method === 'DELETE' && solicitud.url === `${URL}/${id}`,
       );
 
     beforeEach(() => {
@@ -314,11 +317,12 @@ describe('DashboardUsuarios', () => {
       expect(botonDe(0).getAttribute('aria-label')).toBe('Deshabilitar a @persona_1');
     });
 
-    it('[S] quien ya está deshabilitado no tiene el botón', async () => {
+    it('[S] quien ya está deshabilitado no tiene el botón Deshabilitar sino Habilitar', async () => {
       await abrirCon([persona(1), persona(2, { habilitado: false })]);
 
-      expect(botonesDeBaja()).toHaveLength(1);
-      expect(filas()[1].querySelector('button')).toBeNull();
+      expect(botonDe(0).textContent).toContain('Deshabilitar');
+      expect(botonDe(1).textContent).toContain('Habilitar');
+      expect(botonDe(1).textContent).not.toContain('Deshabilitar');
     });
 
     it('[S] la propia cuenta no tiene el botón', async () => {
@@ -341,7 +345,7 @@ describe('DashboardUsuarios', () => {
       await actualizar();
 
       expect(modal().textContent).toContain('¿Deshabilitar a @persona_1?');
-      expect(http.match((solicitud) => solicitud.method === 'DELETE')).toHaveLength(0);
+      expect(pedidosDeCambio()).toHaveLength(0);
     });
 
     it('[S] Cancelar cierra la confirmación sin deshabilitar', async () => {
@@ -354,34 +358,35 @@ describe('DashboardUsuarios', () => {
 
       expect(modal()).toBeNull();
       expect(filas()[0].textContent).toContain('Habilitado');
-      expect(http.match((solicitud) => solicitud.method === 'DELETE')).toHaveLength(0);
+      expect(pedidosDeCambio()).toHaveLength(0);
     });
 
-    it('[O] Confirmar manda el DELETE de ese usuario', async () => {
+    it('[O] Confirmar manda un PATCH de ese usuario con habilitado en falso', async () => {
       await abrirCon([persona(1), persona(2)]);
       botonDe(1).click();
       await actualizar();
 
       botonDelModal('Deshabilitar').click();
 
-      const solicitud = pedidoDeBaja('u2');
-      expect(solicitud.request.method).toBe('DELETE');
-      solicitud.flush(null, { status: 204, statusText: 'No Content' });
+      const solicitud = pedidoDeCambio('u2');
+      expect(solicitud.request.method).toBe('PATCH');
+      expect(solicitud.request.body).toEqual({ habilitado: false });
+      solicitud.flush(persona(2, { habilitado: false }));
     });
 
-    it('[O] al terminar la fila pasa a Deshabilitado, sin recargar, y desaparece su botón', async () => {
+    it('[O] al terminar la fila pasa a Deshabilitado, sin recargar, y su botón pasa a Habilitar', async () => {
       await abrirCon([persona(1), persona(2)]);
       botonDe(0).click();
       await actualizar();
 
       botonDelModal('Deshabilitar').click();
-      pedidoDeBaja('u1').flush(null, { status: 204, statusText: 'No Content' });
+      terminarCambio(1, false);
       await actualizar();
 
       const estado = filas()[0].querySelectorAll('.chip')[1] as HTMLElement;
       expect(estado.textContent).toContain('Deshabilitado');
       expect(estado.classList).not.toContain('activo');
-      expect(filas()[0].querySelector('button')).toBeNull();
+      expect(botonDe(0).textContent?.trim()).toBe('Habilitar');
       expect(filas()[1].textContent).toContain('Habilitado');
       expect(modal()).toBeNull();
     });
@@ -392,7 +397,7 @@ describe('DashboardUsuarios', () => {
       await actualizar();
 
       botonDelModal('Deshabilitar').click();
-      pedidoDeBaja('u1').flush(null, { status: 204, statusText: 'No Content' });
+      terminarCambio(1, false);
       await actualizar();
 
       expect(texto()).toContain('Usuario deshabilitado');
@@ -407,10 +412,10 @@ describe('DashboardUsuarios', () => {
 
       botonDelModal('Deshabilitar').click();
       await actualizar();
-      fixture.componentInstance.confirmarDeshabilitar();
+      fixture.componentInstance.confirmar();
 
       expect(modal().textContent).toContain('Deshabilitando');
-      expect(http.match((solicitud) => solicitud.method === 'DELETE')).toHaveLength(1);
+      expect(pedidosDeCambio()).toHaveLength(1);
     });
 
     it('[E] si la API falla cierra el modal, avisa y la fila sigue habilitada', async () => {
@@ -419,15 +424,15 @@ describe('DashboardUsuarios', () => {
       await actualizar();
 
       botonDelModal('Deshabilitar').click();
-      pedidoDeBaja('u1').flush(
-        { codigo: 'DESHABILITAR_CUENTA_PROPIA' },
+      pedidoDeCambio('u1').flush(
+        { codigo: 'CUENTA_PROPIA' },
         { status: 400, statusText: 'Bad Request' },
       );
       await actualizar();
 
       expect(modal()).toBeNull();
       expect(texto()).toContain('No se pudo deshabilitar al usuario');
-      expect(texto()).toContain('No podés deshabilitar tu propia cuenta');
+      expect(texto()).toContain('No podés cambiar el estado de tu propia cuenta');
       expect(filas()[0].textContent).toContain('Habilitado');
     });
 
@@ -437,7 +442,7 @@ describe('DashboardUsuarios', () => {
       await actualizar();
 
       botonDelModal('Deshabilitar').click();
-      pedidoDeBaja('u1').flush(
+      pedidoDeCambio('u1').flush(
         { codigo: 'USUARIO_NO_ENCONTRADO' },
         { status: 404, statusText: 'Not Found' },
       );
@@ -451,7 +456,7 @@ describe('DashboardUsuarios', () => {
       botonDe(0).click();
       await actualizar();
       botonDelModal('Deshabilitar').click();
-      pedidoDeBaja('u1').error(new ProgressEvent('error'), { status: 0 });
+      pedidoDeCambio('u1').error(new ProgressEvent('error'), { status: 0 });
       await actualizar();
 
       expect(texto()).toContain('No se pudo conectar');
@@ -466,7 +471,7 @@ describe('DashboardUsuarios', () => {
       botonDe(0).click();
       await actualizar();
       botonDelModal('Deshabilitar').click();
-      pedidoDeBaja('u1').flush(null, { status: 204, statusText: 'No Content' });
+      terminarCambio(1, false);
       await actualizar();
       expect(texto()).toContain('ya no puede ingresar');
 
@@ -485,6 +490,166 @@ describe('DashboardUsuarios', () => {
 
       expect(modal().querySelector('[role="alertdialog"]')).not.toBeNull();
       expect(alerta).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('habilitar un usuario', () => {
+    const abrirDeshabilitada = async () => {
+      await abrirCon([persona(1, { habilitado: false }), persona(2)]);
+      botonDe(0).click();
+      await actualizar();
+    };
+
+    beforeEach(() => {
+      TestBed.inject(Auth).usuario.set({ ...usuarioDePrueba, _id: 'yo' });
+    });
+
+    it('[O] cada usuario deshabilitado tiene un botón Habilitar con el usuario en su etiqueta', async () => {
+      await abrirCon([persona(1, { habilitado: false })]);
+
+      expect(botonDe(0).textContent).toContain('Habilitar');
+      expect(botonDe(0).getAttribute('aria-label')).toBe('Habilitar a @persona_1');
+    });
+
+    it('[S] quien está habilitado no tiene el botón Habilitar', async () => {
+      await abrirCon([persona(1)]);
+
+      expect(botonDe(0).textContent).not.toMatch(/^\s*Habilitar/);
+    });
+
+    it('[O] el botón abre una confirmación con el nombre de usuario, sin pedir nada todavía', async () => {
+      await abrirDeshabilitada();
+
+      expect(modal().textContent).toContain('¿Habilitar a @persona_1?');
+      expect(modal().textContent).toContain('Va a poder ingresar de nuevo');
+      expect(pedidosDeCambio()).toHaveLength(0);
+    });
+
+    it('[I] la confirmación de habilitar no usa el estilo de peligro', async () => {
+      await abrirDeshabilitada();
+
+      expect(botonDelModal('Habilitar').classList).toContain('boton-principal');
+      expect(botonDelModal('Habilitar').classList).not.toContain('boton-peligro');
+    });
+
+    it('[S] Cancelar cierra la confirmación sin habilitar', async () => {
+      await abrirDeshabilitada();
+
+      botonDelModal('Cancelar').click();
+      await actualizar();
+
+      expect(modal()).toBeNull();
+      expect(filas()[0].textContent).toContain('Deshabilitado');
+      expect(pedidosDeCambio()).toHaveLength(0);
+    });
+
+    it('[O] Confirmar manda un PATCH de ese usuario con habilitado en verdadero', async () => {
+      await abrirDeshabilitada();
+
+      botonDelModal('Habilitar').click();
+
+      const solicitud = pedidoDeCambio('u1');
+      expect(solicitud.request.method).toBe('PATCH');
+      expect(solicitud.request.body).toEqual({ habilitado: true });
+      solicitud.flush(persona(1, { habilitado: true }));
+    });
+
+    it('[O] al terminar la fila pasa a Habilitado, sin recargar, y su botón pasa a Deshabilitar', async () => {
+      await abrirDeshabilitada();
+
+      botonDelModal('Habilitar').click();
+      terminarCambio(1, true);
+      await actualizar();
+
+      const estado = filas()[0].querySelectorAll('.chip')[1] as HTMLElement;
+      expect(estado.textContent).toContain('Habilitado');
+      expect(estado.classList).toContain('activo');
+      expect(botonDe(0).textContent).toContain('Deshabilitar');
+      expect(filas()[1].textContent).toContain('Habilitado');
+      expect(modal()).toBeNull();
+    });
+
+    it('[O] avisa con el nombre de usuario que ya puede ingresar', async () => {
+      await abrirDeshabilitada();
+
+      botonDelModal('Habilitar').click();
+      terminarCambio(1, true);
+      await actualizar();
+
+      expect(texto()).toContain('Usuario habilitado');
+      expect(texto()).toContain('@persona_1 ya puede ingresar');
+      expect(fixture.nativeElement.querySelector('.aviso-info[role="status"]')).not.toBeNull();
+    });
+
+    it('[S] mientras espera la respuesta el modal queda bloqueado y no manda otro pedido', async () => {
+      await abrirDeshabilitada();
+
+      botonDelModal('Habilitar').click();
+      await actualizar();
+      fixture.componentInstance.confirmar();
+
+      expect(modal().textContent).toContain('Habilitando');
+      expect(pedidosDeCambio()).toHaveLength(1);
+    });
+
+    it('[E] si la persona ya no existe avisa que no se pudo habilitar y que no existe', async () => {
+      await abrirDeshabilitada();
+
+      botonDelModal('Habilitar').click();
+      pedidoDeCambio('u1').flush(
+        { codigo: 'USUARIO_NO_ENCONTRADO' },
+        { status: 404, statusText: 'Not Found' },
+      );
+      await actualizar();
+
+      expect(modal()).toBeNull();
+      expect(texto()).toContain('No se pudo habilitar al usuario');
+      expect(texto()).toContain('El usuario no existe');
+      expect(filas()[0].textContent).toContain('Deshabilitado');
+    });
+
+    it('[E] sin conexión avisa y permite reintentar', async () => {
+      await abrirDeshabilitada();
+      botonDelModal('Habilitar').click();
+      pedidoDeCambio('u1').error(new ProgressEvent('error'), { status: 0 });
+      await actualizar();
+
+      expect(texto()).toContain('No se pudo conectar');
+      botonDe(0).click();
+      await actualizar();
+
+      expect(modal()).not.toBeNull();
+    });
+
+    it('[S] deshabilitar y volver a habilitar a la misma persona deja la fila como estaba', async () => {
+      await abrirCon([persona(1)]);
+      botonDe(0).click();
+      await actualizar();
+      botonDelModal('Deshabilitar').click();
+      terminarCambio(1, false);
+      await actualizar();
+
+      botonDe(0).click();
+      await actualizar();
+      botonDelModal('Habilitar').click();
+      terminarCambio(1, true);
+      await actualizar();
+
+      expect(filas()[0].textContent).toContain('Habilitado');
+      expect(botonDe(0).textContent).toContain('Deshabilitar');
+    });
+
+    it('[S] mostrar un aviso nuevo saca el anterior', async () => {
+      await abrirDeshabilitada();
+      botonDelModal('Habilitar').click();
+      terminarCambio(1, true);
+      await actualizar();
+      expect(texto()).toContain('ya puede ingresar');
+
+      botonDe(1).click();
+      await actualizar();
+
+      expect(texto()).not.toContain('ya puede ingresar');
     });
   });
 

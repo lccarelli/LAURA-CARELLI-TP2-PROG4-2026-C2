@@ -13,6 +13,7 @@ export class ModalConfirmacion {
   readonly confirmar = input.required<string>();
   readonly confirmando = input.required<string>();
   readonly cancelar = input('usuarios.cancelar');
+  readonly peligroso = input(true);
   readonly enviando = input(false);
   readonly confirmado = output<void>();
   readonly cancelado = output<void>();

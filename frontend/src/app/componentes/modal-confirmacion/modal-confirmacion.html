@@ -24,7 +24,8 @@
       </button>
       <button
         type="button"
-        class="boton-peligro"
+        [class.boton-peligro]="peligroso()"
+        [class.boton-principal]="!peligroso()"
         [disabled]="enviando()"
         (click)="confirmado.emit()"
       >

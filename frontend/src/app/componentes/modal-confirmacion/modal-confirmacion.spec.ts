@@ -30,7 +30,7 @@ describe('ModalConfirmacion', () => {
     fixture.componentRef.setInput('titulo', 'usuarios.deshabilitar_titulo');
     fixture.componentRef.setInput('texto', 'usuarios.deshabilitar_texto');
     fixture.componentRef.setInput('confirmar', 'usuarios.deshabilitar');
-    fixture.componentRef.setInput('confirmando', 'usuarios.deshabilitando');
+    fixture.componentRef.setInput('confirmando', 'usuarios.deshabilitar_enviando');
     fixture.componentRef.setInput('parametros', { nombreUsuario: 'juan_p' });
     confirmado = vi.fn<() => void>();
     cancelado = vi.fn<() => void>();
@@ -100,6 +100,13 @@ describe('ModalConfirmacion', () => {
   it('[I] la acción destructiva usa el estilo de peligro y la otra el secundario', () => {
     expect(botonConfirmar().classList).toContain('boton-peligro');
     expect(botonCancelar().classList).toContain('boton-secundario');
+  });
+
+  it('[I] si la acción no es destructiva, el botón de confirmar usa el estilo principal', async () => {
+    await actualizar({ peligroso: false });
+
+    expect(botonConfirmar().classList).toContain('boton-principal');
+    expect(botonConfirmar().classList).not.toContain('boton-peligro');
   });
 
   it('[I] el texto del botón de cancelar se puede cambiar', async () => {

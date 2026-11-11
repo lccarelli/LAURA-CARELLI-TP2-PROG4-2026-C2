@@ -13,6 +13,8 @@ import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
 import { ListadoPaginado } from '../../utilidades/listado-paginado';
 
+type Accion = 'deshabilitar' | 'habilitar';
+
 @Component({
   imports: [Aviso, CubreplatoLoading, ModalConfirmacion, RouterLink, VerMas, TranslatePipe],
   selector: 'app-dashboard-usuarios',
@@ -27,10 +29,10 @@ export class DashboardUsuarios implements OnInit, OnDestroy {
   readonly creado = signal<string | null>(
     inject(Router).currentNavigation()?.extras.state?.['creado'] ?? null,
   );
-  readonly porDeshabilitar = signal<Usuario | null>(null);
-  readonly deshabilitando = signal(false);
-  readonly deshabilitado = signal<string | null>(null);
-  readonly errorBaja = signal<string | null>(null);
+  readonly pendiente = signal<{ accion: Accion; usuario: Usuario } | null>(null);
+  readonly enviando = signal(false);
+  readonly hecho = signal<{ accion: Accion; nombreUsuario: string } | null>(null);
+  readonly error = signal<{ accion: Accion; mensaje: string } | null>(null);
 
   ngOnInit() {
     this.listado.cargarMas();
@@ -44,39 +46,40 @@ export class DashboardUsuarios implements OnInit, OnDestroy {
     return usuario.habilitado && usuario._id !== this.auth.usuario()?._id;
   }
 
-  pedirDeshabilitar(usuario: Usuario) {
+  pedir(accion: Accion, usuario: Usuario) {
     this.creado.set(null);
-    this.deshabilitado.set(null);
-    this.errorBaja.set(null);
-    this.porDeshabilitar.set(usuario);
+    this.hecho.set(null);
+    this.error.set(null);
+    this.pendiente.set({ accion, usuario });
   }
 
-  cancelarDeshabilitar() {
-    this.porDeshabilitar.set(null);
+  cancelar() {
+    this.pendiente.set(null);
   }
 
-  confirmarDeshabilitar() {
-    const usuario = this.porDeshabilitar();
-    if (!usuario || this.deshabilitando()) {
+  confirmar() {
+    const pendiente = this.pendiente();
+    if (!pendiente || this.enviando()) {
       return;
     }
 
-    this.deshabilitando.set(true);
-    this.api.deshabilitar(usuario._id).subscribe({
-      next: () => {
-        this.listado.actualizar(usuario._id, { habilitado: false });
-        this.deshabilitado.set(usuario.nombreUsuario);
-        this.terminarBaja();
+    const { accion, usuario } = pendiente;
+    this.enviando.set(true);
+    this.api.actualizarHabilitado(usuario._id, accion === 'habilitar').subscribe({
+      next: (actualizado) => {
+        this.listado.actualizar(usuario._id, { habilitado: actualizado.habilitado });
+        this.hecho.set({ accion, nombreUsuario: usuario.nombreUsuario });
+        this.terminar();
       },
       error: (error: HttpErrorResponse) => {
-        this.errorBaja.set(mensajeDeApi(error));
-        this.terminarBaja();
+        this.error.set({ accion, mensaje: mensajeDeApi(error) });
+        this.terminar();
       },
     });
   }
 
-  private terminarBaja() {
-    this.deshabilitando.set(false);
-    this.porDeshabilitar.set(null);
+  private terminar() {
+    this.enviando.set(false);
+    this.pendiente.set(null);
   }
 }
