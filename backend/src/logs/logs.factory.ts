@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Campos, Nivel, emitirLog } from './logger-global.js';
 
 export const EVENTOS_DE_LOG = {
+  ACCESO_DENEGADO: 'acceso_denegado',
   COMENTARIO_CREADO: 'comentario_creado',
   COMENTARIO_MODIFICADO: 'comentario_modificado',
   EVENTO_ME_GUSTA_NO_REGISTRADO: 'evento_me_gusta_no_registrado',

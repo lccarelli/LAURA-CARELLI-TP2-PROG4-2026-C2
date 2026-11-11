@@ -38,4 +38,20 @@ export class UsuariosService {
   buscarPorId(id: string) {
     return this.usuarioModel.findById(id).lean();
   }
+
+  async listar(offset: number, limit: number) {
+    const usuarios = await this.usuarioModel
+      .find()
+      .sort({ _id: -1 })
+      .skip(offset)
+      .limit(limit + 1)
+      .lean();
+
+    return {
+      datos: usuarios.slice(0, limit),
+      offset,
+      limit,
+      hayMas: usuarios.length > limit,
+    };
+  }
 }

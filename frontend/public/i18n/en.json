@@ -23,6 +23,7 @@
     "lema": "Everyday recipes",
     "publicaciones": "Recipes",
     "mi_perfil": "My profile",
+    "administracion": "Administration",
     "salir": "Log out",
     "ingresar": "Log in",
     "registrarme": "Sign up",
@@ -218,6 +219,20 @@
     "error_comentarios": "Could not load the comments",
     "ver_comentarios": "See all comments ({{n}})"
   },
+  "usuarios": {
+    "titulo": "Users",
+    "foto": "Photo",
+    "nombre": "Name",
+    "usuario": "Username",
+    "correo": "Email",
+    "perfil": "Role",
+    "estado": "Status",
+    "habilitado": "Enabled",
+    "deshabilitado": "Disabled",
+    "vacio": "There are no users yet",
+    "ver_mas": "Show more users",
+    "error_cargar": "Users could not be loaded"
+  },
   "roles": {
     "usuario": "user",
     "administrador": "administrator"
@@ -257,7 +272,8 @@
     "ME_GUSTA_REPETIDO": "You already liked this post.",
     "ME_GUSTA_INEXISTENTE": "You had not liked this post.",
     "COMENTARIO_AJENO": "You can only edit your own comments.",
-    "COMENTARIO_NO_ENCONTRADO": "The comment does not exist."
+    "COMENTARIO_NO_ENCONTRADO": "The comment does not exist.",
+    "NO_ES_ADMINISTRADOR": "This section is for administrators only."
   },
   "tipos": {
     "receta": "Recipe",

@@ -10,3 +10,10 @@ export interface Usuario {
   perfil: 'usuario' | 'administrador';
   habilitado: boolean;
 }
+
+export interface PaginaUsuarios {
+  datos: Usuario[];
+  offset: number;
+  limit: number;
+  hayMas: boolean;
+}
