@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  Param,
   Post,
   Query,
   Req,
@@ -13,6 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AdminGuard } from '../auth/admin.guard.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
+import { IdParamDto } from '../common/id-param.dto.js';
 import { PaginacionDto } from '../common/paginacion.dto.js';
 import { imagenOpcional } from '../imagenes/imagen-opcional.pipe.js';
 import { TAMANO_MAXIMO_IMAGEN } from '../imagenes/imagenes.constantes.js';
@@ -43,5 +47,14 @@ export class UsuariosController {
       dto,
       imagen,
     );
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  deshabilitar(
+    @Param() { id }: IdParamDto,
+    @Req() solicitud: SolicitudAutenticada,
+  ) {
+    return this.usuariosService.deshabilitar(id, solicitud.usuario.id);
   }
 }

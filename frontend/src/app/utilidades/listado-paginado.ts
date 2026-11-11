@@ -52,6 +52,12 @@ export class ListadoPaginado<T extends { _id: string }> {
     this.cargarMas();
   }
 
+  actualizar(id: string, cambios: Partial<T>) {
+    this.items.update((actuales) =>
+      actuales.map((item) => (item._id === id ? { ...item, ...cambios } : item)),
+    );
+  }
+
   quitar(id: string) {
     this.items.update((actuales) => actuales.filter((item) => item._id !== id));
   }

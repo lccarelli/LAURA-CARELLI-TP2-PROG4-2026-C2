@@ -3,6 +3,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
@@ -112,6 +113,33 @@ export class UsuariosService {
 
   buscarPorId(id: string) {
     return this.usuarioModel.findById(id).lean();
+  }
+
+  async deshabilitar(id: string, administradorId: string) {
+    if (id === administradorId) {
+      throw new BadRequestException({
+        message: 'No se puede deshabilitar la propia cuenta',
+        codigo: 'DESHABILITAR_CUENTA_PROPIA',
+      });
+    }
+
+    const resultado = await this.usuarioModel.updateOne(
+      { _id: id },
+      { habilitado: false },
+    );
+    if (resultado.matchedCount === 0) {
+      throw new NotFoundException({
+        message: 'El usuario no existe',
+        codigo: 'USUARIO_NO_ENCONTRADO',
+      });
+    }
+    if (resultado.modifiedCount > 0) {
+      this.logger.info(
+        EVENTOS_DE_LOG.USUARIO_DESHABILITADO,
+        'Usuario deshabilitado',
+        { id_usuario: id, id_administrador: administradorId },
+      );
+    }
   }
 
   async listar(offset: number, limit: number) {

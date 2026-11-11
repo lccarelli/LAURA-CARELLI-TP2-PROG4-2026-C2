@@ -10,6 +10,7 @@ export const EVENTOS_DE_LOG = {
   IMAGEN_SUBIDA: 'imagen_subida',
   INGRESO_CORRECTO: 'ingreso_correcto',
   INGRESO_FALLIDO: 'ingreso_fallido',
+  INGRESO_RECHAZADO: 'ingreso_rechazado',
   ME_GUSTA_DADO: 'me_gusta_dado',
   ME_GUSTA_QUITADO: 'me_gusta_quitado',
   LIMITE_SUPERADO: 'limite_superado',
@@ -24,6 +25,7 @@ export const EVENTOS_DE_LOG = {
   TOKEN_REFRESCADO: 'token_refrescado',
   SESION_VENCIDA: 'sesion_vencida',
   USUARIO_CREADO: 'usuario_creado',
+  USUARIO_DESHABILITADO: 'usuario_deshabilitado',
   USUARIO_NO_AUTORIZADO: 'usuario_no_autorizado',
   USUARIO_REGISTRADO: 'usuario_registrado',
 } as const;

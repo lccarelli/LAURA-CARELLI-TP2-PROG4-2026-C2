@@ -172,6 +172,32 @@ describe('Sesion: vencimiento del token', () => {
     expect(sesion.extendiendo()).toBe(false);
   });
 
+  it('[E] si la cuenta fue deshabilitada (401 USUARIO_NO_AUTORIZADO) cierra la sesión con ese motivo', () => {
+    iniciarConToken(15 * 60);
+    avanzar(11 * MINUTO);
+
+    sesion.extender();
+    pedidos()[0].flush(
+      { codigo: 'USUARIO_NO_AUTORIZADO' },
+      { status: 401, statusText: 'Unauthorized' },
+    );
+
+    expect(auth.token()).toBeNull();
+    expect(auth.motivoDeSalida()).toBe('api.USUARIO_NO_AUTORIZADO');
+    expect(irA).toHaveBeenCalledWith('/login');
+  });
+
+  it('[E] si el servidor falla al extender (500) no cierra la sesión', () => {
+    iniciarConToken(15 * 60);
+    avanzar(11 * MINUTO);
+
+    sesion.extender();
+    pedidos()[0].flush({}, { status: 500, statusText: 'Error' });
+
+    expect(auth.token()).not.toBeNull();
+    expect(irA).not.toHaveBeenCalled();
+  });
+
   it('[O] cerrar la sesión desde el aviso borra el token y lleva al login', () => {
     iniciarConToken(15 * 60);
     avanzar(11 * MINUTO);

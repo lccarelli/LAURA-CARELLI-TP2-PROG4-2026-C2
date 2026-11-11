@@ -1,0 +1,35 @@
+<div class="fondo-modal">
+  <div
+    class="modal"
+    role="alertdialog"
+    tabindex="-1"
+    (keydown.escape)="salir()"
+    aria-modal="true"
+    aria-labelledby="modal-confirmacion-titulo"
+    aria-describedby="modal-confirmacion-texto"
+  >
+    <h2 id="modal-confirmacion-titulo" class="titulo-seccion">
+      {{ titulo() | translate: parametros() }}
+    </h2>
+    <p id="modal-confirmacion-texto">{{ texto() | translate: parametros() }}</p>
+    <div class="modal-acciones">
+      <button
+        #cancelarBoton
+        type="button"
+        class="boton-secundario"
+        [disabled]="enviando()"
+        (click)="salir()"
+      >
+        {{ cancelar() | translate }}
+      </button>
+      <button
+        type="button"
+        class="boton-peligro"
+        [disabled]="enviando()"
+        (click)="confirmado.emit()"
+      >
+        {{ (enviando() ? confirmando() : confirmar()) | translate }}
+      </button>
+    </div>
+  </div>
+</div>

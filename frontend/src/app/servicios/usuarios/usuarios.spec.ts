@@ -74,4 +74,35 @@ describe('UsuariosApi', () => {
 
     expect(fallo.mock.calls[0][0].status).toBe(409);
   });
+
+  it('[O] deshabilitar manda un DELETE al usuario', () => {
+    const listo = vi.fn();
+    api.deshabilitar('u9').subscribe(listo);
+
+    const solicitud = http.expectOne(`${URL}/u9`);
+
+    expect(solicitud.request.method).toBe('DELETE');
+    solicitud.flush(null, { status: 204, statusText: 'No Content' });
+    expect(listo).toHaveBeenCalledTimes(1);
+  });
+
+  it('[I] deshabilitar codifica el id en la dirección', () => {
+    api.deshabilitar('a/b').subscribe();
+
+    const solicitud = http.expectOne((pedido) => pedido.url.startsWith(URL));
+
+    expect(solicitud.request.url).toBe(`${URL}/a%2Fb`);
+    solicitud.flush(null, { status: 204, statusText: 'No Content' });
+  });
+
+  it('[E] deshabilitar a uno mismo deja pasar el 400 de la API', () => {
+    const fallo = vi.fn();
+    api.deshabilitar('u1').subscribe({ error: fallo });
+
+    http
+      .expectOne(`${URL}/u1`)
+      .flush({ codigo: 'DESHABILITAR_CUENTA_PROPIA' }, { status: 400, statusText: 'Bad Request' });
+
+    expect(fallo.mock.calls[0][0].status).toBe(400);
+  });
 });

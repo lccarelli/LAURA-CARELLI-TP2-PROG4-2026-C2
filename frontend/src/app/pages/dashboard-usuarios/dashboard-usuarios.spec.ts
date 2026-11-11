@@ -6,6 +6,7 @@ import { pruebasDeCargaAutomatica } from '../../../testing/carga-automatica';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { usuarioDePrueba } from '../../../testing/usuario';
 import { Router, provideRouter } from '@angular/router';
+import { Auth } from '../../servicios/auth/auth';
 import { PaginaUsuarios, Usuario } from '../../interfaces/usuario';
 import { DashboardUsuarios } from './dashboard-usuarios';
 
@@ -103,6 +104,7 @@ describe('DashboardUsuarios', () => {
       'Correo',
       'Perfil',
       'Estado',
+      'Acciones',
     ]);
     expect(encabezados[0].getAttribute('aria-label')).toBe('Foto');
   });
@@ -281,6 +283,208 @@ describe('DashboardUsuarios', () => {
 
       expect(fixture.nativeElement.querySelector('.aviso-info[role="status"]')).not.toBeNull();
       expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+    });
+  });
+
+  describe('deshabilitar un usuario', () => {
+    const modal = () => fixture.nativeElement.querySelector('app-modal-confirmacion');
+    const botonesDeBaja = () =>
+      Array.from(
+        fixture.nativeElement.querySelectorAll('tbody button') as NodeListOf<HTMLButtonElement>,
+      );
+    const botonDe = (fila: number) => filas()[fila].querySelector('button') as HTMLButtonElement;
+    const botonDelModal = (texto: string) =>
+      Array.from(modal().querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find(
+        (boton) => boton.textContent?.includes(texto),
+      )!;
+    const pedidoDeBaja = (id: string) =>
+      http.expectOne(
+        (solicitud) => solicitud.method === 'DELETE' && solicitud.url === `${URL}/${id}`,
+      );
+
+    beforeEach(() => {
+      TestBed.inject(Auth).usuario.set({ ...usuarioDePrueba, _id: 'yo' });
+    });
+
+    it('[O] cada usuario habilitado tiene un botón Deshabilitar con el usuario en su etiqueta', async () => {
+      await abrirCon([persona(1), persona(2)]);
+
+      expect(botonesDeBaja()).toHaveLength(2);
+      expect(botonDe(0).textContent).toContain('Deshabilitar');
+      expect(botonDe(0).getAttribute('aria-label')).toBe('Deshabilitar a @persona_1');
+    });
+
+    it('[S] quien ya está deshabilitado no tiene el botón', async () => {
+      await abrirCon([persona(1), persona(2, { habilitado: false })]);
+
+      expect(botonesDeBaja()).toHaveLength(1);
+      expect(filas()[1].querySelector('button')).toBeNull();
+    });
+
+    it('[S] la propia cuenta no tiene el botón', async () => {
+      await abrirCon([persona(1, { _id: 'yo' }), persona(2)]);
+
+      expect(filas()[0].querySelector('button')).toBeNull();
+      expect(botonDe(1)).not.toBeNull();
+    });
+
+    it('[I] al principio no hay ningún modal abierto', async () => {
+      await abrirCon([persona(1)]);
+
+      expect(modal()).toBeNull();
+    });
+
+    it('[O] el botón abre una confirmación con el nombre de usuario, sin pedir nada todavía', async () => {
+      await abrirCon([persona(1)]);
+
+      botonDe(0).click();
+      await actualizar();
+
+      expect(modal().textContent).toContain('¿Deshabilitar a @persona_1?');
+      expect(http.match((solicitud) => solicitud.method === 'DELETE')).toHaveLength(0);
+    });
+
+    it('[S] Cancelar cierra la confirmación sin deshabilitar', async () => {
+      await abrirCon([persona(1)]);
+      botonDe(0).click();
+      await actualizar();
+
+      botonDelModal('Cancelar').click();
+      await actualizar();
+
+      expect(modal()).toBeNull();
+      expect(filas()[0].textContent).toContain('Habilitado');
+      expect(http.match((solicitud) => solicitud.method === 'DELETE')).toHaveLength(0);
+    });
+
+    it('[O] Confirmar manda el DELETE de ese usuario', async () => {
+      await abrirCon([persona(1), persona(2)]);
+      botonDe(1).click();
+      await actualizar();
+
+      botonDelModal('Deshabilitar').click();
+
+      const solicitud = pedidoDeBaja('u2');
+      expect(solicitud.request.method).toBe('DELETE');
+      solicitud.flush(null, { status: 204, statusText: 'No Content' });
+    });
+
+    it('[O] al terminar la fila pasa a Deshabilitado, sin recargar, y desaparece su botón', async () => {
+      await abrirCon([persona(1), persona(2)]);
+      botonDe(0).click();
+      await actualizar();
+
+      botonDelModal('Deshabilitar').click();
+      pedidoDeBaja('u1').flush(null, { status: 204, statusText: 'No Content' });
+      await actualizar();
+
+      const estado = filas()[0].querySelectorAll('.chip')[1] as HTMLElement;
+      expect(estado.textContent).toContain('Deshabilitado');
+      expect(estado.classList).not.toContain('activo');
+      expect(filas()[0].querySelector('button')).toBeNull();
+      expect(filas()[1].textContent).toContain('Habilitado');
+      expect(modal()).toBeNull();
+    });
+
+    it('[O] avisa con el nombre de usuario que ya no puede ingresar', async () => {
+      await abrirCon([persona(1)]);
+      botonDe(0).click();
+      await actualizar();
+
+      botonDelModal('Deshabilitar').click();
+      pedidoDeBaja('u1').flush(null, { status: 204, statusText: 'No Content' });
+      await actualizar();
+
+      expect(texto()).toContain('Usuario deshabilitado');
+      expect(texto()).toContain('@persona_1 ya no puede ingresar');
+      expect(fixture.nativeElement.querySelector('.aviso-info[role="status"]')).not.toBeNull();
+    });
+
+    it('[S] mientras espera la respuesta el modal queda bloqueado y no manda otro pedido', async () => {
+      await abrirCon([persona(1)]);
+      botonDe(0).click();
+      await actualizar();
+
+      botonDelModal('Deshabilitar').click();
+      await actualizar();
+      fixture.componentInstance.confirmarDeshabilitar();
+
+      expect(modal().textContent).toContain('Deshabilitando');
+      expect(http.match((solicitud) => solicitud.method === 'DELETE')).toHaveLength(1);
+    });
+
+    it('[E] si la API falla cierra el modal, avisa y la fila sigue habilitada', async () => {
+      await abrirCon([persona(1)]);
+      botonDe(0).click();
+      await actualizar();
+
+      botonDelModal('Deshabilitar').click();
+      pedidoDeBaja('u1').flush(
+        { codigo: 'DESHABILITAR_CUENTA_PROPIA' },
+        { status: 400, statusText: 'Bad Request' },
+      );
+      await actualizar();
+
+      expect(modal()).toBeNull();
+      expect(texto()).toContain('No se pudo deshabilitar al usuario');
+      expect(texto()).toContain('No podés deshabilitar tu propia cuenta');
+      expect(filas()[0].textContent).toContain('Habilitado');
+    });
+
+    it('[E] si la persona ya no existe avisa que no existe', async () => {
+      await abrirCon([persona(1)]);
+      botonDe(0).click();
+      await actualizar();
+
+      botonDelModal('Deshabilitar').click();
+      pedidoDeBaja('u1').flush(
+        { codigo: 'USUARIO_NO_ENCONTRADO' },
+        { status: 404, statusText: 'Not Found' },
+      );
+      await actualizar();
+
+      expect(texto()).toContain('El usuario no existe');
+    });
+
+    it('[E] sin conexión avisa que no se pudo conectar y permite reintentar', async () => {
+      await abrirCon([persona(1)]);
+      botonDe(0).click();
+      await actualizar();
+      botonDelModal('Deshabilitar').click();
+      pedidoDeBaja('u1').error(new ProgressEvent('error'), { status: 0 });
+      await actualizar();
+
+      expect(texto()).toContain('No se pudo conectar');
+      botonDe(0).click();
+      await actualizar();
+
+      expect(modal()).not.toBeNull();
+    });
+
+    it('[S] abrir otra confirmación saca el aviso anterior', async () => {
+      await abrirCon([persona(1), persona(2)]);
+      botonDe(0).click();
+      await actualizar();
+      botonDelModal('Deshabilitar').click();
+      pedidoDeBaja('u1').flush(null, { status: 204, statusText: 'No Content' });
+      await actualizar();
+      expect(texto()).toContain('ya no puede ingresar');
+
+      botonDe(1).click();
+      await actualizar();
+
+      expect(texto()).not.toContain('ya no puede ingresar');
+    });
+
+    it('[S] la confirmación avisa con el diálogo accesible, sin usar alert', async () => {
+      const alerta = vi.spyOn(window, 'confirm');
+      await abrirCon([persona(1)]);
+
+      botonDe(0).click();
+      await actualizar();
+
+      expect(modal().querySelector('[role="alertdialog"]')).not.toBeNull();
+      expect(alerta).not.toHaveBeenCalled();
     });
   });
 

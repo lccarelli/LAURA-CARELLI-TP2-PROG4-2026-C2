@@ -1,4 +1,9 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -57,6 +62,21 @@ export class AuthService {
       });
     }
 
+    if (!encontrado.habilitado) {
+      this.logger.advertir(
+        EVENTOS_DE_LOG.INGRESO_RECHAZADO,
+        'Ingreso rechazado: usuario deshabilitado',
+        {
+          id_usuario: String(encontrado._id),
+          nombre_usuario: encontrado.nombreUsuario,
+        },
+      );
+      throw new ForbiddenException({
+        message: 'Usuario deshabilitado',
+        codigo: 'USUARIO_DESHABILITADO',
+      });
+    }
+
     this.logger.info(EVENTOS_DE_LOG.INGRESO_CORRECTO, 'Ingreso correcto', {
       id_usuario: String(encontrado._id),
       nombre_usuario: encontrado.nombreUsuario,
@@ -90,24 +110,10 @@ export class AuthService {
   }
 
   async autorizar(usuario: { id: string; nombreUsuario?: string }) {
-    const encontrado = Types.ObjectId.isValid(usuario.id)
-      ? await this.usuariosService.buscarPorId(usuario.id)
-      : null;
-    if (!encontrado?.habilitado) {
-      this.logger.advertir(
-        EVENTOS_DE_LOG.USUARIO_NO_AUTORIZADO,
-        'Usuario inexistente o deshabilitado',
-        { id_usuario: usuario.id, nombre_usuario: usuario.nombreUsuario },
-      );
-      throw new UnauthorizedException({
-        message: 'Usuario no autorizado',
-        codigo: 'USUARIO_NO_AUTORIZADO',
-      });
-    }
-    return { usuario: encontrado };
+    return { usuario: await this.buscarHabilitado(usuario) };
   }
 
-  refrescar(usuario: {
+  async refrescar(usuario: {
     id: string;
     perfil: string;
     nombreUsuario?: string;
@@ -126,20 +132,33 @@ export class AuthService {
       });
     }
 
+    const encontrado = await this.buscarHabilitado(usuario);
     this.logger.info(EVENTOS_DE_LOG.TOKEN_REFRESCADO, 'Token refrescado', {
       id_usuario: usuario.id,
       nombre_usuario: usuario.nombreUsuario,
     });
-    return {
-      token: this.generarToken(
-        {
-          _id: usuario.id,
-          perfil: usuario.perfil,
-          nombreUsuario: usuario.nombreUsuario,
-        },
-        usuario.inicio,
-      ),
-    };
+    return { token: this.generarToken(encontrado, usuario.inicio) };
+  }
+
+  private async buscarHabilitado(usuario: {
+    id: string;
+    nombreUsuario?: string;
+  }) {
+    const encontrado = Types.ObjectId.isValid(usuario.id)
+      ? await this.usuariosService.buscarPorId(usuario.id)
+      : null;
+    if (!encontrado?.habilitado) {
+      this.logger.advertir(
+        EVENTOS_DE_LOG.USUARIO_NO_AUTORIZADO,
+        'Usuario inexistente o deshabilitado',
+        { id_usuario: usuario.id, nombre_usuario: usuario.nombreUsuario },
+      );
+      throw new UnauthorizedException({
+        message: 'Usuario no autorizado',
+        codigo: 'USUARIO_NO_AUTORIZADO',
+      });
+    }
+    return encontrado;
   }
 
   private generarToken(

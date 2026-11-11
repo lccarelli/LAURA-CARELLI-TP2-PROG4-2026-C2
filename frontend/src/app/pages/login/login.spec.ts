@@ -115,6 +115,24 @@ describe('Login', () => {
     expect(navegar).not.toHaveBeenCalled();
   });
 
+  it('[E] si la cuenta está deshabilitada avisa que está deshabilitada, no que las credenciales fallaron', async () => {
+    componente.formulario.setValue({ identificador: 'laura_c', clave: 'Clave1234' });
+
+    await enviar();
+    http
+      .expectOne(URL)
+      .flush({ codigo: 'USUARIO_DESHABILITADO' }, { status: 403, statusText: 'Forbidden' });
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(componente.mensajeError()).toBe('api.USUARIO_DESHABILITADO');
+    expect(fixture.nativeElement.textContent).toContain('Tu usuario está deshabilitado');
+    expect(fixture.nativeElement.textContent).toContain('Contactá a un administrador');
+    expect(fixture.nativeElement.textContent).not.toContain('incorrectos');
+    expect(navegar).not.toHaveBeenCalled();
+    expect(TestBed.inject(Auth).token()).toBeNull();
+  });
+
   it('[S] mientras espera la respuesta no envía una segunda vez', async () => {
     componente.formulario.setValue({ identificador: 'laura_c', clave: 'Clave1234' });
 

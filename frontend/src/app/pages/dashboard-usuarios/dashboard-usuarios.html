@@ -12,6 +12,18 @@
     }}</app-aviso>
   }
 
+  @if (deshabilitado(); as nombreUsuario) {
+    <app-aviso titulo="usuarios.baja_hecha" [info]="true" (cerrar)="deshabilitado.set(null)">{{
+      'usuarios.baja_hecha_detalle' | translate: { nombreUsuario }
+    }}</app-aviso>
+  }
+
+  @if (errorBaja(); as mensaje) {
+    <app-aviso titulo="usuarios.error_deshabilitar" (cerrar)="errorBaja.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+
   @if (listado.mensajeError(); as mensaje) {
     <app-aviso titulo="usuarios.error_cargar" (cerrar)="listado.mensajeError.set(null)">{{
       mensaje | translate
@@ -29,6 +41,7 @@
             <th scope="col">{{ 'usuarios.correo' | translate }}</th>
             <th scope="col">{{ 'usuarios.perfil' | translate }}</th>
             <th scope="col">{{ 'usuarios.estado' | translate }}</th>
+            <th scope="col">{{ 'usuarios.acciones' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -53,6 +66,21 @@
                     | translate
                 }}</span>
               </td>
+              <td>
+                @if (puedeDeshabilitar(usuario)) {
+                  <button
+                    type="button"
+                    class="boton-peligro"
+                    [attr.aria-label]="
+                      'usuarios.deshabilitar_aria'
+                        | translate: { nombreUsuario: usuario.nombreUsuario }
+                    "
+                    (click)="pedirDeshabilitar(usuario)"
+                  >
+                    {{ 'usuarios.deshabilitar' | translate }}
+                  </button>
+                }
+              </td>
             </tr>
           }
         </tbody>
@@ -73,6 +101,19 @@
       texto="usuarios.ver_mas"
       [automatico]="!listado.fallaLaCarga()"
       (cargar)="listado.cargarMas()"
+    />
+  }
+
+  @if (porDeshabilitar(); as usuario) {
+    <app-modal-confirmacion
+      titulo="usuarios.deshabilitar_titulo"
+      texto="usuarios.deshabilitar_texto"
+      confirmar="usuarios.deshabilitar"
+      confirmando="usuarios.deshabilitando"
+      [parametros]="{ nombreUsuario: usuario.nombreUsuario }"
+      [enviando]="deshabilitando()"
+      (confirmado)="confirmarDeshabilitar()"
+      (cancelado)="cancelarDeshabilitar()"
     />
   }
 </section>
