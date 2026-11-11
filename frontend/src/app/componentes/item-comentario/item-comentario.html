@@ -1,0 +1,70 @@
+@let comentario = this.comentario();
+<header class="flex items-center gap-2">
+  <img
+    class="avatar-chico"
+    [src]="urlImagen(comentario.usuario.imagenPerfil)"
+    [alt]="'comun.foto_de' | translate: { nombre: comentario.usuario.nombreUsuario }"
+  />
+  <span class="comentario-autor">&#64;{{ comentario.usuario.nombreUsuario }}</span>
+  <span class="detalle-publicacion">
+    {{ comentario.fecha | date: ('formatos.fecha_hora' | translate) }}
+  </span>
+  @if (comentario.modificado) {
+    <span
+      class="detalle-publicacion marca-editado"
+      [attr.title]="
+        comentario.modificadoEn
+          ? ('comentarios.editado_el'
+            | translate
+              : { fecha: comentario.modificadoEn | date: ('formatos.fecha_hora' | translate) })
+          : null
+      "
+    >
+      {{ 'comentarios.editado' | translate }}
+    </span>
+  }
+  @if (esDeQuienIngreso() && !editando()) {
+    <button
+      type="button"
+      class="boton-mini ml-auto"
+      [attr.aria-label]="
+        'comentarios.editar_aria' | translate: { nombre: comentario.usuario.nombreUsuario }
+      "
+      (click)="editar()"
+    >
+      {{ 'comentarios.editar' | translate }}
+    </button>
+  }
+</header>
+
+@if (editando()) {
+  <form class="formulario-comentario" [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+    <textarea
+      class="campo campo-comentario"
+      rows="3"
+      formControlName="mensaje"
+      [attr.aria-label]="'comentarios.editar_etiqueta' | translate"
+    ></textarea>
+    @if (mensajeDeError(); as mensaje) {
+      <span class="mensaje-error">{{ mensaje }}</span>
+    }
+    <div class="pie-comentario">
+      <app-contador-texto [cantidad]="formulario.controls.mensaje.value.length" [maximo]="maximo" />
+      <span class="flex gap-2">
+        <button type="button" class="boton-secundario" (click)="cancelar()">
+          {{ 'comentarios.cancelar' | translate }}
+        </button>
+        <button type="submit" class="boton-principal" [disabled]="enviando()">
+          {{ (enviando() ? 'comentarios.guardando' : 'comentarios.guardar') | translate }}
+        </button>
+      </span>
+    </div>
+  </form>
+  @if (errorAlEditar(); as mensaje) {
+    <app-aviso titulo="comentarios.error_editar" (cerrar)="errorAlEditar.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+} @else {
+  <p class="texto-publicacion whitespace-pre-line">{{ comentario.mensaje }}</p>
+}

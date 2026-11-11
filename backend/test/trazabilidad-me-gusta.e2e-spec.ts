@@ -115,7 +115,7 @@ describe('trazabilidad de me gusta', () => {
       expect(await megusta.countDocuments()).toBe(0);
     });
 
-    it('[M] dar, quitar y volver a dar quedan en orden, con el mismo dueño', async () => {
+    it('[M] dar, quitar y volver a dar quedan en orden, con el mismo autor', async () => {
       await dar().expect(201);
       await quitar().expect(204);
       await dar().expect(201);

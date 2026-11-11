@@ -3,11 +3,15 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
 import { Aviso } from '../../componentes/aviso/aviso';
+import { BotonMeGusta } from '../../componentes/boton-me-gusta/boton-me-gusta';
+import { Comentarios } from '../../componentes/comentarios/comentarios';
 import { Ingrediente, Paso, Publicacion, UNIDADES } from '../../interfaces/publicacion';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
+import { Icono } from '../../componentes/icono/icono';
 
 const enteroEnRango = (valor: unknown, maximo: number) =>
   typeof valor === 'number' && Number.isInteger(valor) && valor >= 1 && valor <= maximo
@@ -30,7 +34,16 @@ const esIngrediente = (valor: unknown): valor is Ingrediente => {
 };
 
 @Component({
-  imports: [DatePipe, RouterLink, Aviso, TranslatePipe],
+  imports: [
+    BotonMeGusta,
+    CubreplatoLoading,
+    DatePipe,
+    RouterLink,
+    Aviso,
+    Comentarios,
+    TranslatePipe,
+    Icono,
+  ],
   selector: 'app-detalle-publicacion',
   templateUrl: './detalle-publicacion.html',
   host: { '(document:keydown.escape)': 'cerrar()' },
@@ -43,6 +56,7 @@ export class DetallePublicacion implements OnInit {
   readonly publicacion = signal<Publicacion | null>(null);
   readonly cargando = signal(true);
   readonly mensajeError = signal<string | null>(null);
+  protected readonly errorMeGusta = signal<string | null>(null);
 
   protected readonly ingredientes = computed(() => {
     const lista = this.publicacion()?.ingredientes;
@@ -86,6 +100,12 @@ export class DetallePublicacion implements OnInit {
 
   protected signos(cantidad: number) {
     return '$'.repeat(cantidad);
+  }
+
+  protected sumarComentario() {
+    this.publicacion.update((actual) =>
+      actual ? { ...actual, cantidadComentarios: actual.cantidadComentarios + 1 } : actual,
+    );
   }
 
   protected cerrar() {

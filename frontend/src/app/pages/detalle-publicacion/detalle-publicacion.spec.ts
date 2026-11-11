@@ -6,19 +6,9 @@ import { environment } from '../../../environments/environment';
 import { Publicacion } from '../../interfaces/publicacion';
 import { DetallePublicacion } from './detalle-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
+import { publicacionDePrueba } from '../../../testing/publicacion';
 
 const URL = `${environment.API_URL}/publicaciones`;
-
-const publicacion = (numero: number): Publicacion => ({
-  _id: `id${numero}`,
-  usuario: { _id: 'u1', nombre: 'Laura', apellido: 'Carelli', nombreUsuario: 'laura_c' },
-  tipo: 'experiencia',
-  cantidadMeGusta: 7,
-  cantidadComentarios: 2,
-  titulo: `Título ${numero}`,
-  mensaje: `Mensaje ${numero}`,
-  fecha: '2026-10-22T15:30:00.000Z',
-});
 
 describe('DetallePublicacion', () => {
   let fixture: ComponentFixture<DetallePublicacion>;
@@ -60,8 +50,72 @@ describe('DetallePublicacion', () => {
     expect(fixture.nativeElement.textContent).toContain('Cargando');
   });
 
+  it('[I] debajo de la publicación pide y muestra sus comentarios', async () => {
+    await abrir(publicacionDePrueba(1));
+
+    http
+      .expectOne((p) => p.url === `${URL}/id1/comentarios` && p.params.get('offset') === '0')
+      .flush({
+        datos: [
+          {
+            _id: 'c1',
+            publicacion: 'id1',
+            usuario: { _id: 'u2', nombre: 'Ana', apellido: 'Gómez', nombreUsuario: 'ana_g' },
+            mensaje: 'Me salió riquísimo',
+            fecha: '2026-10-22T15:30:00',
+            modificado: false,
+          },
+        ],
+        offset: 0,
+        limit: 10,
+        hayMas: false,
+      });
+    await actualizar();
+
+    const seccion = fixture.nativeElement.querySelector('app-comentarios') as HTMLElement;
+    expect(seccion.textContent).toContain('Comentarios');
+    expect(seccion.textContent).toContain('Me salió riquísimo');
+  });
+
+  it('[O] al publicar un comentario, el contador de la publicación sube en uno', async () => {
+    await abrir(publicacionDePrueba(1));
+    http
+      .expectOne((p) => p.url === `${URL}/id1/comentarios` && p.method === 'GET')
+      .flush({ datos: [], offset: 0, limit: 10, hayMas: false });
+    await actualizar();
+    expect(fixture.nativeElement.querySelector('[aria-label="2 comentarios"]')).not.toBeNull();
+
+    const campo = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    campo.value = 'Muy rico';
+    campo.dispatchEvent(new Event('input'));
+    await actualizar();
+    (fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement).click();
+    http.expectOne({ method: 'POST', url: `${URL}/id1/comentarios` }).flush({
+      _id: 'c1',
+      publicacion: 'id1',
+      usuario: { _id: 'u1', nombre: 'Laura', apellido: 'Carelli', nombreUsuario: 'laura_c' },
+      mensaje: 'Muy rico',
+      fecha: '2026-10-22T15:30:00',
+      modificado: false,
+    });
+    await actualizar();
+
+    expect(fixture.nativeElement.querySelector('[aria-label="3 comentarios"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('[aria-label="2 comentarios"]')).toBeNull();
+  });
+
+  it('[E] si la publicación no carga, no pide comentarios', async () => {
+    http
+      .expectOne({ method: 'GET', url: `${URL}/id1` })
+      .flush({ codigo: 'PUBLICACION_NO_ENCONTRADA' }, { status: 404, statusText: 'Not Found' });
+    await actualizar();
+
+    http.expectNone((p) => p.url === `${URL}/id1/comentarios`);
+    expect(fixture.nativeElement.querySelector('app-comentarios')).toBeNull();
+  });
+
   it('[I] ocupa toda la pantalla con una X para cerrar que vuelve al muro', async () => {
-    await abrir(publicacion(1));
+    await abrir(publicacionDePrueba(1));
 
     const cerrar = fixture.nativeElement.querySelector('a.cerrar-detalle') as HTMLAnchorElement;
     expect(fixture.nativeElement.querySelector('.pagina-detalle')).not.toBeNull();
@@ -71,7 +125,7 @@ describe('DetallePublicacion', () => {
 
   it('[I] la tecla Escape vuelve al muro', async () => {
     const navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    await abrir(publicacion(1));
+    await abrir(publicacionDePrueba(1));
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
 
@@ -79,11 +133,11 @@ describe('DetallePublicacion', () => {
   });
 
   it('[I] es una página con enlace para volver, sin ventana flotante', async () => {
-    await abrir(publicacion(1));
+    await abrir(publicacionDePrueba(1));
 
     expect(fixture.nativeElement.querySelector('a[href="/publicaciones"]')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('[role="dialog"], [aria-modal]')).toBeNull();
-    expect(fixture.nativeElement.textContent).not.toContain('Cargando');
+    expect(fixture.nativeElement.querySelector('.pagina .estado-carga')).toBeNull();
   });
 
   it('[E] si la publicación no existe muestra el aviso y el enlace para volver', async () => {
@@ -100,7 +154,7 @@ describe('DetallePublicacion', () => {
 
   it('[I] el detalle muestra el tipo, los ingredientes y los pasos numerados', async () => {
     await abrir({
-      ...publicacion(1),
+      ...publicacionDePrueba(1),
       tipo: 'receta',
       ingredientes: [
         { nombre: 'Pan', cantidad: 2, unidad: 'unidad' },
@@ -117,7 +171,13 @@ describe('DetallePublicacion', () => {
   });
 
   it('[I] el detalle muestra la ficha con el costo y sólo los datos que hay', async () => {
-    await abrir({ ...publicacion(1), tipo: 'receta', porciones: 4, tiempoMinutos: 19, costo: 2 });
+    await abrir({
+      ...publicacionDePrueba(1),
+      tipo: 'receta',
+      porciones: 4,
+      tiempoMinutos: 19,
+      costo: 2,
+    });
 
     const detalle = fixture.nativeElement as HTMLElement;
     expect(detalle.querySelector('.ficha')!.textContent).toContain('Porciones');
@@ -128,13 +188,13 @@ describe('DetallePublicacion', () => {
   });
 
   it('[I] sin datos de ficha el detalle no muestra el bloque', async () => {
-    await abrir(publicacion(1));
+    await abrir(publicacionDePrueba(1));
 
     expect(fixture.nativeElement.querySelector('.ficha')).toBeNull();
   });
 
   it('[I] muestra el título, el mensaje, el autor y las métricas', async () => {
-    await abrir(publicacion(1));
+    await abrir(publicacionDePrueba(1));
 
     const detalle = fixture.nativeElement as HTMLElement;
     expect(detalle.textContent).toContain('Título 1');
@@ -145,7 +205,7 @@ describe('DetallePublicacion', () => {
 
   it('[E] con ingredientes y pasos en el formato viejo (texto) no muestra esas secciones', async () => {
     const vieja = {
-      ...publicacion(1),
+      ...publicacionDePrueba(1),
       ingredientes: '2 huevos\n1 taza de harina',
       pasos: 'Mezclar\nHornear',
     } as unknown as Publicacion;
@@ -160,7 +220,7 @@ describe('DetallePublicacion', () => {
 
   it('[E] descarta los ingredientes y pasos inválidos y muestra sólo los válidos', async () => {
     const mezclada = {
-      ...publicacion(1),
+      ...publicacionDePrueba(1),
       ingredientes: [
         { nombre: 'Harina', cantidad: 2, unidad: 'taza' },
         { nombre: 'Sal', unidad: 'a_gusto' },
@@ -184,7 +244,7 @@ describe('DetallePublicacion', () => {
 
   it('[E] ignora los datos de ficha fuera de rango o que no son números', async () => {
     const rara = {
-      ...publicacion(1),
+      ...publicacionDePrueba(1),
       porciones: '4; db.drop()',
       tiempoMinutos: -5,
       costo: 9,
@@ -198,7 +258,7 @@ describe('DetallePublicacion', () => {
 
   it('[O] cada paso muestra su título y todas sus fotos de preparación', async () => {
     await abrir({
-      ...publicacion(1),
+      ...publicacionDePrueba(1),
       tipo: 'receta',
       pasos: [
         {
@@ -227,7 +287,7 @@ describe('DetallePublicacion', () => {
 
   it('[E] ignora fotos de pasos que no son texto y títulos que no son texto', async () => {
     const rara = {
-      ...publicacion(1),
+      ...publicacionDePrueba(1),
       tipo: 'receta',
       pasos: [{ titulo: 5, texto: 'Mezclar', imagenes: [null, 7, '', 'https://img.test/ok.jpg'] }],
     } as unknown as Publicacion;
@@ -239,14 +299,19 @@ describe('DetallePublicacion', () => {
   });
 
   it('[O] la ficha dice Unidades cuando la receta rinde unidades y Porciones en cualquier otro caso', async () => {
-    await abrir({ ...publicacion(1), tipo: 'receta', porciones: 12, tipoRinde: 'unidades' });
+    await abrir({
+      ...publicacionDePrueba(1),
+      tipo: 'receta',
+      porciones: 12,
+      tipoRinde: 'unidades',
+    });
     expect(fixture.nativeElement.querySelector('.ficha').textContent).toContain('Unidades');
     expect(fixture.nativeElement.querySelector('.ficha').textContent).toContain('12');
   });
 
   it('[O] los pasos guardados como texto (formato anterior) se siguen viendo', async () => {
     const anterior = {
-      ...publicacion(1),
+      ...publicacionDePrueba(1),
       tipo: 'receta',
       pasos: ['Tostar', 'Untar'],
     } as unknown as Publicacion;
@@ -255,5 +320,68 @@ describe('DetallePublicacion', () => {
 
     expect(fixture.nativeElement.querySelectorAll('.numero-paso')).toHaveLength(2);
     expect(fixture.nativeElement.textContent).toContain('Untar');
+  });
+
+  describe('me gusta', () => {
+    const botonMeGusta = () =>
+      fixture.nativeElement.querySelector('app-boton-me-gusta button') as HTMLButtonElement;
+    const sinComentarios = async () => {
+      http
+        .expectOne((p) => p.url === `${URL}/id1/comentarios` && p.method === 'GET')
+        .flush({ datos: [], offset: 0, limit: 10, hayMas: false });
+      await actualizar();
+    };
+
+    it('[O] dentro de la publicación hay un botón para dar me gusta, con la cantidad', async () => {
+      await abrir({ ...publicacionDePrueba(1), cantidadMeGusta: 7, meGusta: false });
+      await sinComentarios();
+
+      expect(botonMeGusta().getAttribute('aria-label')).toBe('Dar me gusta (7)');
+      expect(botonMeGusta().getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it('[O] dar me gusta pide POST y muestra la cantidad nueva y el botón marcado', async () => {
+      await abrir({ ...publicacionDePrueba(1), cantidadMeGusta: 7, meGusta: false });
+      await sinComentarios();
+
+      botonMeGusta().click();
+      http
+        .expectOne({ method: 'POST', url: `${URL}/id1/megusta` })
+        .flush({ meGusta: true, cantidadMeGusta: 8 });
+      await actualizar();
+
+      expect(botonMeGusta().getAttribute('aria-label')).toBe('Quitar me gusta (8)');
+      expect(botonMeGusta().getAttribute('aria-pressed')).toBe('true');
+    });
+
+    it('[S] si ya había dado me gusta, el botón sale marcado y quitarlo pide DELETE', async () => {
+      await abrir({ ...publicacionDePrueba(1), cantidadMeGusta: 7, meGusta: true });
+      await sinComentarios();
+      expect(botonMeGusta().getAttribute('aria-pressed')).toBe('true');
+
+      botonMeGusta().click();
+      http
+        .expectOne({ method: 'DELETE', url: `${URL}/id1/megusta` })
+        .flush(null, { status: 204, statusText: 'No Content' });
+      await actualizar();
+
+      expect(botonMeGusta().getAttribute('aria-label')).toBe('Dar me gusta (6)');
+    });
+
+    it('[E] si falla, muestra el aviso en la página y deja la cantidad como estaba', async () => {
+      await abrir({ ...publicacionDePrueba(1), cantidadMeGusta: 7, meGusta: false });
+      await sinComentarios();
+
+      botonMeGusta().click();
+      http
+        .expectOne({ method: 'POST', url: `${URL}/id1/megusta` })
+        .flush({ codigo: 'TOKEN_INVALIDO' }, { status: 401, statusText: 'Unauthorized' });
+      await actualizar();
+
+      expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent).toContain(
+        'Tu sesión no es válida o venció',
+      );
+      expect(botonMeGusta().getAttribute('aria-label')).toBe('Dar me gusta (7)');
+    });
   });
 });

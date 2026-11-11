@@ -34,4 +34,8 @@ export class UsuariosService {
       .select('+clave')
       .lean();
   }
+
+  buscarPorId(id: string) {
+    return this.usuarioModel.findById(id).lean();
+  }
 }

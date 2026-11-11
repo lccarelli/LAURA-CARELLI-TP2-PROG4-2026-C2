@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Campos, Nivel, emitirLog } from './logger-global.js';
 
 export const EVENTOS_DE_LOG = {
+  COMENTARIO_CREADO: 'comentario_creado',
+  COMENTARIO_MODIFICADO: 'comentario_modificado',
   EVENTO_ME_GUSTA_NO_REGISTRADO: 'evento_me_gusta_no_registrado',
   IMAGEN_BORRADA: 'imagen_borrada',
   IMAGEN_SUBIDA: 'imagen_subida',
@@ -20,6 +22,7 @@ export const EVENTOS_DE_LOG = {
   TOKEN_RECHAZADO: 'token_rechazado',
   TOKEN_REFRESCADO: 'token_refrescado',
   SESION_VENCIDA: 'sesion_vencida',
+  USUARIO_NO_AUTORIZADO: 'usuario_no_autorizado',
   USUARIO_REGISTRADO: 'usuario_registrado',
 } as const;
 

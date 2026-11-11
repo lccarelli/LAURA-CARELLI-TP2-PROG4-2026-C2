@@ -52,7 +52,7 @@ describe('DELETE /publicaciones/:id', () => {
   });
 
   describe('quien puede eliminar', () => {
-    it('[O] la dueña elimina su publicación y responde 204 sin cuerpo', async () => {
+    it('[O] quien publicó elimina su publicación y responde 204 sin body', async () => {
       const [creada] = await sembrarPublicaciones(app, usuarioId, 1);
 
       const { body } = await eliminar(creada.id).expect(204);

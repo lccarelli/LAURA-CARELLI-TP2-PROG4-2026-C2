@@ -20,6 +20,8 @@ export class Login {
   private router = inject(Router);
   private traductor = inject(TranslateService);
 
+  protected readonly motivoDeSalida = this.auth.motivoDeSalida;
+
   readonly enviando = signal(false);
   readonly mensajeError = signal<string | null>(null);
 

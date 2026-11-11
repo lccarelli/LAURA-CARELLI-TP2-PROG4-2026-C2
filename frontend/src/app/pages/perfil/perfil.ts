@@ -4,8 +4,10 @@ import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
+import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
 import { Aviso } from '../../componentes/aviso/aviso';
 import { TarjetaPublicacion } from '../../componentes/tarjeta-publicacion/tarjeta-publicacion';
+import { UltimosComentarios } from '../../componentes/ultimos-comentarios/ultimos-comentarios';
 import { Publicacion } from '../../interfaces/publicacion';
 import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
@@ -15,7 +17,15 @@ import { urlImagen } from '../../utilidades/imagen';
 const CANTIDAD_DE_ULTIMAS = 3;
 
 @Component({
-  imports: [DatePipe, RouterLink, TranslatePipe, Aviso, TarjetaPublicacion],
+  imports: [
+    CubreplatoLoading,
+    DatePipe,
+    RouterLink,
+    TranslatePipe,
+    Aviso,
+    TarjetaPublicacion,
+    UltimosComentarios,
+  ],
   selector: 'app-perfil',
   templateUrl: './perfil.html',
 })

@@ -4,23 +4,13 @@
     routerLink="/publicaciones"
     [attr.aria-label]="'comun.cerrar' | translate"
   >
-    <svg
-      class="icono"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.8"
-      stroke-linecap="round"
-      aria-hidden="true"
-    >
-      <path d="M6 6l12 12M18 6L6 18" />
-    </svg>
+    <app-icono nombre="cerrar" />
   </a>
 
   @if (cargando() || mensajeError()) {
     <div class="pagina">
       @if (cargando()) {
-        <p class="estado-carga">{{ 'comun.cargando' | translate }}</p>
+        <app-cubreplato-loading />
       }
 
       @if (mensajeError(); as mensaje) {
@@ -57,45 +47,25 @@
           </div>
         </header>
         <span class="metricas metricas-detalle">
-          <span
-            class="metrica"
-            [attr.aria-label]="
-              'publicaciones.me_gusta' | translate: { n: publicacion.cantidadMeGusta }
-            "
-          >
-            <svg
-              class="icono-chico"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
-            </svg>
-            <span aria-hidden="true">{{ publicacion.cantidadMeGusta }}</span>
-          </span>
+          <app-boton-me-gusta
+            [publicacionId]="publicacion._id"
+            [meGustaDado]="publicacion.meGusta ?? false"
+            [cantidadMeGusta]="publicacion.cantidadMeGusta"
+            (fallo)="errorMeGusta.set($event)"
+          />
           <span
             class="metrica"
             [attr.aria-label]="
               'publicaciones.comentarios' | translate: { n: publicacion.cantidadComentarios }
             "
           >
-            <svg
-              class="icono-chico"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M4 5h16v11H9l-5 4V5z" />
-            </svg>
+            <app-icono nombre="comentario" [chico]="true" />
             <span aria-hidden="true">{{ publicacion.cantidadComentarios }}</span>
           </span>
         </span>
+        @if (errorMeGusta(); as mensaje) {
+          <p class="mensaje-error" role="alert">{{ mensaje | translate }}</p>
+        }
         @let ficha = this.ficha();
         @if (ficha.porciones || ficha.tiempoMinutos || ficha.costo || ficha.calorias) {
           <h3 class="etiqueta">{{ 'publicaciones.ficha' | translate }}</h3>
@@ -175,6 +145,8 @@
             }
           </ol>
         }
+
+        <app-comentarios [publicacionId]="publicacion._id" (creado)="sumarComentario()" />
       </div>
     </article>
   }

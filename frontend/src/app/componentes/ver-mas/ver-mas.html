@@ -1,0 +1,15 @@
+<div class="ver-mas">
+  <button
+    #vista="enVista"
+    type="button"
+    class="boton-secundario boton-ver-mas"
+    [class.esperando]="vista.esperando()"
+    appEnVista
+    [activa]="automatico()"
+    (permanece)="cargar.emit()"
+    (click)="cargar.emit()"
+  >
+    <span class="boton-ver-mas-relleno" aria-hidden="true"></span>
+    <span class="boton-ver-mas-texto">{{ texto() | translate }}</span>
+  </button>
+</div>

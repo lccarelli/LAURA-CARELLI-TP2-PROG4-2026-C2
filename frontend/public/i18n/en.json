@@ -11,6 +11,9 @@
     "cerrar": "Close",
     "reintentar": "Try again"
   },
+  "carga": {
+    "despertando": "The server is waking up. This can take up to a minute."
+  },
   "formatos": {
     "fecha": "MM/dd/yyyy",
     "fecha_hora": "MM/dd/yyyy hh:mm a"
@@ -53,7 +56,8 @@
     "boton_enviando": "Logging in…",
     "sin_cuenta": "Don't have an account?",
     "registrarme": "Sign up",
-    "error_titulo": "Could not log in"
+    "error_titulo": "Could not log in",
+    "sesion_cerrada_titulo": "Signed out"
   },
   "registro": {
     "titulo": "Create account",
@@ -174,6 +178,27 @@
     "paso_foto_primera_aria": "Add a photo to step {{n}}",
     "paso_foto_otra": "Add another photo"
   },
+  "comentarios": {
+    "titulo": "Comments",
+    "vacio": "There are no comments yet",
+    "ver_mas": "Show more comments",
+    "error_cargar": "Comments could not be loaded",
+    "placeholder": "Write a comment",
+    "etiqueta": "Your comment",
+    "boton": "Comment",
+    "enviando": "Sending…",
+    "contador": "{{n}} / {{max}}",
+    "error_comentar": "The comment could not be posted",
+    "editar": "Edit",
+    "editar_aria": "Edit the comment by @{{nombre}}",
+    "editar_etiqueta": "Edit your comment",
+    "guardar": "Save",
+    "guardando": "Saving…",
+    "cancelar": "Cancel",
+    "editado": "(edited)",
+    "editado_el": "Edited on {{fecha}}",
+    "error_editar": "The comment could not be saved"
+  },
   "borrador": {
     "titulo": "We recovered your draft",
     "recuperado": "You saved it on {{fecha}}.",
@@ -187,7 +212,11 @@
     "ultimas_publicaciones": "My latest posts",
     "error_publicaciones": "We could not load your posts",
     "sin_publicaciones": "You have not posted anything yet.",
-    "publicar_primera": "Create my first post"
+    "publicar_primera": "Create my first post",
+    "ultimos_comentarios": "Latest comments",
+    "sin_comentarios": "No comments yet.",
+    "error_comentarios": "Could not load the comments",
+    "ver_comentarios": "See all comments ({{n}})"
   },
   "roles": {
     "usuario": "user",
@@ -222,10 +251,13 @@
     "SESION_VENCIDA": "Your session reached its maximum length. Please sign in again.",
     "TOKEN_AUSENTE": "You need to log in to do this.",
     "TOKEN_INVALIDO": "Your session is not valid or has expired. Log in again.",
+    "USUARIO_NO_AUTORIZADO": "Your user is not enabled or no longer exists. Log in again.",
     "DEMASIADAS_SOLICITUDES": "You made too many requests in a row. Wait a moment and try again.",
     "PUBLICACION_AJENA": "You can only delete your own posts.",
     "ME_GUSTA_REPETIDO": "You already liked this post.",
-    "ME_GUSTA_INEXISTENTE": "You had not liked this post."
+    "ME_GUSTA_INEXISTENTE": "You had not liked this post.",
+    "COMENTARIO_AJENO": "You can only edit your own comments.",
+    "COMENTARIO_NO_ENCONTRADO": "The comment does not exist."
   },
   "tipos": {
     "receta": "Recipe",
@@ -243,5 +275,12 @@
     "unidad": "pc",
     "pizca": "pinch",
     "a_gusto": "to taste"
+  },
+  "sesion": {
+    "titulo": "Your session is about to expire",
+    "texto": "For security, your session is about to close. Do you want to extend it?",
+    "extender": "Extend session",
+    "extendiendo": "Extending…",
+    "cerrar": "Log out"
   }
 }

@@ -18,6 +18,73 @@ describe('PublicacionesApi', () => {
     http = TestBed.inject(HttpTestingController);
   });
 
+  it('[O] listarComentarios pide los comentarios de esa publicación con offset y límite', () => {
+    api.listarComentarios('abc', 20, 5).subscribe();
+
+    const solicitud = http.expectOne((p) => p.url === `${URL}/abc/comentarios`);
+
+    expect(solicitud.request.method).toBe('GET');
+    expect(solicitud.request.params.get('offset')).toBe('20');
+    expect(solicitud.request.params.get('limit')).toBe('5');
+    solicitud.flush({ datos: [], offset: 20, limit: 5, hayMas: false });
+  });
+
+  it('[Z] listarComentarios sin indicar el límite pide 10', () => {
+    api.listarComentarios('abc', 0).subscribe();
+
+    const solicitud = http.expectOne((p) => p.url === `${URL}/abc/comentarios`);
+
+    expect(solicitud.request.params.get('limit')).toBe('10');
+    solicitud.flush({ datos: [], offset: 0, limit: 10, hayMas: false });
+  });
+
+  it('[S] listarComentarios codifica el id en la dirección', () => {
+    api.listarComentarios('a/b', 0).subscribe();
+
+    const solicitud = http.expectOne((p) => p.url === `${URL}/a%2Fb/comentarios`);
+
+    expect(solicitud.request.method).toBe('GET');
+    solicitud.flush({ datos: [], offset: 0, limit: 10, hayMas: false });
+  });
+
+  it('[O] comentar envía el mensaje con POST a los comentarios de esa publicación', () => {
+    api.comentar('abc', 'Hola').subscribe();
+
+    const solicitud = http.expectOne(`${URL}/abc/comentarios`);
+
+    expect(solicitud.request.method).toBe('POST');
+    expect(solicitud.request.body).toEqual({ mensaje: 'Hola' });
+    solicitud.flush({});
+  });
+
+  it('[S] comentar codifica el id en la dirección', () => {
+    api.comentar('a/b', 'Hola').subscribe();
+
+    const solicitud = http.expectOne(`${URL}/a%2Fb/comentarios`);
+
+    expect(solicitud.request.method).toBe('POST');
+    solicitud.flush({});
+  });
+
+  it('[O] editarComentario envía el mensaje con PUT al comentario de esa publicación', () => {
+    api.editarComentario('abc', 'xyz', 'Nuevo').subscribe();
+
+    const solicitud = http.expectOne(`${URL}/abc/comentarios/xyz`);
+
+    expect(solicitud.request.method).toBe('PUT');
+    expect(solicitud.request.body).toEqual({ mensaje: 'Nuevo' });
+    solicitud.flush({});
+  });
+
+  it('[S] editarComentario codifica los dos ids en la dirección', () => {
+    api.editarComentario('a/b', 'c/d', 'Nuevo').subscribe();
+
+    const solicitud = http.expectOne(`${URL}/a%2Fb/comentarios/c%2Fd`);
+
+    expect(solicitud.request.method).toBe('PUT');
+    solicitud.flush({});
+  });
+
   it('[Z] listar sin indicar el límite pide 10', () => {
     api.listar(0).subscribe();
 
@@ -82,7 +149,7 @@ describe('PublicacionesApi', () => {
     solicitud.flush({});
   });
 
-  it('[O] darMeGusta envía un POST sin cuerpo a la publicación y devuelve la cantidad', () => {
+  it('[O] darMeGusta envía un POST sin body a la publicación y devuelve la cantidad', () => {
     let respuesta: unknown;
     api.darMeGusta('abc123').subscribe((r) => (respuesta = r));
 
@@ -116,7 +183,12 @@ describe('PublicacionesApi', () => {
     api.darMeGusta('a/b?c').subscribe();
     api.eliminar('a/b?c').subscribe();
 
-    http.expectOne(`${URL}/a%2Fb%3Fc/megusta`).flush({});
-    http.expectOne(`${URL}/a%2Fb%3Fc`).flush(null);
+    const megusta = http.expectOne(`${URL}/a%2Fb%3Fc/megusta`);
+    const baja = http.expectOne(`${URL}/a%2Fb%3Fc`);
+
+    expect(megusta.request.method).toBe('POST');
+    expect(baja.request.method).toBe('DELETE');
+    megusta.flush({});
+    baja.flush(null);
   });
 });

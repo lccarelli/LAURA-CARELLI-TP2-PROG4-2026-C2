@@ -1,0 +1,77 @@
+<section class="comentarios" aria-labelledby="titulo-comentarios">
+  <h3 class="rotulo-publicacion" id="titulo-comentarios">
+    {{ 'comentarios.titulo' | translate }}
+  </h3>
+
+  <form class="formulario-comentario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+    <div class="entrada-comentario">
+      @if (auth.usuario(); as usuario) {
+        <img
+          class="avatar-comentario"
+          [src]="urlImagen(usuario.imagenPerfil)"
+          [alt]="'comun.foto_de' | translate: { nombre: usuario.nombreUsuario }"
+        />
+      }
+      <div class="entrada-campo">
+        <textarea
+          class="campo campo-comentario"
+          rows="3"
+          formControlName="mensaje"
+          [placeholder]="'comentarios.placeholder' | translate"
+          [attr.aria-label]="'comentarios.etiqueta' | translate"
+        ></textarea>
+        @if (mensajeDeError(); as mensaje) {
+          <span class="mensaje-error">{{ mensaje }}</span>
+        }
+      </div>
+    </div>
+    <div class="pie-comentario">
+      <app-contador-texto [cantidad]="formulario.controls.mensaje.value.length" [maximo]="maximo" />
+      <button type="submit" class="boton-principal" [disabled]="enviando()">
+        {{ (enviando() ? 'comentarios.enviando' : 'comentarios.boton') | translate }}
+      </button>
+    </div>
+  </form>
+
+  @if (errorAlComentar(); as mensaje) {
+    <app-aviso titulo="comentarios.error_comentar" (cerrar)="errorAlComentar.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+
+  @if (mensajeError(); as mensaje) {
+    <app-aviso titulo="comentarios.error_cargar" (cerrar)="mensajeError.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+
+  @if (comentarios().length) {
+    <ul class="lista-comentarios">
+      @for (comentario of comentarios(); track comentario._id) {
+        <li class="comentario">
+          <app-item-comentario
+            [comentario]="comentario"
+            [publicacionId]="publicacionId()"
+            (modificado)="reemplazar($event)"
+          />
+        </li>
+      }
+    </ul>
+  }
+
+  @if (comentarios().length === 0 && !cargando() && !fallaLaCarga()) {
+    <p class="estado-vacio">{{ 'comentarios.vacio' | translate }}</p>
+  }
+
+  @if (cargando()) {
+    <app-cubreplato-loading />
+  }
+
+  @if (hayMas() && !cargando()) {
+    <app-ver-mas
+      texto="comentarios.ver_mas"
+      [automatico]="!fallaLaCarga()"
+      (cargar)="cargarMas()"
+    />
+  }
+</section>

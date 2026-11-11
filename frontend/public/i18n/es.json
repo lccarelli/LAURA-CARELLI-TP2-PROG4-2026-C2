@@ -11,6 +11,9 @@
     "cerrar": "Cerrar",
     "reintentar": "Reintentar"
   },
+  "carga": {
+    "despertando": "El servidor se está despertando. Puede tardar hasta un minuto."
+  },
   "formatos": {
     "fecha": "dd/MM/yyyy",
     "fecha_hora": "dd/MM/yyyy HH:mm"
@@ -53,7 +56,8 @@
     "boton_enviando": "Ingresando…",
     "sin_cuenta": "¿No tenés cuenta?",
     "registrarme": "Registrarme",
-    "error_titulo": "No se pudo ingresar"
+    "error_titulo": "No se pudo ingresar",
+    "sesion_cerrada_titulo": "Sesión cerrada"
   },
   "registro": {
     "titulo": "Crear cuenta",
@@ -174,6 +178,27 @@
     "paso_foto_primera_aria": "Agregar una foto al paso {{n}}",
     "paso_foto_otra": "Agregar otra foto"
   },
+  "comentarios": {
+    "titulo": "Comentarios",
+    "vacio": "Todavía no hay comentarios",
+    "ver_mas": "Ver más comentarios",
+    "error_cargar": "No se pudieron cargar los comentarios",
+    "placeholder": "Escribí un comentario",
+    "etiqueta": "Tu comentario",
+    "boton": "Comentar",
+    "enviando": "Enviando…",
+    "contador": "{{n}} / {{max}}",
+    "error_comentar": "No se pudo publicar el comentario",
+    "editar": "Editar",
+    "editar_aria": "Editar el comentario de @{{nombre}}",
+    "editar_etiqueta": "Editar tu comentario",
+    "guardar": "Guardar",
+    "guardando": "Guardando…",
+    "cancelar": "Cancelar",
+    "editado": "(editado)",
+    "editado_el": "Editado el {{fecha}}",
+    "error_editar": "No se pudo guardar el comentario"
+  },
   "borrador": {
     "titulo": "Recuperamos tu borrador",
     "recuperado": "Lo guardaste el {{fecha}}.",
@@ -187,7 +212,11 @@
     "ultimas_publicaciones": "Mis últimas publicaciones",
     "error_publicaciones": "No pudimos cargar tus publicaciones",
     "sin_publicaciones": "Todavía no publicaste nada.",
-    "publicar_primera": "Crear mi primera publicación"
+    "publicar_primera": "Crear mi primera publicación",
+    "ultimos_comentarios": "Últimos comentarios",
+    "sin_comentarios": "Todavía no tiene comentarios.",
+    "error_comentarios": "No se pudieron cargar los comentarios",
+    "ver_comentarios": "Ver todos los comentarios ({{n}})"
   },
   "roles": {
     "usuario": "usuario",
@@ -222,10 +251,13 @@
     "SESION_VENCIDA": "Tu sesión llegó a su duración máxima. Ingresá de nuevo.",
     "TOKEN_AUSENTE": "Tenés que ingresar para hacer esto.",
     "TOKEN_INVALIDO": "Tu sesión no es válida o venció. Ingresá de nuevo.",
+    "USUARIO_NO_AUTORIZADO": "Tu usuario no está habilitado o ya no existe. Ingresá de nuevo.",
     "DEMASIADAS_SOLICITUDES": "Hiciste demasiadas solicitudes seguidas. Esperá un momento e intentá de nuevo.",
     "PUBLICACION_AJENA": "Sólo podés eliminar tus propias publicaciones.",
     "ME_GUSTA_REPETIDO": "Ya le diste me gusta a esta publicación.",
-    "ME_GUSTA_INEXISTENTE": "No le habías dado me gusta a esta publicación."
+    "ME_GUSTA_INEXISTENTE": "No le habías dado me gusta a esta publicación.",
+    "COMENTARIO_AJENO": "Sólo podés editar tus propios comentarios.",
+    "COMENTARIO_NO_ENCONTRADO": "El comentario no existe."
   },
   "tipos": {
     "receta": "Receta",
@@ -243,5 +275,12 @@
     "unidad": "u.",
     "pizca": "pizca",
     "a_gusto": "a gusto"
+  },
+  "sesion": {
+    "titulo": "Tu sesión está por vencer",
+    "texto": "Por seguridad, la sesión está por cerrarse. ¿Querés extenderla?",
+    "extender": "Extender sesión",
+    "extendiendo": "Extendiendo…",
+    "cerrar": "Cerrar sesión"
   }
 }

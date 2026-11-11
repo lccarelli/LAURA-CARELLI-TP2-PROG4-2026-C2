@@ -1,8 +1,9 @@
 import { Component, input, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
+import { Icono } from '../icono/icono';
 
 @Component({
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, Icono],
   selector: 'app-aviso',
   templateUrl: './aviso.html',
 })

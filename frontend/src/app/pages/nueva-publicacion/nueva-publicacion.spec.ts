@@ -4,27 +4,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { Publicacion } from '../../interfaces/publicacion';
-import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
 import { FotosBorrador } from '../../servicios/fotos-borrador/fotos-borrador';
 import { Borrador } from '../../servicios/borrador/borrador';
 import { NuevaPublicacion } from './nueva-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
+import { usuarioDePrueba } from '../../../testing/usuario';
 
 const URL = `${environment.API_URL}/publicaciones`;
 const REFRESCAR = `${environment.API_URL}/auth/refrescar`;
-
-const usuarioPrueba: Usuario = {
-  _id: 'u1',
-  nombre: 'Laura',
-  apellido: 'Carelli',
-  correo: 'laura@correo.com',
-  nombreUsuario: 'laura_c',
-  fechaNacimiento: '1990-05-20T00:00:00.000Z',
-  descripcion: '',
-  perfil: 'usuario',
-  habilitado: true,
-};
 
 const publicacion = (numero: number): Publicacion => ({
   _id: `id${numero}`,
@@ -34,7 +22,7 @@ const publicacion = (numero: number): Publicacion => ({
   cantidadComentarios: 0,
   titulo: `Título ${numero}`,
   mensaje: `Mensaje ${numero}`,
-  fecha: '2026-10-22T15:30:00.000Z',
+  fecha: '2026-10-22T15:30:00',
 });
 
 describe('NuevaPublicacion', () => {
@@ -62,7 +50,7 @@ describe('NuevaPublicacion', () => {
     navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true) as never;
     http = TestBed.inject(HttpTestingController);
     TestBed.inject(Auth).token.set('token-inicial');
-    TestBed.inject(Auth).usuario.set(usuarioPrueba);
+    TestBed.inject(Auth).usuario.set(usuarioDePrueba);
     fixture = TestBed.createComponent(NuevaPublicacion);
     await fixture.whenStable();
   });
@@ -87,7 +75,7 @@ describe('NuevaPublicacion', () => {
     it('[Z] con el formulario vacío no envía nada y marca los campos', async () => {
       await enviar();
 
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       expect(fixture.componentInstance.mensajeDeError('titulo')).toBe('Este campo es obligatorio');
       expect(fixture.componentInstance.mensajeDeError('mensaje')).toBe('Este campo es obligatorio');
     });
@@ -106,28 +94,28 @@ describe('NuevaPublicacion', () => {
       fixture.componentInstance.imagen.set(new File(['x'], 'foto.png', { type: 'image/png' }));
 
       await enviar();
-      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
 
-      expect(cuerpo.get('titulo')).toBe('Hola');
-      expect(cuerpo.get('mensaje')).toBe('Mundo');
-      expect((cuerpo.get('imagen') as File).name).toBe('foto.png');
+      expect(body.get('titulo')).toBe('Hola');
+      expect(body.get('mensaje')).toBe('Mundo');
+      expect((body.get('imagen') as File).name).toBe('foto.png');
     });
 
     it('[I] envía el tipo receta por defecto', async () => {
       fixture.componentInstance.formulario.patchValue(formularioValido);
       await enviar();
-      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
 
-      expect(cuerpo.get('tipo')).toBe('receta');
+      expect(body.get('tipo')).toBe('receta');
     });
 
     it('[I] envía el tipo que se eligió', async () => {
       fixture.componentInstance.tipo.set('experiencia');
       fixture.componentInstance.formulario.patchValue(formularioValido);
       await enviar();
-      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
 
-      expect(cuerpo.get('tipo')).toBe('experiencia');
+      expect(body.get('tipo')).toBe('experiencia');
     });
 
     const cargarPasos = (textos: string[]) => {
@@ -152,13 +140,13 @@ describe('NuevaPublicacion', () => {
         { nombre: 'Huevo', cantidad: 2, unidad: 'unidad' },
       ]);
       await enviar();
-      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
 
-      expect(JSON.parse(cuerpo.get('ingredientes') as string)).toEqual([
+      expect(JSON.parse(body.get('ingredientes') as string)).toEqual([
         { nombre: 'Harina', cantidad: 250, unidad: 'g' },
         { nombre: 'Huevo', cantidad: 2, unidad: 'unidad' },
       ]);
-      expect(JSON.parse(cuerpo.get('pasos') as string)).toEqual([
+      expect(JSON.parse(body.get('pasos') as string)).toEqual([
         { texto: 'Mezclar' },
         { texto: 'Hornear' },
       ]);
@@ -168,9 +156,9 @@ describe('NuevaPublicacion', () => {
       fixture.componentInstance.formulario.patchValue(formularioValido);
       cargarIngredientes([{ nombre: 'Sal', cantidad: 5, unidad: 'a_gusto' }]);
       await enviar();
-      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
 
-      expect(JSON.parse(cuerpo.get('ingredientes') as string)).toEqual([
+      expect(JSON.parse(body.get('ingredientes') as string)).toEqual([
         { nombre: 'Sal', unidad: 'a_gusto' },
       ]);
     });
@@ -178,9 +166,9 @@ describe('NuevaPublicacion', () => {
     it('[I] las filas vacías se ignoran y, si no queda ninguna, no se envía la lista', async () => {
       fixture.componentInstance.formulario.patchValue(formularioValido);
       await enviar();
-      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
 
-      expect(cuerpo.has('ingredientes')).toBe(false);
+      expect(body.has('ingredientes')).toBe(false);
     });
 
     it('[E] un ingrediente sin cantidad, o con cantidad y sin nombre, bloquea el envío', async () => {
@@ -188,11 +176,11 @@ describe('NuevaPublicacion', () => {
 
       cargarIngredientes([{ nombre: 'Harina', cantidad: null, unidad: 'g' }]);
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
 
       cargarIngredientes([{ nombre: '  ', cantidad: 3, unidad: 'g' }]);
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
     });
 
     describe('mensajes del ingrediente', () => {
@@ -272,12 +260,12 @@ describe('NuevaPublicacion', () => {
       for (const cantidad of [0, -1, 0.255, 100001]) {
         cargarIngredientes([{ nombre: 'Harina', cantidad, unidad: 'g' }]);
         await enviar();
-        http.expectNone({ method: 'POST', url: URL });
+        expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       }
 
       cargarIngredientes([{ nombre: 'Harina', cantidad: 0.25, unidad: 'kg' }]);
       await enviar();
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
 
     it('[I] se pueden agregar y quitar ingredientes, hasta 40', async () => {
@@ -311,21 +299,21 @@ describe('NuevaPublicacion', () => {
       });
       fixture.componentInstance.elegirCosto(2);
       await enviar();
-      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
 
-      expect(cuerpo.get('porciones')).toBe('4');
-      expect(cuerpo.get('tiempoMinutos')).toBe('19');
-      expect(cuerpo.get('calorias')).toBe('270');
-      expect(cuerpo.get('costo')).toBe('2');
+      expect(body.get('porciones')).toBe('4');
+      expect(body.get('tiempoMinutos')).toBe('19');
+      expect(body.get('calorias')).toBe('270');
+      expect(body.get('costo')).toBe('2');
     });
 
     it('[I] la ficha es opcional: vacía no envía ningún dato', async () => {
       fixture.componentInstance.formulario.patchValue(formularioValido);
       await enviar();
-      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
 
       for (const campo of ['porciones', 'tiempoMinutos', 'calorias', 'costo']) {
-        expect(cuerpo.has(campo), campo).toBe(false);
+        expect(body.has(campo), campo).toBe(false);
       }
     });
 
@@ -349,13 +337,13 @@ describe('NuevaPublicacion', () => {
       for (const valor of malos) {
         fixture.componentInstance.formulario.patchValue({ porciones: valor });
         await enviar();
-        http.expectNone({ method: 'POST', url: URL });
+        expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
         expect(fixture.componentInstance.mensajeDeError('porciones'), valor).toContain('entero');
       }
 
       fixture.componentInstance.formulario.patchValue({ porciones: '100' });
       await enviar();
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
 
     it('[B] el tiempo llega hasta 10080 y las calorías hasta 10000', async () => {
@@ -364,18 +352,18 @@ describe('NuevaPublicacion', () => {
         tiempoMinutos: '10081',
       });
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
 
       fixture.componentInstance.formulario.patchValue({
         tiempoMinutos: '10080',
         calorias: '10001',
       });
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
 
       fixture.componentInstance.formulario.patchValue({ calorias: '10000' });
       await enviar();
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
 
     it('[I] los campos numéricos de la ficha descartan lo que no es un dígito al escribir', async () => {
@@ -481,9 +469,9 @@ describe('NuevaPublicacion', () => {
 
         await enviar();
 
-        const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
-        expect(cuerpo.get('porciones')).toBe('12');
-        expect(cuerpo.get('tipoRinde')).toBe('unidades');
+        const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+        expect(body.get('porciones')).toBe('12');
+        expect(body.get('tipoRinde')).toBe('unidades');
       });
 
       it('[B] sin cantidad no envía el tipo', async () => {
@@ -493,9 +481,9 @@ describe('NuevaPublicacion', () => {
 
         await enviar();
 
-        const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
-        expect(cuerpo.has('tipoRinde')).toBe(false);
-        expect(cuerpo.has('porciones')).toBe(false);
+        const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+        expect(body.has('tipoRinde')).toBe(false);
+        expect(body.has('porciones')).toBe(false);
       });
     });
 
@@ -673,10 +661,10 @@ describe('NuevaPublicacion', () => {
       fixture.componentInstance.formulario.patchValue({ ...formularioValido, porciones: '4' });
       fixture.componentInstance.elegirCosto(2);
       await enviar();
-      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
 
-      expect(cuerpo.has('porciones')).toBe(false);
-      expect(cuerpo.has('costo')).toBe(false);
+      expect(body.has('porciones')).toBe(false);
+      expect(body.has('costo')).toBe(false);
     });
 
     it('[I] se pueden agregar y quitar pasos, hasta 40, y se numeran en orden', async () => {
@@ -779,8 +767,8 @@ describe('NuevaPublicacion', () => {
 
         await enviar();
 
-        const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
-        expect((cuerpo.get('imagen') as File).name).toBe('portada.png');
+        const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+        expect((body.get('imagen') as File).name).toBe('portada.png');
       });
     });
 
@@ -948,13 +936,13 @@ describe('NuevaPublicacion', () => {
 
         await enviar();
 
-        const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
-        expect(JSON.parse(cuerpo.get('pasos') as string)).toEqual([
+        const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+        expect(JSON.parse(body.get('pasos') as string)).toEqual([
           { texto: 'Mezclar', fotos: [0, 1] },
           { texto: 'Reposar' },
           { texto: 'Hornear', fotos: [2] },
         ]);
-        expect((cuerpo.getAll('imagenesPasos') as File[]).map((archivo) => archivo.name)).toEqual([
+        expect((body.getAll('imagenesPasos') as File[]).map((archivo) => archivo.name)).toEqual([
           'mezclar-1.png',
           'mezclar-2.png',
           'hornear.png',
@@ -969,8 +957,8 @@ describe('NuevaPublicacion', () => {
         fixture.componentInstance.moverPaso(0, 1);
         await enviar();
 
-        const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
-        expect(JSON.parse(cuerpo.get('pasos') as string)).toEqual([
+        const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+        expect(JSON.parse(body.get('pasos') as string)).toEqual([
           { texto: 'Hornear' },
           { texto: 'Mezclar', fotos: [0] },
         ]);
@@ -983,7 +971,7 @@ describe('NuevaPublicacion', () => {
 
         await enviar();
 
-        http.expectNone({ method: 'POST', url: URL });
+        expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
         expect(fixture.nativeElement.textContent).toContain('Escribí la descripción de este paso');
       });
 
@@ -1027,8 +1015,8 @@ describe('NuevaPublicacion', () => {
 
         await enviar();
 
-        const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
-        expect(JSON.parse(cuerpo.get('pasos') as string)).toEqual([
+        const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+        expect(JSON.parse(body.get('pasos') as string)).toEqual([
           { titulo: 'La masa', texto: 'Mezclar' },
         ]);
       });
@@ -1039,7 +1027,7 @@ describe('NuevaPublicacion', () => {
 
         await enviar();
 
-        http.expectNone({ method: 'POST', url: URL });
+        expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
         expect(fixture.nativeElement.textContent).toContain('Escribí la descripción de este paso');
       });
 
@@ -1117,9 +1105,9 @@ describe('NuevaPublicacion', () => {
         fixture.componentInstance.formulario.patchValue(formularioValido);
         fixture.componentInstance.moverPaso(2, 0);
         await enviar();
-        const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+        const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
 
-        expect(JSON.parse(cuerpo.get('pasos') as string)).toEqual([
+        expect(JSON.parse(body.get('pasos') as string)).toEqual([
           { texto: 'Servir' },
           { texto: 'Mezclar' },
           { texto: 'Hornear' },
@@ -1138,13 +1126,13 @@ describe('NuevaPublicacion', () => {
       fixture.componentInstance.formulario.patchValue(formularioValido);
       cargarPasos(['a'.repeat(2001)]);
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       expect(fixture.componentInstance.pasos.at(0).controls.texto.invalid).toBe(true);
 
       cargarPasos(['a'.repeat(2000)]);
       await enviar();
-      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
-      expect(JSON.parse(cuerpo.get('pasos') as string)[0].texto).toHaveLength(2000);
+      const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      expect(JSON.parse(body.get('pasos') as string)[0].texto).toHaveLength(2000);
     });
 
     it('[I] al elegir "a gusto" la cantidad se vacía y se desactiva', async () => {
@@ -1167,10 +1155,10 @@ describe('NuevaPublicacion', () => {
       cargarPasos(['Tostar']);
       cargarIngredientes([{ nombre: 'Pan', cantidad: 1, unidad: 'unidad' }]);
       await enviar();
-      const cuerpo = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+      const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
 
-      expect(cuerpo.has('ingredientes')).toBe(false);
-      expect(cuerpo.has('pasos')).toBe(false);
+      expect(body.has('ingredientes')).toBe(false);
+      expect(body.has('pasos')).toBe(false);
     });
 
     it('[I] ingredientes y pasos sólo aparecen en receta', async () => {
@@ -1190,23 +1178,23 @@ describe('NuevaPublicacion', () => {
     it('[B] un título de 55 caracteres envía y uno de 56 no', async () => {
       fixture.componentInstance.formulario.patchValue({ titulo: 'a'.repeat(56), mensaje: 'x' });
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       expect(fixture.componentInstance.mensajeDeError('titulo')).toContain('55');
 
       fixture.componentInstance.formulario.patchValue({ titulo: 'a'.repeat(55), mensaje: 'x' });
       await enviar();
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
 
     it('[B] un mensaje de 2000 caracteres envía y uno de 2001 no', async () => {
       fixture.componentInstance.formulario.patchValue({ titulo: 'x', mensaje: 'a'.repeat(2001) });
       await enviar();
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       expect(fixture.componentInstance.mensajeDeError('mensaje')).toContain('2000');
 
       fixture.componentInstance.formulario.patchValue({ titulo: 'x', mensaje: 'a'.repeat(2000) });
       await enviar();
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
 
     it('[E] una imagen inválida muestra el error y bloquea el envío', async () => {
@@ -1217,7 +1205,7 @@ describe('NuevaPublicacion', () => {
 
       await enviar();
 
-      http.expectNone({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
       expect(fixture.componentInstance.errorImagen()).toBe('imagen.tipo');
     });
 
@@ -1244,7 +1232,7 @@ describe('NuevaPublicacion', () => {
       await enviar();
       await enviar();
 
-      http.expectOne({ method: 'POST', url: URL });
+      expect(http.match({ method: 'POST', url: URL })).toHaveLength(1);
     });
   });
 
@@ -1552,7 +1540,7 @@ describe('NuevaPublicacion', () => {
         pasos: [],
         conFotos: false,
       });
-      TestBed.inject(Auth).usuario.set({ ...usuarioPrueba, _id: 'u2' });
+      TestBed.inject(Auth).usuario.set({ ...usuarioDePrueba, _id: 'u2' });
 
       const otra = TestBed.createComponent(NuevaPublicacion);
       otra.detectChanges();

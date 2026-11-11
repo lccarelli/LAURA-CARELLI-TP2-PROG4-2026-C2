@@ -6,6 +6,8 @@ import { environment } from '../../../environments/environment';
 import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
 import { Publicacion } from '../../interfaces/publicacion';
+import { By } from '@angular/platform-browser';
+import { BotonMeGusta } from '../boton-me-gusta/boton-me-gusta';
 import { TarjetaPublicacion } from './tarjeta-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 
@@ -22,7 +24,7 @@ const base: Publicacion = {
   cantidadComentarios: 2,
   titulo: 'Mi título',
   mensaje: 'Mi mensaje',
-  fecha: '2026-10-22T15:30:00.000Z',
+  fecha: '2026-10-22T15:30:00',
 };
 
 const URL = `${environment.API_URL}/publicaciones`;
@@ -164,13 +166,12 @@ describe('TarjetaPublicacion', () => {
       await crear(base);
 
       botonMeGusta().click();
-      fixture.componentInstance['alternarMeGusta']();
+      fixture.debugElement.query(By.directive(BotonMeGusta)).componentInstance['alternar']();
       await actualizar();
 
-      http.expectOne({ method: 'POST', url: `${URL}/1/megusta` }).flush({
-        meGusta: true,
-        cantidadMeGusta: 8,
-      });
+      const pedidos = http.match({ method: 'POST', url: `${URL}/1/megusta` });
+      expect(pedidos).toHaveLength(1);
+      pedidos[0].flush({ meGusta: true, cantidadMeGusta: 8 });
       http.verify();
     });
 
@@ -291,7 +292,7 @@ describe('TarjetaPublicacion', () => {
     };
     const iniciarSesion = (usuario: Usuario | null) => TestBed.inject(Auth).usuario.set(usuario);
 
-    it('[O] la dueña ve el botón de eliminar', async () => {
+    it('[O] quien publicó ve el botón de eliminar', async () => {
       await crear(base);
       iniciarSesion(persona('u1'));
       await actualizar();
