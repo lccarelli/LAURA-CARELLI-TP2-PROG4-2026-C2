@@ -53,6 +53,34 @@ describe('Barra', () => {
     expect(texto()).not.toContain('Registrarme');
   });
 
+  it('[O] un administrador ve el enlace a Administración y lleva a los usuarios', async () => {
+    TestBed.inject(Auth).usuario.set({
+      nombreUsuario: 'laura_c',
+      perfil: 'administrador',
+    } as never);
+    TestBed.inject(Auth).token.set('abc');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const enlace = fixture.nativeElement.querySelector('a[href="/dashboard/usuarios"]');
+
+    expect(enlace.textContent).toContain('Administración');
+  });
+
+  it('[E] una persona común no ve el enlace a Administración', async () => {
+    TestBed.inject(Auth).usuario.set({ nombreUsuario: 'laura_c', perfil: 'usuario' } as never);
+    TestBed.inject(Auth).token.set('abc');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelector('a[href="/dashboard/usuarios"]')).toBeNull();
+    expect(texto()).not.toContain('Administración');
+  });
+
+  it('[Z] sin sesión tampoco aparece Administración', () => {
+    expect(texto()).not.toContain('Administración');
+  });
+
   it('[I] ofrece español e inglés y marca el idioma actual', () => {
     const botones = [...fixture.nativeElement.querySelectorAll('[aria-pressed]')] as HTMLElement[];
 

@@ -23,6 +23,7 @@
     "lema": "Comunidad Culinaria",
     "publicaciones": "Publicaciones",
     "mi_perfil": "Mi perfil",
+    "administracion": "Administración",
     "salir": "Salir",
     "ingresar": "Ingresar",
     "registrarme": "Registrarme",
@@ -218,6 +219,20 @@
     "error_comentarios": "No se pudieron cargar los comentarios",
     "ver_comentarios": "Ver todos los comentarios ({{n}})"
   },
+  "usuarios": {
+    "titulo": "Usuarios",
+    "foto": "Foto",
+    "nombre": "Nombre",
+    "usuario": "Usuario",
+    "correo": "Correo",
+    "perfil": "Perfil",
+    "estado": "Estado",
+    "habilitado": "Habilitado",
+    "deshabilitado": "Deshabilitado",
+    "vacio": "Todavía no hay usuarios",
+    "ver_mas": "Ver más usuarios",
+    "error_cargar": "No se pudieron cargar los usuarios"
+  },
   "roles": {
     "usuario": "usuario",
     "administrador": "administrador"
@@ -257,7 +272,8 @@
     "ME_GUSTA_REPETIDO": "Ya le diste me gusta a esta publicación.",
     "ME_GUSTA_INEXISTENTE": "No le habías dado me gusta a esta publicación.",
     "COMENTARIO_AJENO": "Sólo podés editar tus propios comentarios.",
-    "COMENTARIO_NO_ENCONTRADO": "El comentario no existe."
+    "COMENTARIO_NO_ENCONTRADO": "El comentario no existe.",
+    "NO_ES_ADMINISTRADOR": "Esta sección es sólo para administradores."
   },
   "tipos": {
     "receta": "Receta",

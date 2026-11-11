@@ -240,6 +240,14 @@ Pantalla `/publicaciones/nueva` (requiere sesión). Se elige un tipo y el formul
 
 Las **últimas 3 publicaciones** de la persona, y debajo de cada una sus **3 comentarios más recientes** con un enlace "Ver todos los comentarios (N)" a la publicación. Cada una carga sus comentarios por separado: si falla una, las otras siguen viéndose.
 
+### Administración de usuarios
+
+Sólo para personas con perfil administrador (el correo de `ADMIN_EMAIL` queda con ese perfil al registrarse).
+
+- **Enlace "Administración"** en la barra, visible sólo para administradores, que lleva a `/dashboard/usuarios`.
+- **Listado** con foto, nombre, usuario, correo, perfil y estado (habilitado o deshabilitado), de a 10, con el botón "Ver más" que se acciona solo al llegar al final con el scroll.
+- **Protección:** la ruta `/dashboard/usuarios` saca de ahí a quien no es administrador (a las publicaciones, o al login si no hay sesión). En la API, `GET /usuarios?offset&limit` responde 403 `NO_ES_ADMINISTRADOR` con el token de una persona común y 401 sin token. El listado nunca incluye la clave.
+
 ### Pantalla de carga
 
 Al abrir la aplicación con una sesión guardada se muestra una pantalla de carga (el cubreplato animado) mientras se llama a `POST /auth/autorizar`. Si el token es válido se actualizan los datos de la persona y se sigue en la dirección que se abrió; si no, se va al login. Si pasan más de 4 segundos aparece "El servidor se está despertando" (el plan gratis de Render tarda hasta un minuto). Sin sesión, la app despierta al servidor en segundo plano con `GET /health`. El mismo cubreplato se usa en todas las esperas de la aplicación.

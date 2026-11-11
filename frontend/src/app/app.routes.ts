@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './guards/admin-guard';
 import { invitadoGuard } from './guards/invitado-guard';
 import { sesionGuard } from './guards/sesion-guard';
 
@@ -40,6 +41,12 @@ export const routes: Routes = [
     path: 'perfil',
     canActivate: [sesionGuard],
     loadComponent: () => import('./pages/perfil/perfil').then((m) => m.Perfil),
+  },
+  {
+    path: 'dashboard/usuarios',
+    canActivate: [sesionGuard, adminGuard],
+    loadComponent: () =>
+      import('./pages/dashboard-usuarios/dashboard-usuarios').then((m) => m.DashboardUsuarios),
   },
   { path: '**', redirectTo: '' },
 ];

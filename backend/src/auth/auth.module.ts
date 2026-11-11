@@ -5,7 +5,7 @@ import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 
 @Module({
-  imports: [UsuariosModule, forwardRef(() => ImagenesModule)],
+  imports: [forwardRef(() => UsuariosModule), forwardRef(() => ImagenesModule)],
   controllers: [AuthController],
   providers: [AuthService],
   exports: [AuthService],

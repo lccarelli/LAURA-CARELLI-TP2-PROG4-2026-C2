@@ -4,9 +4,10 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { Auth } from '../../servicios/auth/auth';
 import { Idioma } from '../../servicios/idioma/idioma';
 import { Tema } from '../../servicios/tema/tema';
+import { Icono } from '../icono/icono';
 
 @Component({
-  imports: [RouterLink, RouterLinkActive, TranslatePipe],
+  imports: [Icono, RouterLink, RouterLinkActive, TranslatePipe],
   selector: 'app-barra',
   templateUrl: './barra.html',
 })

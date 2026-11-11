@@ -16,33 +16,33 @@
     }
   </div>
 
-  @if (mensajeError(); as mensaje) {
-    <app-aviso titulo="publicaciones.error_cargar" (cerrar)="mensajeError.set(null)">{{
+  @if (listado.mensajeError(); as mensaje) {
+    <app-aviso titulo="publicaciones.error_cargar" (cerrar)="listado.mensajeError.set(null)">{{
       mensaje | translate
     }}</app-aviso>
   }
 
   <div class="muro">
-    @for (publicacion of publicaciones(); track publicacion._id) {
-      <app-tarjeta-publicacion [publicacion]="publicacion" (eliminada)="quitar($event)" />
+    @for (publicacion of listado.items(); track publicacion._id) {
+      <app-tarjeta-publicacion [publicacion]="publicacion" (eliminada)="listado.quitar($event)" />
     }
   </div>
 
-  @if (publicaciones().length === 0 && !cargando() && !fallaLaCarga()) {
+  @if (listado.items().length === 0 && !listado.cargando() && !listado.fallaLaCarga()) {
     <p class="tarjeta estado-vacio">
       {{ 'publicaciones.vacio' | translate }}
     </p>
   }
 
-  @if (cargando()) {
+  @if (listado.cargando()) {
     <app-cubreplato-loading />
   }
 
-  @if (hayMas() && !cargando()) {
+  @if (listado.hayMas() && !listado.cargando()) {
     <app-ver-mas
       texto="publicaciones.ver_mas"
-      [automatico]="!fallaLaCarga()"
-      (cargar)="cargarMas()"
+      [automatico]="!listado.fallaLaCarga()"
+      (cargar)="listado.cargarMas()"
     />
   }
 </section>
