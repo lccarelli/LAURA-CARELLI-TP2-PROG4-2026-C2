@@ -24,6 +24,7 @@
     "publicaciones": "Publicaciones",
     "mi_perfil": "Mi perfil",
     "administracion": "Administración",
+    "estadisticas": "Estadísticas",
     "salir": "Salir",
     "ingresar": "Ingresar",
     "registrarme": "Registrarme",
@@ -304,7 +305,9 @@
     "NO_ES_ADMINISTRADOR": "Esta sección es sólo para administradores.",
     "USUARIO_DESHABILITADO": "Tu usuario está deshabilitado. Contactá a un administrador.",
     "CUENTA_PROPIA": "No podés cambiar el estado de tu propia cuenta.",
-    "USUARIO_NO_ENCONTRADO": "El usuario no existe."
+    "USUARIO_NO_ENCONTRADO": "El usuario no existe.",
+    "RANGO_INVALIDO": "La fecha desde no puede ser posterior a la fecha hasta.",
+    "RANGO_DEMASIADO_LARGO": "El rango no puede superar 366 días."
   },
   "tipos": {
     "receta": "Receta",
@@ -329,5 +332,19 @@
     "extender": "Extender sesión",
     "extendiendo": "Extendiendo…",
     "cerrar": "Cerrar sesión"
+  },
+  "estadisticas": {
+    "titulo": "Estadísticas",
+    "desde": "Desde",
+    "hasta": "Hasta",
+    "publicaciones_por_usuario": "Publicaciones por usuario",
+    "serie_publicaciones": "Publicaciones",
+    "descripcion_publicaciones": "Gráfico de barras con la cantidad de publicaciones activas de cada usuario en el rango elegido",
+    "vacio": "No hay publicaciones en el rango elegido.",
+    "rango_incompleto": "Elegí las dos fechas.",
+    "rango_invalido": "La fecha desde no puede ser posterior a la fecha hasta.",
+    "rango_largo": "El rango no puede superar 366 días.",
+    "error_cargar": "No pudimos cargar las estadísticas.",
+    "reintentar": "Reintentar"
   }
 }

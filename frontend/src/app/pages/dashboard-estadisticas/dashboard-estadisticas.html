@@ -1,0 +1,56 @@
+<section class="pagina-ancha">
+  <h1 class="titulo">{{ 'estadisticas.titulo' | translate }}</h1>
+
+  <div class="flex flex-wrap items-end gap-4">
+    <label class="caja">
+      <span class="etiqueta">{{ 'estadisticas.desde' | translate }}</span>
+      <input
+        class="campo"
+        type="date"
+        [value]="desde()"
+        (change)="cambiarDesde($any($event.target).value)"
+      />
+    </label>
+    <label class="caja">
+      <span class="etiqueta">{{ 'estadisticas.hasta' | translate }}</span>
+      <input
+        class="campo"
+        type="date"
+        [value]="hasta()"
+        (change)="cambiarHasta($any($event.target).value)"
+      />
+    </label>
+  </div>
+
+  @if (errorDeRango(); as mensaje) {
+    <p class="mensaje-error" role="alert">{{ mensaje | translate }}</p>
+  }
+
+  @if (mensajeError(); as mensaje) {
+    <app-aviso titulo="estadisticas.error_cargar" (cerrar)="mensajeError.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+    <button type="button" class="boton-secundario" (click)="cargar()">
+      {{ 'estadisticas.reintentar' | translate }}
+    </button>
+  }
+
+  <h2 class="subtitulo">{{ 'estadisticas.publicaciones_por_usuario' | translate }}</h2>
+
+  @if (cargando()) {
+    <app-cubreplato-loading />
+  } @else if (datos(); as filas) {
+    @if (filas.length > 0) {
+      <div class="tarjeta">
+        <app-grafico-barras
+          [etiquetas]="etiquetas()"
+          [valores]="valores()"
+          [serie]="'estadisticas.serie_publicaciones' | translate"
+          [descripcion]="'estadisticas.descripcion_publicaciones' | translate"
+        />
+      </div>
+    } @else {
+      <p class="tarjeta estado-vacio">{{ 'estadisticas.vacio' | translate }}</p>
+    }
+  }
+</section>

@@ -7,6 +7,7 @@ import { appConfig } from './app.config.js';
 import { LimiteSolicitudesGuard } from './common/limite-solicitudes.guard.js';
 import { authConfig } from './auth/auth.config.js';
 import { AuthModule } from './auth/auth.module.js';
+import { EstadisticasModule } from './estadisticas/estadisticas.module.js';
 import { HealthModule } from './health/health.module.js';
 import { LogsModule } from './logs/logs.module.js';
 import { imagenesConfig } from './imagenes/imagenes.config.js';
@@ -33,6 +34,7 @@ import { UsuariosModule } from './usuarios/usuarios.module.js';
     ImagenesModule,
     AuthModule,
     PublicacionesModule,
+    EstadisticasModule,
     HealthModule,
   ],
   providers: [

@@ -53,5 +53,13 @@ export const routes: Routes = [
     canActivate: [sesionGuard, adminGuard],
     loadComponent: () => import('./pages/nuevo-usuario/nuevo-usuario').then((m) => m.NuevoUsuario),
   },
+  {
+    path: 'dashboard/estadisticas',
+    canActivate: [sesionGuard, adminGuard],
+    loadComponent: () =>
+      import('./pages/dashboard-estadisticas/dashboard-estadisticas').then(
+        (m) => m.DashboardEstadisticas,
+      ),
+  },
   { path: '**', redirectTo: '' },
 ];

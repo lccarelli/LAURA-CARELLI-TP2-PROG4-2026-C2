@@ -112,6 +112,14 @@ body {
     @apply font-serif text-3xl leading-tight font-black break-words md:text-5xl;
   }
 
+  .subtitulo {
+    @apply font-serif text-2xl leading-tight font-medium break-words;
+  }
+
+  .grafico {
+    @apply relative w-full;
+  }
+
   .titulo-tarjeta {
     @apply font-serif text-3xl leading-tight font-medium break-words italic;
   }
