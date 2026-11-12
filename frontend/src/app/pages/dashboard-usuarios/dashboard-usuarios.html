@@ -12,6 +12,24 @@
     }}</app-aviso>
   }
 
+  @if (hecho(); as listo) {
+    <app-aviso
+      [titulo]="'usuarios.' + listo.accion + '_hecha'"
+      [info]="true"
+      (cerrar)="hecho.set(null)"
+      >{{
+        'usuarios.' + listo.accion + '_hecha_detalle'
+          | translate: { nombreUsuario: listo.nombreUsuario }
+      }}</app-aviso
+    >
+  }
+
+  @if (error(); as fallo) {
+    <app-aviso [titulo]="'usuarios.error_' + fallo.accion" (cerrar)="error.set(null)">{{
+      fallo.mensaje | translate
+    }}</app-aviso>
+  }
+
   @if (listado.mensajeError(); as mensaje) {
     <app-aviso titulo="usuarios.error_cargar" (cerrar)="listado.mensajeError.set(null)">{{
       mensaje | translate
@@ -29,6 +47,7 @@
             <th scope="col">{{ 'usuarios.correo' | translate }}</th>
             <th scope="col">{{ 'usuarios.perfil' | translate }}</th>
             <th scope="col">{{ 'usuarios.estado' | translate }}</th>
+            <th scope="col">{{ 'usuarios.acciones' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -53,6 +72,33 @@
                     | translate
                 }}</span>
               </td>
+              <td>
+                @if (puedeDeshabilitar(usuario)) {
+                  <button
+                    type="button"
+                    class="boton-peligro"
+                    [attr.aria-label]="
+                      'usuarios.deshabilitar_aria'
+                        | translate: { nombreUsuario: usuario.nombreUsuario }
+                    "
+                    (click)="pedir('deshabilitar', usuario)"
+                  >
+                    {{ 'usuarios.deshabilitar' | translate }}
+                  </button>
+                } @else if (!usuario.habilitado) {
+                  <button
+                    type="button"
+                    class="boton-secundario"
+                    [attr.aria-label]="
+                      'usuarios.habilitar_aria'
+                        | translate: { nombreUsuario: usuario.nombreUsuario }
+                    "
+                    (click)="pedir('habilitar', usuario)"
+                  >
+                    {{ 'usuarios.habilitar' | translate }}
+                  </button>
+                }
+              </td>
             </tr>
           }
         </tbody>
@@ -73,6 +119,20 @@
       texto="usuarios.ver_mas"
       [automatico]="!listado.fallaLaCarga()"
       (cargar)="listado.cargarMas()"
+    />
+  }
+
+  @if (pendiente(); as confirmacion) {
+    <app-modal-confirmacion
+      [titulo]="'usuarios.' + confirmacion.accion + '_titulo'"
+      [texto]="'usuarios.' + confirmacion.accion + '_texto'"
+      [confirmar]="'usuarios.' + confirmacion.accion"
+      [confirmando]="'usuarios.' + confirmacion.accion + '_enviando'"
+      [parametros]="{ nombreUsuario: confirmacion.usuario.nombreUsuario }"
+      [peligroso]="confirmacion.accion === 'deshabilitar'"
+      [enviando]="enviando()"
+      (confirmado)="confirmar()"
+      (cancelado)="cancelar()"
     />
   }
 </section>

@@ -4,6 +4,7 @@ import { ListadoPaginado } from './listado-paginado';
 
 interface Elemento {
   _id: string;
+  marca?: string;
 }
 
 const pagina = (ids: string[], hayMas = false) => ({
@@ -111,6 +112,24 @@ describe('ListadoPaginado', () => {
     listado.quitar('b');
 
     expect(ids()).toEqual(['a', 'c']);
+  });
+
+  it('[S] actualizar cambia sólo los campos indicados del elemento que corresponde', () => {
+    listado.cargarMas();
+    responder(['a', 'b']);
+
+    listado.actualizar('b', { marca: 'nueva' });
+
+    expect(listado.items()).toEqual([{ _id: 'a' }, { _id: 'b', marca: 'nueva' }]);
+  });
+
+  it('[S] actualizar un id que no está no cambia nada', () => {
+    listado.cargarMas();
+    responder(['a']);
+
+    listado.actualizar('z', { marca: 'nueva' });
+
+    expect(listado.items()).toEqual([{ _id: 'a' }]);
   });
 
   it('[S] reiniciar vacía todo y vuelve a pedir desde 0', () => {

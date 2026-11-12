@@ -242,7 +242,24 @@
     "creado": "User created",
     "creado_detalle": "They can now log in as @{{nombreUsuario}}.",
     "error_crear": "The user could not be created",
-    "volver": "← Back to users"
+    "volver": "← Back to users",
+    "acciones": "Actions",
+    "deshabilitar": "Disable",
+    "deshabilitar_aria": "Disable @{{nombreUsuario}}",
+    "deshabilitar_titulo": "Disable @{{nombreUsuario}}?",
+    "deshabilitar_texto": "They will not be able to log in to the app while their account is disabled.",
+    "deshabilitar_enviando": "Disabling…",
+    "deshabilitar_hecha": "User disabled",
+    "deshabilitar_hecha_detalle": "@{{nombreUsuario}} can no longer log in.",
+    "error_deshabilitar": "The user could not be disabled",
+    "habilitar": "Enable",
+    "habilitar_aria": "Enable @{{nombreUsuario}}",
+    "habilitar_titulo": "Enable @{{nombreUsuario}}?",
+    "habilitar_texto": "They will be able to log in to the app again.",
+    "habilitar_enviando": "Enabling…",
+    "habilitar_hecha": "User enabled",
+    "habilitar_hecha_detalle": "@{{nombreUsuario}} can log in again.",
+    "error_habilitar": "The user could not be enabled"
   },
   "roles": {
     "usuario": "user",
@@ -284,7 +301,10 @@
     "ME_GUSTA_INEXISTENTE": "You had not liked this post.",
     "COMENTARIO_AJENO": "You can only edit your own comments.",
     "COMENTARIO_NO_ENCONTRADO": "The comment does not exist.",
-    "NO_ES_ADMINISTRADOR": "This section is for administrators only."
+    "NO_ES_ADMINISTRADOR": "This section is for administrators only.",
+    "USUARIO_DESHABILITADO": "Your user is disabled. Contact an administrator.",
+    "CUENTA_PROPIA": "You cannot change the status of your own account.",
+    "USUARIO_NO_ENCONTRADO": "The user does not exist."
   },
   "tipos": {
     "receta": "Recipe",

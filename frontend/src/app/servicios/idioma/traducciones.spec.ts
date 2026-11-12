@@ -12,6 +12,9 @@ const CODIGOS_DE_LA_API = [
   'TOKEN_INVALIDO',
   'DEMASIADAS_SOLICITUDES',
   'NO_ES_ADMINISTRADOR',
+  'USUARIO_DESHABILITADO',
+  'CUENTA_PROPIA',
+  'USUARIO_NO_ENCONTRADO',
 ];
 
 function aplanar(objeto: object, prefijo = ''): Record<string, string> {

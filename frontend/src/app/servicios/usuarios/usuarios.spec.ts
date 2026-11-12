@@ -74,4 +74,59 @@ describe('UsuariosApi', () => {
 
     expect(fallo.mock.calls[0][0].status).toBe(409);
   });
+
+  it.each([[false], [true]])(
+    '[O] actualizarHabilitado manda un PATCH al usuario con habilitado %j y devuelve al usuario',
+    (habilitado) => {
+      const actualizado = vi.fn();
+      api.actualizarHabilitado('u9', habilitado).subscribe(actualizado);
+
+      const solicitud = http.expectOne(`${URL}/u9`);
+
+      expect(solicitud.request.method).toBe('PATCH');
+      expect(solicitud.request.body).toEqual({ habilitado });
+      solicitud.flush({ _id: 'u9', habilitado });
+      expect(actualizado).toHaveBeenCalledWith({ _id: 'u9', habilitado });
+    },
+  );
+
+  it('[I] actualizarHabilitado manda sólo habilitado en el body', () => {
+    api.actualizarHabilitado('u9', false).subscribe();
+
+    const solicitud = http.expectOne(`${URL}/u9`);
+
+    expect(Object.keys(solicitud.request.body as object)).toEqual(['habilitado']);
+    solicitud.flush({ _id: 'u9', habilitado: false });
+  });
+
+  it('[I] actualizarHabilitado codifica el id en la dirección', () => {
+    api.actualizarHabilitado('a/b', false).subscribe();
+
+    const solicitud = http.expectOne((pedido) => pedido.url.startsWith(URL));
+
+    expect(solicitud.request.url).toBe(`${URL}/a%2Fb`);
+    solicitud.flush({ _id: 'a/b', habilitado: false });
+  });
+
+  it('[E] cambiar el estado de la propia cuenta deja pasar el 400 de la API', () => {
+    const fallo = vi.fn();
+    api.actualizarHabilitado('u1', false).subscribe({ error: fallo });
+
+    http
+      .expectOne(`${URL}/u1`)
+      .flush({ codigo: 'CUENTA_PROPIA' }, { status: 400, statusText: 'Bad Request' });
+
+    expect(fallo.mock.calls[0][0].status).toBe(400);
+  });
+
+  it('[E] cambiar el estado de una persona que no existe deja pasar el 404 de la API', () => {
+    const fallo = vi.fn();
+    api.actualizarHabilitado('u1', true).subscribe({ error: fallo });
+
+    http
+      .expectOne(`${URL}/u1`)
+      .flush({ codigo: 'USUARIO_NO_ENCONTRADO' }, { status: 404, statusText: 'Not Found' });
+
+    expect(fallo.mock.calls[0][0].status).toBe(404);
+  });
 });

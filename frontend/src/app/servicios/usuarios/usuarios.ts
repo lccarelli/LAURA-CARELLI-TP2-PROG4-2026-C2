@@ -16,4 +16,10 @@ export class UsuariosApi {
   crear(datos: FormData) {
     return this.http.post<Usuario>(`${environment.API_URL}/usuarios`, datos);
   }
+
+  actualizarHabilitado(id: string, habilitado: boolean) {
+    return this.http.patch<Usuario>(`${environment.API_URL}/usuarios/${encodeURIComponent(id)}`, {
+      habilitado,
+    });
+  }
 }

@@ -3,6 +3,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
@@ -128,5 +129,39 @@ export class UsuariosService {
       limit,
       hayMas: usuarios.length > limit,
     };
+  }
+
+  async actualizarHabilitado(
+    id: string,
+    habilitado: boolean,
+    administradorId: string,
+  ) {
+    if (id === administradorId) {
+      throw new BadRequestException({
+        message: 'No se puede cambiar el estado de la propia cuenta',
+        codigo: 'CUENTA_PROPIA',
+      });
+    }
+
+    const resultado = await this.usuarioModel.updateOne(
+      { _id: id },
+      { habilitado },
+    );
+    if (resultado.matchedCount === 0) {
+      throw new NotFoundException({
+        message: 'El usuario no existe',
+        codigo: 'USUARIO_NO_ENCONTRADO',
+      });
+    }
+    if (resultado.modifiedCount > 0) {
+      this.logger.info(
+        habilitado
+          ? EVENTOS_DE_LOG.USUARIO_HABILITADO
+          : EVENTOS_DE_LOG.USUARIO_DESHABILITADO,
+        habilitado ? 'Usuario habilitado' : 'Usuario deshabilitado',
+        { id_usuario: id, id_administrador: administradorId },
+      );
+    }
+    return this.usuarioModel.findById(id).lean();
   }
 }
