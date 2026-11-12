@@ -71,48 +71,36 @@ describe('rutas', () => {
       auth.usuario.set({ ...usuarioDePrueba, perfil });
     };
 
-    it('[E] sin sesión lleva al login', async () => {
-      await RouterTestingHarness.create('/dashboard/usuarios');
+    it.each(['/dashboard/usuarios', '/dashboard/usuarios/nuevo', '/dashboard/estadisticas'])(
+      '[E] sin sesión, %s lleva al login',
+      async (ruta) => {
+        await RouterTestingHarness.create(ruta);
 
-      expect(TestBed.inject(Router).url).toBe('/login');
-    });
+        expect(TestBed.inject(Router).url).toBe('/login');
+      },
+    );
 
-    it('[E] una persona común vuelve a las publicaciones', async () => {
-      ingresarComo('usuario');
+    it.each(['/dashboard/usuarios', '/dashboard/usuarios/nuevo', '/dashboard/estadisticas'])(
+      '[E] una persona común no entra a %s y vuelve a las publicaciones',
+      async (ruta) => {
+        ingresarComo('usuario');
 
-      await RouterTestingHarness.create('/dashboard/usuarios');
+        await RouterTestingHarness.create(ruta);
 
-      expect(TestBed.inject(Router).url).toBe('/publicaciones');
-    });
+        expect(TestBed.inject(Router).url).toBe('/publicaciones');
+      },
+    );
 
-    it('[E] sin sesión, la página para crear un usuario lleva al login', async () => {
-      await RouterTestingHarness.create('/dashboard/usuarios/nuevo');
-
-      expect(TestBed.inject(Router).url).toBe('/login');
-    });
-
-    it('[E] una persona común no entra a crear usuarios y vuelve a las publicaciones', async () => {
-      ingresarComo('usuario');
-
-      await RouterTestingHarness.create('/dashboard/usuarios/nuevo');
-
-      expect(TestBed.inject(Router).url).toBe('/publicaciones');
-    });
-
-    it('[O] un administrador ve la página para crear un usuario', async () => {
+    it.each([
+      ['/dashboard/usuarios', 'APP-DASHBOARD-USUARIOS'],
+      ['/dashboard/usuarios/nuevo', 'APP-NUEVO-USUARIO'],
+      ['/dashboard/estadisticas', 'APP-DASHBOARD-ESTADISTICAS'],
+    ])('[O] un administrador ve %s', async (ruta, etiqueta) => {
       ingresarComo('administrador');
 
-      const harness = await RouterTestingHarness.create('/dashboard/usuarios/nuevo');
+      const harness = await RouterTestingHarness.create(ruta);
 
-      expect(harness.routeNativeElement?.tagName).toBe('APP-NUEVO-USUARIO');
-    });
-
-    it('[O] un administrador ve el listado de usuarios', async () => {
-      ingresarComo('administrador');
-
-      const harness = await RouterTestingHarness.create('/dashboard/usuarios');
-
-      expect(harness.routeNativeElement?.tagName).toBe('APP-DASHBOARD-USUARIOS');
+      expect(harness.routeNativeElement?.tagName).toBe(etiqueta);
     });
   });
 

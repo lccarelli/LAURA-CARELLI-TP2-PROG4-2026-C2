@@ -15,6 +15,8 @@ const CODIGOS_DE_LA_API = [
   'USUARIO_DESHABILITADO',
   'CUENTA_PROPIA',
   'USUARIO_NO_ENCONTRADO',
+  'RANGO_INVALIDO',
+  'RANGO_DEMASIADO_LARGO',
 ];
 
 function aplanar(objeto: object, prefijo = ''): Record<string, string> {

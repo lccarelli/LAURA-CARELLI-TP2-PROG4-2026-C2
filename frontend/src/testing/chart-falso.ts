@@ -1,0 +1,30 @@
+export interface ConfiguracionFalsa {
+  type: string;
+  options: { indexAxis: string };
+  data: {
+    labels: string[];
+    datasets: { label: string; data: number[]; backgroundColor: string }[];
+  };
+}
+
+export const graficos: { config: ConfiguracionFalsa; destroy: ReturnType<typeof vi.fn> }[] = [];
+
+class ChartFalso {
+  static readonly register = vi.fn();
+  destroy = vi.fn();
+  config: ConfiguracionFalsa;
+
+  constructor(_lienzo: HTMLCanvasElement, config: ConfiguracionFalsa) {
+    this.config = config;
+    graficos.push(this);
+  }
+}
+
+export const moduloFalso = {
+  Chart: ChartFalso,
+  BarController: {},
+  BarElement: {},
+  CategoryScale: {},
+  LinearScale: {},
+  Tooltip: {},
+};

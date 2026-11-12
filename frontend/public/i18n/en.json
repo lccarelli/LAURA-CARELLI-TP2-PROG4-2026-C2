@@ -24,6 +24,7 @@
     "publicaciones": "Recipes",
     "mi_perfil": "My profile",
     "administracion": "Administration",
+    "estadisticas": "Statistics",
     "salir": "Log out",
     "ingresar": "Log in",
     "registrarme": "Sign up",
@@ -304,7 +305,9 @@
     "NO_ES_ADMINISTRADOR": "This section is for administrators only.",
     "USUARIO_DESHABILITADO": "Your user is disabled. Contact an administrator.",
     "CUENTA_PROPIA": "You cannot change the status of your own account.",
-    "USUARIO_NO_ENCONTRADO": "The user does not exist."
+    "USUARIO_NO_ENCONTRADO": "The user does not exist.",
+    "RANGO_INVALIDO": "The from date cannot be later than the to date.",
+    "RANGO_DEMASIADO_LARGO": "The range cannot exceed 366 days."
   },
   "tipos": {
     "receta": "Recipe",
@@ -329,5 +332,19 @@
     "extender": "Extend session",
     "extendiendo": "Extending…",
     "cerrar": "Log out"
+  },
+  "estadisticas": {
+    "titulo": "Statistics",
+    "desde": "From",
+    "hasta": "To",
+    "publicaciones_por_usuario": "Posts per user",
+    "serie_publicaciones": "Posts",
+    "descripcion_publicaciones": "Bar chart with the number of active posts of each user in the selected range",
+    "vacio": "There are no posts in the selected range.",
+    "rango_incompleto": "Pick both dates.",
+    "rango_invalido": "The from date cannot be later than the to date.",
+    "rango_largo": "The range cannot exceed 366 days.",
+    "error_cargar": "We could not load the statistics.",
+    "reintentar": "Try again"
   }
 }
