@@ -313,4 +313,124 @@ describe('Auth', () => {
       expect(auth.usuario()).toBeNull();
     });
   });
+
+  describe('almacenamiento no disponible', () => {
+    const bloquear = (metodo: 'getItem' | 'setItem' | 'removeItem') =>
+      vi.spyOn(Storage.prototype, metodo).mockImplementation(() => {
+        throw new Error('bloqueado');
+      });
+
+    afterEach(() => vi.restoreAllMocks());
+
+    it('[E] si no se puede leer, arranca sin sesión en lugar de romper', () => {
+      bloquear('getItem');
+
+      const { auth } = crearAuth();
+
+      expect(auth.token()).toBeNull();
+      expect(auth.usuario()).toBeNull();
+    });
+
+    it('[E] si no se puede escribir, ingresar deja la sesión en memoria', () => {
+      bloquear('setItem');
+      const { auth, http } = crearAuth();
+
+      auth.ingresar('laura_c', 'Clave1234').subscribe();
+      http.expectOne(`${environment.API_URL}/auth/ingresar`).flush(sesion);
+
+      expect(auth.token()).toBe('token-de-prueba');
+      expect(auth.usuario()?.nombreUsuario).toBe('laura_c');
+    });
+
+    it('[E] si no se puede escribir, refrescar deja el token nuevo en memoria', () => {
+      bloquear('setItem');
+      const { auth, http } = crearAuth();
+
+      auth.refrescar().subscribe();
+      http.expectOne(`${environment.API_URL}/auth/refrescar`).flush({ token: 'nuevo' });
+
+      expect(auth.token()).toBe('nuevo');
+    });
+
+    it('[E] si no se puede borrar, salir limpia igual la memoria', () => {
+      const { auth } = crearAuth();
+      auth.token.set('vigente');
+      bloquear('removeItem');
+
+      auth.salir();
+
+      expect(auth.token()).toBeNull();
+      expect(auth.usuario()).toBeNull();
+    });
+
+    it('[E] sin almacenamiento, sincronizar no cierra la sesión que está en memoria', () => {
+      bloquear('setItem');
+      const { auth, http } = crearAuth();
+      auth.ingresar('laura_c', 'Clave1234').subscribe();
+      http.expectOne(`${environment.API_URL}/auth/ingresar`).flush(sesion);
+
+      auth.sincronizar();
+
+      expect(auth.token()).toBe('token-de-prueba');
+    });
+  });
+
+  describe('sincronizar', () => {
+    it('[Z] sin sesión en ningún lado no cambia nada', () => {
+      const { auth } = crearAuth();
+
+      auth.sincronizar();
+
+      expect(auth.token()).toBeNull();
+    });
+
+    it('[O] si el token ya no está en el almacenamiento, vacía la sesión', () => {
+      localStorage.setItem('token', sesion.token);
+      localStorage.setItem('usuario', JSON.stringify(sesion.usuario));
+      const { auth } = crearAuth();
+
+      localStorage.removeItem('token');
+      auth.sincronizar();
+
+      expect(auth.token()).toBeNull();
+      expect(auth.usuario()).toBeNull();
+    });
+
+    it('[O] si otra pestaña guardó un token distinto, lo toma junto con su usuario', () => {
+      localStorage.setItem('token', sesion.token);
+      localStorage.setItem('usuario', JSON.stringify(sesion.usuario));
+      const { auth } = crearAuth();
+
+      localStorage.setItem('token', 'otro');
+      localStorage.setItem('usuario', JSON.stringify({ ...sesion.usuario, nombre: 'Ana' }));
+      auth.sincronizar();
+
+      expect(auth.token()).toBe('otro');
+      expect(auth.usuario()?.nombre).toBe('Ana');
+    });
+
+    it('[I] si el almacenamiento coincide con la memoria no toca nada', () => {
+      localStorage.setItem('token', sesion.token);
+      const { auth } = crearAuth();
+      auth.usuario.set(sesion.usuario);
+
+      auth.sincronizar();
+
+      expect(auth.token()).toBe('token-de-prueba');
+      expect(auth.usuario()?.nombre).toBe('Laura');
+    });
+
+    it('[E] si leer falla en ese momento, conserva la sesión', () => {
+      localStorage.setItem('token', sesion.token);
+      const { auth } = crearAuth();
+      vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+        throw new Error('bloqueado');
+      });
+
+      auth.sincronizar();
+
+      expect(auth.token()).toBe('token-de-prueba');
+      vi.restoreAllMocks();
+    });
+  });
 });

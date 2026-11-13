@@ -20,7 +20,11 @@ describe('Sesion: vencimiento del token', () => {
   let irA: ReturnType<typeof vi.spyOn>;
 
   const iniciarConToken = (segundos: number | null) => {
-    auth.token.set(segundos === null ? null : tokenQueVenceEn(segundos));
+    const token = segundos === null ? null : tokenQueVenceEn(segundos);
+    if (token) {
+      localStorage.setItem('token', token);
+    }
+    auth.token.set(token);
     sesion.iniciar();
     http.match(`${environment.API_URL}/auth/autorizar`);
   };
@@ -42,6 +46,7 @@ describe('Sesion: vencimiento del token', () => {
   afterEach(() => {
     TestBed.resetTestingModule();
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('[Z] sin sesión iniciada nunca avisa ni cierra nada', () => {
@@ -207,6 +212,43 @@ describe('Sesion: vencimiento del token', () => {
     expect(auth.token()).toBeNull();
     expect(auth.motivoDeSalida()).toBeNull();
     expect(irA).toHaveBeenCalledWith('/login');
+  });
+
+  it('[O] si se borra el token del almacenamiento, al segundo siguiente cierra la sesión y lleva al login', () => {
+    iniciarConToken(15 * 60);
+
+    localStorage.removeItem('token');
+    avanzar(SEGUNDO);
+
+    expect(auth.token()).toBeNull();
+    expect(auth.motivoDeSalida()).toBeNull();
+    expect(irA).toHaveBeenCalledWith('/login');
+  });
+
+  it('[S] si otra pestaña refresca el token, lo adopta y la sesión sigue', () => {
+    iniciarConToken(4 * 60);
+    avanzar(SEGUNDO);
+    expect(sesion.avisando()).toBe(true);
+    const nuevo = tokenQueVenceEn(15 * 60);
+
+    localStorage.setItem('token', nuevo);
+    avanzar(SEGUNDO);
+
+    expect(auth.token()).toBe(nuevo);
+    expect(sesion.avisando()).toBe(false);
+    expect(irA).not.toHaveBeenCalled();
+  });
+
+  it('[E] si el almacenamiento deja de estar disponible, la sesión sigue en memoria', () => {
+    iniciarConToken(15 * 60);
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('bloqueado');
+    });
+
+    avanzar(5 * SEGUNDO);
+
+    expect(auth.token()).not.toBeNull();
+    expect(irA).not.toHaveBeenCalled();
   });
 
   it('[I] al cerrarse el servicio deja de contar el tiempo', () => {

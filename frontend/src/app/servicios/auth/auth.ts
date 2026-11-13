@@ -9,7 +9,9 @@ import { Usuario } from '../../interfaces/usuario';
 export class Auth {
   private http = inject(HttpClient);
 
-  readonly token = signal<string | null>(localStorage.getItem('token'));
+  private sinAlmacenamiento = false;
+
+  readonly token = signal<string | null>(this.leer('token'));
   readonly usuario = signal<Usuario | null>(this.leerUsuario());
   readonly motivoDeSalida = signal<string | null>(null);
   readonly vencimiento = computed(() => this.leerVencimiento(this.token()));
@@ -42,9 +44,23 @@ export class Auth {
     return this.http.get(`${environment.API_URL}/health`);
   }
 
+  sincronizar() {
+    if (this.sinAlmacenamiento) {
+      return;
+    }
+
+    const guardado = this.leer('token');
+    if (this.sinAlmacenamiento || guardado === this.token()) {
+      return;
+    }
+
+    this.token.set(guardado);
+    this.usuario.set(guardado ? this.leerUsuario() : null);
+  }
+
   salir(motivo: string | null = null) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
+    this.borrar('token');
+    this.borrar('usuario');
     this.token.set(null);
     this.usuario.set(null);
     this.motivoDeSalida.set(motivo);
@@ -57,12 +73,12 @@ export class Auth {
   }
 
   private guardarUsuario(usuario: Usuario) {
-    localStorage.setItem('usuario', JSON.stringify(usuario));
+    this.escribir('usuario', JSON.stringify(usuario));
     this.usuario.set(usuario);
   }
 
   private guardarToken(token: string) {
-    localStorage.setItem('token', token);
+    this.escribir('token', token);
     this.token.set(token);
   }
 
@@ -78,9 +94,34 @@ export class Auth {
 
   private leerUsuario(): Usuario | null {
     try {
-      return JSON.parse(localStorage.getItem('usuario') ?? 'null');
+      return JSON.parse(this.leer('usuario') ?? 'null');
     } catch {
       return null;
+    }
+  }
+
+  private leer(clave: string): string | null {
+    try {
+      return localStorage.getItem(clave);
+    } catch {
+      this.sinAlmacenamiento = true;
+      return null;
+    }
+  }
+
+  private escribir(clave: string, valor: string) {
+    try {
+      localStorage.setItem(clave, valor);
+    } catch {
+      this.sinAlmacenamiento = true;
+    }
+  }
+
+  private borrar(clave: string) {
+    try {
+      localStorage.removeItem(clave);
+    } catch {
+      this.sinAlmacenamiento = true;
     }
   }
 }
