@@ -59,4 +59,19 @@ describe('EstadisticasApi', () => {
     expect(solicitud.request.params.get('hasta')).toBe('2026-03-12');
     expect(recibido).toHaveBeenCalledWith([{ fecha: '2026-03-10', cantidad: 2 }]);
   });
+
+  it('[O] pide los comentarios por publicación con desde y hasta', () => {
+    const recibido = vi.fn();
+    api.comentariosPorPublicacion('2026-03-10', '2026-03-12').subscribe(recibido);
+
+    const solicitud = http.expectOne(
+      (pedido) => pedido.url === `${environment.API_URL}/estadisticas/comentarios-por-publicacion`,
+    );
+    solicitud.flush([{ publicacion: 'p1', titulo: 'Tarta', cantidad: 4 }]);
+
+    expect(solicitud.request.method).toBe('GET');
+    expect(solicitud.request.params.get('desde')).toBe('2026-03-10');
+    expect(solicitud.request.params.get('hasta')).toBe('2026-03-12');
+    expect(recibido).toHaveBeenCalledWith([{ publicacion: 'p1', titulo: 'Tarta', cantidad: 4 }]);
+  });
 });

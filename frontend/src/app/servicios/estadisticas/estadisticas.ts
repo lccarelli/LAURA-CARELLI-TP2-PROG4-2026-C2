@@ -1,7 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { ComentariosDelDia, PublicacionesDeUsuario } from '../../interfaces/estadisticas';
+import {
+  ComentariosDePublicacion,
+  ComentariosDelDia,
+  PublicacionesDeUsuario,
+} from '../../interfaces/estadisticas';
 
 @Service()
 export class EstadisticasApi {
@@ -17,6 +21,13 @@ export class EstadisticasApi {
   comentariosPorDia(desde: string, hasta: string) {
     return this.http.get<ComentariosDelDia[]>(
       `${environment.API_URL}/estadisticas/comentarios-por-dia`,
+      { params: { desde, hasta } },
+    );
+  }
+
+  comentariosPorPublicacion(desde: string, hasta: string) {
+    return this.http.get<ComentariosDePublicacion[]>(
+      `${environment.API_URL}/estadisticas/comentarios-por-publicacion`,
       { params: { desde, hasta } },
     );
   }

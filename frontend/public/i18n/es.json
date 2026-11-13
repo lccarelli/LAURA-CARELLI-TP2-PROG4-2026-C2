@@ -349,6 +349,9 @@
     "comentarios_por_dia": "Comentarios por día",
     "serie_comentarios": "Comentarios",
     "descripcion_comentarios": "Gráfico de líneas con la cantidad de comentarios de cada día del rango elegido",
-    "vacio_comentarios": "No hay comentarios en el rango elegido."
+    "vacio_comentarios": "No hay comentarios en el rango elegido.",
+    "comentarios_por_publicacion": "Publicaciones con más comentarios",
+    "descripcion_ranking": "Gráfico de barras con las 10 publicaciones que más comentarios recibieron en el rango elegido",
+    "vacio_ranking": "No hay publicaciones con comentarios en el rango elegido."
   }
 }

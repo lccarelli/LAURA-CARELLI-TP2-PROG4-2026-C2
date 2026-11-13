@@ -10,6 +10,7 @@ import {
   PublicacionSchema,
 } from '../publicaciones/schemas/publicacion.schema.js';
 import { EstadisticasController } from './estadisticas.controller.js';
+import { EstadisticasRepositorio } from './estadisticas.repositorio.js';
 import { EstadisticasService } from './estadisticas.service.js';
 
 @Module({
@@ -21,6 +22,6 @@ import { EstadisticasService } from './estadisticas.service.js';
     AuthModule,
   ],
   controllers: [EstadisticasController],
-  providers: [EstadisticasService],
+  providers: [EstadisticasService, EstadisticasRepositorio],
 })
 export class EstadisticasModule {}

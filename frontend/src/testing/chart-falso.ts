@@ -1,6 +1,14 @@
 export interface ConfiguracionFalsa {
   type: string;
-  options: { indexAxis?: string; interaction?: { mode: string; intersect: boolean } };
+  options: {
+    indexAxis?: string;
+    interaction?: { mode: string; intersect: boolean };
+    plugins?: {
+      tooltip?: {
+        callbacks: { title: (elementos: { dataIndex: number; label: string }[]) => string };
+      };
+    };
+  };
   data: {
     labels: string[];
     datasets: {

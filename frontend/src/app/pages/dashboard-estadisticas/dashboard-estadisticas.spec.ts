@@ -10,6 +10,7 @@ vi.mock('chart.js', async () => (await import('../../../testing/chart-falso')).m
 
 const URL = `${environment.API_URL}/estadisticas/publicaciones-por-usuario`;
 const URL_COMENTARIOS = `${environment.API_URL}/estadisticas/comentarios-por-dia`;
+const URL_RANKING = `${environment.API_URL}/estadisticas/comentarios-por-publicacion`;
 const LAURA = { usuario: 'u1', nombreUsuario: 'laura_c', cantidad: 3 };
 const JUAN = { usuario: 'u2', nombreUsuario: 'juan_p', cantidad: 1 };
 
@@ -32,6 +33,14 @@ describe('DashboardEstadisticas', () => {
         solicitud.params.get('desde') === desde &&
         solicitud.params.get('hasta') === hasta,
     );
+  const pedirRanking = (desde: string, hasta: string) =>
+    http.expectOne(
+      (solicitud) =>
+        solicitud.url === URL_RANKING &&
+        solicitud.params.get('desde') === desde &&
+        solicitud.params.get('hasta') === hasta,
+    );
+  const rankingPedidos = () => http.match((solicitud) => solicitud.url === URL_RANKING);
   const comentariosPedidos = () => http.match((solicitud) => solicitud.url === URL_COMENTARIOS);
   const lineas = () => fixture.nativeElement.querySelector('app-grafico-lineas');
   const texto = () => fixture.nativeElement.textContent as string;
@@ -106,6 +115,7 @@ describe('DashboardEstadisticas', () => {
     await abrir('2026-03-31T15:00:00Z');
     pedir('2026-03-02', '2026-03-31').flush([LAURA, JUAN]);
     pedirComentarios('2026-03-02', '2026-03-31').flush([]);
+    pedirRanking('2026-03-02', '2026-03-31').flush([]);
     await actualizar();
     await vi.waitFor(() => expect(graficos).toHaveLength(1));
 
@@ -365,6 +375,123 @@ describe('DashboardEstadisticas', () => {
     it('[I] al salir de la pantalla cancela el pedido en curso', async () => {
       await abrirConPublicaciones();
       const solicitud = pedirComentarios('2026-03-02', '2026-03-31');
+
+      fixture.destroy();
+
+      expect(solicitud.cancelled).toBe(true);
+    });
+  });
+
+  describe('comentarios por publicación', () => {
+    const LARGO = 'Milanesas de berenjena al horno con salsa de tomate casera';
+    const FILAS = [
+      { publicacion: 'p1', titulo: LARGO, cantidad: 7 },
+      { publicacion: 'p2', titulo: 'Tarta', cantidad: 2 },
+    ];
+    const abrirConOtras = async () => {
+      await abrir('2026-03-31T15:00:00Z');
+      pedir('2026-03-02', '2026-03-31').flush([]);
+      pedirComentarios('2026-03-02', '2026-03-31').flush([]);
+    };
+
+    it('[I] al abrir pide el ranking de los últimos 30 días hasta hoy', async () => {
+      await abrirConOtras();
+
+      const solicitud = pedirRanking('2026-03-02', '2026-03-31');
+
+      expect(solicitud.request.method).toBe('GET');
+      solicitud.flush([]);
+    });
+
+    it('[O] dibuja barras horizontales con los títulos largos cortados', async () => {
+      await abrirConOtras();
+      pedirRanking('2026-03-02', '2026-03-31').flush(FILAS);
+      await actualizar();
+      await vi.waitFor(() => expect(graficos).toHaveLength(1));
+
+      const { type, data, options } = graficos[0].config;
+      expect(type).toBe('bar');
+      expect(options.indexAxis).toBe('y');
+      expect(data.labels).toEqual(['Milanesas de berenjena al hor…', 'Tarta']);
+      expect(data.datasets[0].data).toEqual([7, 2]);
+    });
+
+    it('[O] al pasar el mouse el tooltip muestra el título completo', async () => {
+      await abrirConOtras();
+      pedirRanking('2026-03-02', '2026-03-31').flush(FILAS);
+      await actualizar();
+      await vi.waitFor(() => expect(graficos).toHaveLength(1));
+
+      const titulo = graficos[0].config.options.plugins!.tooltip!.callbacks.title;
+
+      expect(titulo([{ dataIndex: 0, label: 'cortado' }])).toBe(LARGO);
+      expect(titulo([{ dataIndex: 1, label: 'Tarta' }])).toBe('Tarta');
+    });
+
+    it('[Z] sin publicaciones comentadas muestra el mensaje y no el gráfico', async () => {
+      await abrirConOtras();
+      pedirRanking('2026-03-02', '2026-03-31').flush([]);
+      await actualizar();
+
+      expect(texto()).toContain('No hay publicaciones con comentarios en el rango elegido.');
+      expect(graficos).toHaveLength(0);
+    });
+
+    it('[E] si falla, Reintentar vuelve a pedir sólo el ranking', async () => {
+      await abrirConOtras();
+      pedirRanking('2026-03-02', '2026-03-31').flush({}, { status: 500, statusText: 'Error' });
+      await actualizar();
+      const reintentar = Array.from(
+        fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
+      ).find((boton) => boton.textContent?.includes('Reintentar'))!;
+
+      reintentar.click();
+      await actualizar();
+
+      expect(pedidos()).toHaveLength(0);
+      expect(comentariosPedidos()).toHaveLength(0);
+      pedirRanking('2026-03-02', '2026-03-31').flush(FILAS);
+    });
+
+    it('[O] al cambiar la fecha vuelve a pedir el ranking con el rango nuevo', async () => {
+      await abrirConOtras();
+      pedirRanking('2026-03-02', '2026-03-31').flush([]);
+      await actualizar();
+
+      await escribir(1, '2026-03-15');
+
+      pedir('2026-03-02', '2026-03-15').flush([]);
+      pedirComentarios('2026-03-02', '2026-03-15').flush([]);
+      const solicitud = pedirRanking('2026-03-02', '2026-03-15');
+      expect(solicitud.request.params.get('hasta')).toBe('2026-03-15');
+      solicitud.flush([]);
+    });
+
+    it('[S] si cambia el rango con un pedido en curso, cancela el anterior', async () => {
+      await abrirConOtras();
+      const primero = pedirRanking('2026-03-02', '2026-03-31');
+
+      await escribir(0, '2026-03-20');
+
+      expect(primero.cancelled).toBe(true);
+      pedir('2026-03-20', '2026-03-31').flush([]);
+      pedirComentarios('2026-03-20', '2026-03-31').flush([]);
+      pedirRanking('2026-03-20', '2026-03-31').flush([]);
+    });
+
+    it('[E] con un rango inválido no pide el ranking', async () => {
+      await abrirConOtras();
+      pedirRanking('2026-03-02', '2026-03-31').flush([]);
+      await actualizar();
+
+      await escribir(0, '2026-04-05');
+
+      expect(rankingPedidos()).toHaveLength(0);
+    });
+
+    it('[I] al salir de la pantalla cancela el pedido en curso', async () => {
+      await abrirConOtras();
+      const solicitud = pedirRanking('2026-03-02', '2026-03-31');
 
       fixture.destroy();
 
