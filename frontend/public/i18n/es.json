@@ -345,6 +345,10 @@
     "rango_invalido": "La fecha desde no puede ser posterior a la fecha hasta.",
     "rango_largo": "El rango no puede superar 366 días.",
     "error_cargar": "No pudimos cargar las estadísticas.",
-    "reintentar": "Reintentar"
+    "reintentar": "Reintentar",
+    "comentarios_por_dia": "Comentarios por día",
+    "serie_comentarios": "Comentarios",
+    "descripcion_comentarios": "Gráfico de líneas con la cantidad de comentarios de cada día del rango elegido",
+    "vacio_comentarios": "No hay comentarios en el rango elegido."
   }
 }

@@ -345,6 +345,10 @@
     "rango_invalido": "The from date cannot be later than the to date.",
     "rango_largo": "The range cannot exceed 366 days.",
     "error_cargar": "We could not load the statistics.",
-    "reintentar": "Try again"
+    "reintentar": "Try again",
+    "comentarios_por_dia": "Comments per day",
+    "serie_comentarios": "Comments",
+    "descripcion_comentarios": "Line chart with the number of comments for each day in the selected range",
+    "vacio_comentarios": "There are no comments in the selected range."
   }
 }

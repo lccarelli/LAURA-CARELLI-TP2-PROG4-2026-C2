@@ -1,4 +1,4 @@
-import { diasDelRango, hoyEnBuenosAires, sumarDias } from './fechas';
+import { diasDelRango, etiquetaDeDia, hoyEnBuenosAires, sumarDias } from './fechas';
 
 describe('hoyEnBuenosAires', () => {
   it('[O] a mediodía UTC devuelve el mismo día', () => {
@@ -47,5 +47,19 @@ describe('diasDelRango', () => {
 
   it('[B] un año completo con bisiesto son 366 días', () => {
     expect(diasDelRango('2028-01-01', '2028-12-31')).toBe(366);
+  });
+});
+
+describe('etiquetaDeDia', () => {
+  it.each([
+    ['es', '2026-03-10', '10 mar'],
+    ['en', '2026-03-10', 'Mar 10'],
+    ['es', '2026-01-01', '1 ene'],
+  ])('[O] en %s el %s se muestra %s', (idioma, fecha, esperado) => {
+    expect(etiquetaDeDia(fecha, idioma)).toBe(esperado);
+  });
+
+  it('[I] sin idioma usa español', () => {
+    expect(etiquetaDeDia('2026-03-10')).toBe('10 mar');
   });
 });

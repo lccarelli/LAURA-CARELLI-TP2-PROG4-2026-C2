@@ -13,4 +13,9 @@ export class EstadisticasController {
   publicacionesPorUsuario(@Query() { desde, hasta }: RangoFechasDto) {
     return this.estadisticasService.publicacionesPorUsuario(desde, hasta);
   }
+
+  @Get('comentarios-por-dia')
+  comentariosPorDia(@Query() { desde, hasta }: RangoFechasDto) {
+    return this.estadisticasService.comentariosPorDia(desde, hasta);
+  }
 }
