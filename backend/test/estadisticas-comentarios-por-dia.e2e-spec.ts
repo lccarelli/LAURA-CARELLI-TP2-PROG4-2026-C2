@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import request from 'supertest';
 import { crearApp, limpiarBase } from './ayudas/app.js';
 import { registrarYObtenerSesion } from './ayudas/datos.js';
+import { probarRangoYPermisos } from './ayudas/rango.js';
 import { tokenDeAdministrador } from './ayudas/sesiones.js';
 import { Comentario } from '../src/publicaciones/schemas/comentario.schema.js';
 import { Publicacion } from '../src/publicaciones/schemas/publicacion.schema.js';
@@ -178,50 +179,17 @@ describe('GET /estadisticas/comentarios-por-dia', () => {
     expect(body).toEqual([{ fecha: '2026-03-10', cantidad: 1 }]);
   });
 
-  it('[B] un rango de 366 días devuelve 366 filas y uno de 367 se rechaza', async () => {
+  it('[B] un rango de 366 días devuelve 366 filas', async () => {
     const { body } = await consultar(
       'desde=2025-03-01&hasta=2026-03-01',
     ).expect(200);
+
     expect(body).toHaveLength(366);
-
-    const rechazo = await consultar('desde=2025-02-28&hasta=2026-03-01').expect(
-      400,
-    );
-    expect(rechazo.body.codigo).toBe('RANGO_DEMASIADO_LARGO');
   });
 
-  it('[E] desde posterior a hasta responde 400 RANGO_INVALIDO', async () => {
-    const { body } = await consultar(
-      'desde=2026-03-31&hasta=2026-03-01',
-    ).expect(400);
-
-    expect(body.codigo).toBe('RANGO_INVALIDO');
-  });
-
-  it.each([
-    ['sin parámetros', ''],
-    ['sin hasta', 'desde=2026-03-01'],
-    ['fecha inexistente', 'desde=2026-02-30&hasta=2026-03-31'],
-    ['parámetro de más', 'desde=2026-03-01&hasta=2026-03-31&usuario=1'],
-  ])('[E] %s responde 400 DATOS_INVALIDOS', async (_caso, consulta) => {
-    const { body } = await consultar(consulta).expect(400);
-
-    expect(body.codigo).toBe('DATOS_INVALIDOS');
-  });
-
-  it('[S] una persona común recibe 403 NO_ES_ADMINISTRADOR', async () => {
-    const { body } = await consultar(undefined, tokenComun).expect(403);
-
-    expect(body.codigo).toBe('NO_ES_ADMINISTRADOR');
-  });
-
-  it('[S] sin token responde 401 TOKEN_AUSENTE', async () => {
-    const { body } = await request(app.getHttpServer())
-      .get(
-        '/estadisticas/comentarios-por-dia?desde=2026-03-10&hasta=2026-03-12',
-      )
-      .expect(401);
-
-    expect(body.codigo).toBe('TOKEN_AUSENTE');
-  });
+  probarRangoYPermisos('/estadisticas/comentarios-por-dia', () => ({
+    app,
+    tokenComun,
+    consultar,
+  }));
 });
