@@ -65,10 +65,24 @@ export class Sesion {
 
   private pasar() {
     this.ahora.set(Date.now());
+    if (this.redirectALoginConTokenBorrado()) {
+      return;
+    }
+
     if (this.segundosRestantes() === 0) {
       this.auth.salir('api.SESION_VENCIDA');
       this.router.navigateByUrl('/login');
     }
+  }
+
+  private redirectALoginConTokenBorrado() {
+    const habiaSesion = this.auth.token() !== null;
+    this.auth.sincronizar();
+    if (habiaSesion && this.auth.token() === null) {
+      this.router.navigateByUrl('/login');
+      return true;
+    }
+    return false;
   }
 
   private verificar() {
