@@ -5,12 +5,15 @@ import { Subscription } from 'rxjs';
 import { Aviso } from '../../componentes/aviso/aviso';
 import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
 import { GraficoBarras } from '../../componentes/grafico-barras/grafico-barras';
-import { PublicacionesDeUsuario } from '../../interfaces/estadisticas';
+import { GraficoLineas } from '../../componentes/grafico-lineas/grafico-lineas';
+import { ComentariosDelDia, PublicacionesDeUsuario } from '../../interfaces/estadisticas';
 import { EstadisticasApi } from '../../servicios/estadisticas/estadisticas';
+import { Idioma } from '../../servicios/idioma/idioma';
 import { mensajeDeApi } from '../../utilidades/errores';
 import {
   DIAS_MAXIMOS_DEL_RANGO,
   diasDelRango,
+  etiquetaDeDia,
   hoyEnBuenosAires,
   sumarDias,
 } from '../../utilidades/fechas';
@@ -18,19 +21,24 @@ import {
 const DIAS_POR_DEFECTO = 30;
 
 @Component({
-  imports: [Aviso, CubreplatoLoading, GraficoBarras, TranslatePipe],
+  imports: [Aviso, CubreplatoLoading, GraficoBarras, GraficoLineas, TranslatePipe],
   selector: 'app-dashboard-estadisticas',
   templateUrl: './dashboard-estadisticas.html',
 })
 export class DashboardEstadisticas implements OnInit, OnDestroy {
   private api = inject(EstadisticasApi);
+  private idioma = inject(Idioma);
   private pedido?: Subscription;
+  private pedidoComentarios?: Subscription;
 
   readonly hasta = signal(hoyEnBuenosAires());
   readonly desde = signal(sumarDias(this.hasta(), 1 - DIAS_POR_DEFECTO));
   readonly datos = signal<PublicacionesDeUsuario[] | null>(null);
   readonly cargando = signal(false);
   readonly mensajeError = signal<string | null>(null);
+  readonly comentarios = signal<ComentariosDelDia[] | null>(null);
+  readonly cargandoComentarios = signal(false);
+  readonly mensajeErrorComentarios = signal<string | null>(null);
 
   readonly errorDeRango = computed(() => {
     const desde = this.desde();
@@ -45,6 +53,17 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
   });
   readonly etiquetas = computed(() => this.datos()?.map((fila) => `@${fila.nombreUsuario}`) ?? []);
   readonly valores = computed(() => this.datos()?.map((fila) => fila.cantidad) ?? []);
+  readonly dias = computed(() =>
+    (this.comentarios() ?? []).map((dia) =>
+      etiquetaDeDia(dia.fecha, this.idioma.actual() ?? undefined),
+    ),
+  );
+  readonly comentariosPorDia = computed(() =>
+    (this.comentarios() ?? []).map((dia) => dia.cantidad),
+  );
+  readonly hayComentarios = computed(() =>
+    this.comentariosPorDia().some((cantidad) => cantidad > 0),
+  );
 
   ngOnInit() {
     this.cargar();
@@ -52,6 +71,7 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.pedido?.unsubscribe();
+    this.pedidoComentarios?.unsubscribe();
   }
 
   cambiarDesde(valor: string) {
@@ -65,6 +85,11 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
   }
 
   cargar() {
+    this.cargarPublicaciones();
+    this.cargarComentarios();
+  }
+
+  cargarPublicaciones() {
     this.pedido?.unsubscribe();
     if (this.errorDeRango()) {
       this.cargando.set(false);
@@ -81,6 +106,27 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
       error: (error: HttpErrorResponse) => {
         this.mensajeError.set(mensajeDeApi(error));
         this.cargando.set(false);
+      },
+    });
+  }
+
+  cargarComentarios() {
+    this.pedidoComentarios?.unsubscribe();
+    if (this.errorDeRango()) {
+      this.cargandoComentarios.set(false);
+      return;
+    }
+
+    this.cargandoComentarios.set(true);
+    this.mensajeErrorComentarios.set(null);
+    this.pedidoComentarios = this.api.comentariosPorDia(this.desde(), this.hasta()).subscribe({
+      next: (dias) => {
+        this.comentarios.set(dias);
+        this.cargandoComentarios.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.mensajeErrorComentarios.set(mensajeDeApi(error));
+        this.cargandoComentarios.set(false);
       },
     });
   }

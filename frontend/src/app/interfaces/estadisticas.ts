@@ -3,3 +3,8 @@ export interface PublicacionesDeUsuario {
   nombreUsuario: string;
   cantidad: number;
 }
+
+export interface ComentariosDelDia {
+  fecha: string;
+  cantidad: number;
+}

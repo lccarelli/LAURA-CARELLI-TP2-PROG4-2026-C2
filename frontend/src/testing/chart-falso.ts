@@ -1,9 +1,14 @@
 export interface ConfiguracionFalsa {
   type: string;
-  options: { indexAxis: string };
+  options: { indexAxis?: string; interaction?: { mode: string; intersect: boolean } };
   data: {
     labels: string[];
-    datasets: { label: string; data: number[]; backgroundColor: string }[];
+    datasets: {
+      label: string;
+      data: number[];
+      backgroundColor: string;
+      borderColor?: string;
+    }[];
   };
 }
 
@@ -23,6 +28,9 @@ class ChartFalso {
 export const moduloFalso = {
   Chart: ChartFalso,
   BarController: {},
+  LineController: {},
+  LineElement: {},
+  PointElement: {},
   BarElement: {},
   CategoryScale: {},
   LinearScale: {},

@@ -9,6 +9,7 @@ import { DashboardEstadisticas } from './dashboard-estadisticas';
 vi.mock('chart.js', async () => (await import('../../../testing/chart-falso')).moduloFalso);
 
 const URL = `${environment.API_URL}/estadisticas/publicaciones-por-usuario`;
+const URL_COMENTARIOS = `${environment.API_URL}/estadisticas/comentarios-por-dia`;
 const LAURA = { usuario: 'u1', nombreUsuario: 'laura_c', cantidad: 3 };
 const JUAN = { usuario: 'u2', nombreUsuario: 'juan_p', cantidad: 1 };
 
@@ -24,6 +25,15 @@ describe('DashboardEstadisticas', () => {
         solicitud.params.get('desde') === desde &&
         solicitud.params.get('hasta') === hasta,
     );
+  const pedirComentarios = (desde: string, hasta: string) =>
+    http.expectOne(
+      (solicitud) =>
+        solicitud.url === URL_COMENTARIOS &&
+        solicitud.params.get('desde') === desde &&
+        solicitud.params.get('hasta') === hasta,
+    );
+  const comentariosPedidos = () => http.match((solicitud) => solicitud.url === URL_COMENTARIOS);
+  const lineas = () => fixture.nativeElement.querySelector('app-grafico-lineas');
   const texto = () => fixture.nativeElement.textContent as string;
   const campo = (indice: number) =>
     fixture.nativeElement.querySelectorAll('input[type="date"]')[indice] as HTMLInputElement;
@@ -95,6 +105,7 @@ describe('DashboardEstadisticas', () => {
   it('[O] con datos muestra el gráfico con una barra por persona', async () => {
     await abrir('2026-03-31T15:00:00Z');
     pedir('2026-03-02', '2026-03-31').flush([LAURA, JUAN]);
+    pedirComentarios('2026-03-02', '2026-03-31').flush([]);
     await actualizar();
     await vi.waitFor(() => expect(graficos).toHaveLength(1));
 
@@ -235,5 +246,129 @@ describe('DashboardEstadisticas', () => {
     fixture.destroy();
 
     expect(solicitud.cancelled).toBe(true);
+  });
+
+  describe('comentarios por día', () => {
+    const DIAS = [
+      { fecha: '2026-03-10', cantidad: 2 },
+      { fecha: '2026-03-11', cantidad: 0 },
+      { fecha: '2026-03-12', cantidad: 5 },
+    ];
+    const abrirConPublicaciones = async () => {
+      await abrir('2026-03-31T15:00:00Z');
+      pedir('2026-03-02', '2026-03-31').flush([]);
+    };
+
+    it('[I] al abrir pide los comentarios de los últimos 30 días hasta hoy', async () => {
+      await abrirConPublicaciones();
+
+      const solicitud = pedirComentarios('2026-03-02', '2026-03-31');
+
+      expect(solicitud.request.method).toBe('GET');
+      solicitud.flush([]);
+    });
+
+    it('[O] con datos dibuja la línea con un punto por día y las etiquetas en español', async () => {
+      await abrirConPublicaciones();
+      pedirComentarios('2026-03-02', '2026-03-31').flush(DIAS);
+      await actualizar();
+      await vi.waitFor(() => expect(graficos).toHaveLength(1));
+
+      expect(graficos[0].config.type).toBe('line');
+      expect(graficos[0].config.data.labels).toEqual(['10 mar', '11 mar', '12 mar']);
+      expect(graficos[0].config.data.datasets[0].data).toEqual([2, 0, 5]);
+    });
+
+    it('[S] mientras cargan muestra el cubreplato y no la línea', async () => {
+      await abrirConPublicaciones();
+      await actualizar();
+
+      expect(fixture.nativeElement.querySelector('app-cubreplato-loading')).not.toBeNull();
+      expect(lineas()).toBeNull();
+      pedirComentarios('2026-03-02', '2026-03-31').flush([]);
+    });
+
+    it('[Z] si todos los días están en cero muestra el mensaje y no la línea', async () => {
+      await abrirConPublicaciones();
+      pedirComentarios('2026-03-02', '2026-03-31').flush([{ fecha: '2026-03-10', cantidad: 0 }]);
+      await actualizar();
+
+      expect(texto()).toContain('No hay comentarios en el rango elegido.');
+      expect(lineas()).toBeNull();
+    });
+
+    it('[E] si falla muestra el aviso, y reintentar vuelve a pedir solo los comentarios', async () => {
+      await abrirConPublicaciones();
+      pedirComentarios('2026-03-02', '2026-03-31').flush(
+        { codigo: 'NO_ES_ADMINISTRADOR' },
+        { status: 403, statusText: 'Forbidden' },
+      );
+      await actualizar();
+
+      expect(texto()).toContain('No pudimos cargar las estadísticas.');
+      const reintentar = Array.from(
+        fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
+      ).find((boton) => boton.textContent?.includes('Reintentar'))!;
+      reintentar.click();
+      await actualizar();
+
+      expect(pedidos()).toHaveLength(0);
+      pedirComentarios('2026-03-02', '2026-03-31').flush(DIAS);
+      await actualizar();
+      expect(texto()).not.toContain('No pudimos cargar las estadísticas.');
+    });
+
+    it('[S] si fallan las publicaciones, los comentarios se muestran igual', async () => {
+      await abrir('2026-03-31T15:00:00Z');
+      pedir('2026-03-02', '2026-03-31').flush({}, { status: 500, statusText: 'Error' });
+      pedirComentarios('2026-03-02', '2026-03-31').flush(DIAS);
+      await actualizar();
+      await vi.waitFor(() => expect(graficos).toHaveLength(1));
+
+      expect(lineas()).not.toBeNull();
+    });
+
+    it('[O] al cambiar la fecha vuelve a pedir los comentarios con el rango nuevo', async () => {
+      await abrirConPublicaciones();
+      pedirComentarios('2026-03-02', '2026-03-31').flush([]);
+      await actualizar();
+
+      await escribir(0, '2026-03-20');
+
+      pedir('2026-03-20', '2026-03-31').flush([]);
+      const solicitud = pedirComentarios('2026-03-20', '2026-03-31');
+      expect(solicitud.request.params.get('desde')).toBe('2026-03-20');
+      solicitud.flush([]);
+    });
+
+    it('[S] si cambia el rango con un pedido en curso, cancela el anterior', async () => {
+      await abrirConPublicaciones();
+      const primero = pedirComentarios('2026-03-02', '2026-03-31');
+
+      await escribir(0, '2026-03-20');
+
+      expect(primero.cancelled).toBe(true);
+      pedir('2026-03-20', '2026-03-31').flush([]);
+      pedirComentarios('2026-03-20', '2026-03-31').flush([]);
+    });
+
+    it('[E] con un rango inválido no pide comentarios', async () => {
+      await abrirConPublicaciones();
+      pedirComentarios('2026-03-02', '2026-03-31').flush([]);
+      await actualizar();
+
+      await escribir(0, '2026-04-05');
+
+      expect(comentariosPedidos()).toHaveLength(0);
+    });
+
+    it('[I] al salir de la pantalla cancela el pedido en curso', async () => {
+      await abrirConPublicaciones();
+      const solicitud = pedirComentarios('2026-03-02', '2026-03-31');
+
+      fixture.destroy();
+
+      expect(solicitud.cancelled).toBe(true);
+    });
   });
 });

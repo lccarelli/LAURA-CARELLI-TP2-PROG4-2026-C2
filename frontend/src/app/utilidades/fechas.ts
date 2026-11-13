@@ -21,3 +21,11 @@ export function sumarDias(fecha: string, dias: number) {
 export function diasDelRango(desde: string, hasta: string) {
   return Math.round((aMilisegundos(hasta) - aMilisegundos(desde)) / MS_POR_DIA) + 1;
 }
+
+export function etiquetaDeDia(fecha: string, idioma = 'es') {
+  return new Intl.DateTimeFormat(idioma, {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(aMilisegundos(fecha));
+}

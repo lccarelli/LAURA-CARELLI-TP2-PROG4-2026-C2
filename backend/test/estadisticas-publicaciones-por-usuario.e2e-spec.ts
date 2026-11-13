@@ -7,6 +7,7 @@ import {
   registrarOtraPersona,
   registrarYObtenerSesion,
 } from './ayudas/datos.js';
+import { probarRangoYPermisos } from './ayudas/rango.js';
 import { tokenDeAdministrador } from './ayudas/sesiones.js';
 import { Publicacion } from '../src/publicaciones/schemas/publicacion.schema.js';
 
@@ -150,51 +151,9 @@ describe('GET /estadisticas/publicaciones-por-usuario', () => {
     expect(body[0].nombreUsuario).toBe('laura_c');
   });
 
-  it('[B] un rango de 366 días se acepta y uno de 367 no', async () => {
-    await consultar('desde=2025-03-01&hasta=2026-03-01').expect(200);
-
-    const { body } = await consultar(
-      'desde=2025-02-28&hasta=2026-03-01',
-    ).expect(400);
-
-    expect(body.codigo).toBe('RANGO_DEMASIADO_LARGO');
-  });
-
-  it('[E] desde posterior a hasta responde 400 RANGO_INVALIDO', async () => {
-    const { body } = await consultar(
-      'desde=2026-03-31&hasta=2026-03-01',
-    ).expect(400);
-
-    expect(body.codigo).toBe('RANGO_INVALIDO');
-  });
-
-  it.each([
-    ['sin parámetros', ''],
-    ['sin hasta', 'desde=2026-03-01'],
-    ['sin desde', 'hasta=2026-03-31'],
-    ['fecha inexistente', 'desde=2026-02-30&hasta=2026-03-31'],
-    ['texto que no es fecha', 'desde=ayer&hasta=hoy'],
-    ['fecha con hora', 'desde=2026-03-01T00:00:00Z&hasta=2026-03-31'],
-    ['parámetro de más', 'desde=2026-03-01&hasta=2026-03-31&usuario=1'],
-  ])('[E] %s responde 400 DATOS_INVALIDOS', async (_caso, consulta) => {
-    const { body } = await consultar(consulta).expect(400);
-
-    expect(body.codigo).toBe('DATOS_INVALIDOS');
-  });
-
-  it('[S] una persona común recibe 403 NO_ES_ADMINISTRADOR', async () => {
-    const { body } = await consultar(undefined, tokenComun).expect(403);
-
-    expect(body.codigo).toBe('NO_ES_ADMINISTRADOR');
-  });
-
-  it('[S] sin token responde 401 TOKEN_AUSENTE', async () => {
-    const { body } = await request(app.getHttpServer())
-      .get(
-        '/estadisticas/publicaciones-por-usuario?desde=2026-03-01&hasta=2026-03-31',
-      )
-      .expect(401);
-
-    expect(body.codigo).toBe('TOKEN_AUSENTE');
-  });
+  probarRangoYPermisos('/estadisticas/publicaciones-por-usuario', () => ({
+    app,
+    tokenComun,
+    consultar,
+  }));
 });
