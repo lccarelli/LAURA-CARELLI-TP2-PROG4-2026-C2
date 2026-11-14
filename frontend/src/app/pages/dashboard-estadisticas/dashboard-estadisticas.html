@@ -26,59 +26,52 @@
     <p class="mensaje-error" role="alert">{{ mensaje | translate }}</p>
   }
 
-  <h2 class="subtitulo">{{ 'estadisticas.publicaciones_por_usuario' | translate }}</h2>
-
-  @if (mensajeError(); as mensaje) {
-    <app-aviso titulo="estadisticas.error_cargar" (cerrar)="mensajeError.set(null)">{{
-      mensaje | translate
-    }}</app-aviso>
-    <button type="button" class="boton-secundario" (click)="cargarPublicaciones()">
-      {{ 'estadisticas.reintentar' | translate }}
-    </button>
-  }
-
-  @if (cargando()) {
-    <app-cubreplato-loading />
-  } @else if (datos(); as filas) {
-    @if (filas.length > 0) {
-      <div class="tarjeta">
-        <app-grafico-barras
-          [etiquetas]="etiquetas()"
-          [valores]="valores()"
-          [serie]="'estadisticas.serie_publicaciones' | translate"
-          [descripcion]="'estadisticas.descripcion_publicaciones' | translate"
-        />
-      </div>
-    } @else {
-      <p class="tarjeta estado-vacio">{{ 'estadisticas.vacio' | translate }}</p>
+  <app-seccion-estadistica
+    titulo="estadisticas.publicaciones_por_usuario"
+    textoVacio="estadisticas.vacio"
+    [carga]="publicaciones"
+    (reintentar)="cargarPublicaciones()"
+  >
+    @if (publicaciones.estado() === 'datos') {
+      <app-grafico-barras
+        [etiquetas]="usuarios()"
+        [valores]="publicacionesPorUsuario()"
+        [serie]="'estadisticas.serie_publicaciones' | translate"
+        [descripcion]="'estadisticas.descripcion_publicaciones' | translate"
+      />
     }
-  }
+  </app-seccion-estadistica>
 
-  <h2 class="subtitulo">{{ 'estadisticas.comentarios_por_dia' | translate }}</h2>
-
-  @if (mensajeErrorComentarios(); as mensaje) {
-    <app-aviso titulo="estadisticas.error_cargar" (cerrar)="mensajeErrorComentarios.set(null)">{{
-      mensaje | translate
-    }}</app-aviso>
-    <button type="button" class="boton-secundario" (click)="cargarComentarios()">
-      {{ 'estadisticas.reintentar' | translate }}
-    </button>
-  }
-
-  @if (cargandoComentarios()) {
-    <app-cubreplato-loading />
-  } @else if (comentarios() !== null) {
-    @if (hayComentarios()) {
-      <div class="tarjeta">
-        <app-grafico-lineas
-          [etiquetas]="dias()"
-          [valores]="comentariosPorDia()"
-          [serie]="'estadisticas.serie_comentarios' | translate"
-          [descripcion]="'estadisticas.descripcion_comentarios' | translate"
-        />
-      </div>
-    } @else {
-      <p class="tarjeta estado-vacio">{{ 'estadisticas.vacio_comentarios' | translate }}</p>
+  <app-seccion-estadistica
+    titulo="estadisticas.comentarios_por_dia"
+    textoVacio="estadisticas.vacio_comentarios"
+    [carga]="comentarios"
+    (reintentar)="cargarComentarios()"
+  >
+    @if (comentarios.estado() === 'datos') {
+      <app-grafico-lineas
+        [etiquetas]="dias()"
+        [valores]="comentariosPorDia()"
+        [serie]="'estadisticas.serie_comentarios' | translate"
+        [descripcion]="'estadisticas.descripcion_comentarios' | translate"
+      />
     }
-  }
+  </app-seccion-estadistica>
+
+  <app-seccion-estadistica
+    titulo="estadisticas.comentarios_por_publicacion"
+    textoVacio="estadisticas.vacio_ranking"
+    [carga]="ranking"
+    (reintentar)="cargarRanking()"
+  >
+    @if (ranking.estado() === 'datos') {
+      <app-grafico-barras
+        [etiquetas]="titulosCortos()"
+        [valores]="comentariosPorPublicacion()"
+        [detalles]="titulos()"
+        [serie]="'estadisticas.serie_comentarios' | translate"
+        [descripcion]="'estadisticas.descripcion_ranking' | translate"
+      />
+    }
+  </app-seccion-estadistica>
 </section>

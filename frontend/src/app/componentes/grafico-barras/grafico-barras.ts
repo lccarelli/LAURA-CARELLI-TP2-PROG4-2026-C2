@@ -35,7 +35,7 @@ export class GraficoBarras extends GraficoBase {
     return cargarChartJs();
   }
 
-  protected configuracion({ etiquetas, valores, serie }: Datos) {
+  protected configuracion({ etiquetas, valores, serie, detalles }: Datos) {
     const tinta = variable('--tema-suave');
     return {
       type: 'bar' as const,
@@ -55,7 +55,15 @@ export class GraficoBarras extends GraficoBase {
           },
           y: { ticks: { color: tinta }, grid: { display: false } },
         },
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (elementos: { dataIndex: number; label: string }[]) =>
+                detalles?.[elementos[0].dataIndex] ?? elementos[0].label,
+            },
+          },
+        },
       },
     };
   }

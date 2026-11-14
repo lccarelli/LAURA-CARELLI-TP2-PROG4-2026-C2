@@ -1,0 +1,24 @@
+<h2 class="subtitulo">{{ titulo() | translate }}</h2>
+
+@if (carga().mensajeError(); as mensaje) {
+  <app-aviso titulo="estadisticas.error_cargar" (cerrar)="carga().mensajeError.set(null)">{{
+    mensaje | translate
+  }}</app-aviso>
+  <button type="button" class="boton-secundario" (click)="reintentar.emit()">
+    {{ 'estadisticas.reintentar' | translate }}
+  </button>
+}
+
+@switch (carga().estado()) {
+  @case ('cargando') {
+    <app-cubreplato-loading />
+  }
+  @case ('vacio') {
+    <p class="tarjeta estado-vacio">{{ textoVacio() | translate }}</p>
+  }
+  @case ('datos') {
+    <div class="tarjeta">
+      <ng-content />
+    </div>
+  }
+}

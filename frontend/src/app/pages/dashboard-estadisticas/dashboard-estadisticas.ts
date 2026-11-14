@@ -1,15 +1,17 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
-import { Aviso } from '../../componentes/aviso/aviso';
-import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
+import { Observable } from 'rxjs';
 import { GraficoBarras } from '../../componentes/grafico-barras/grafico-barras';
 import { GraficoLineas } from '../../componentes/grafico-lineas/grafico-lineas';
-import { ComentariosDelDia, PublicacionesDeUsuario } from '../../interfaces/estadisticas';
+import { SeccionEstadistica } from '../../componentes/seccion-estadistica/seccion-estadistica';
+import {
+  ComentariosDePublicacion,
+  ComentariosDelDia,
+  PublicacionesDeUsuario,
+} from '../../interfaces/estadisticas';
 import { EstadisticasApi } from '../../servicios/estadisticas/estadisticas';
 import { Idioma } from '../../servicios/idioma/idioma';
-import { mensajeDeApi } from '../../utilidades/errores';
+import { Carga } from '../../utilidades/carga';
 import {
   DIAS_MAXIMOS_DEL_RANGO,
   diasDelRango,
@@ -17,28 +19,28 @@ import {
   hoyEnBuenosAires,
   sumarDias,
 } from '../../utilidades/fechas';
+import { acortar } from '../../utilidades/textos';
 
 const DIAS_POR_DEFECTO = 30;
+const LETRAS_DEL_TITULO = 30;
 
 @Component({
-  imports: [Aviso, CubreplatoLoading, GraficoBarras, GraficoLineas, TranslatePipe],
+  imports: [GraficoBarras, GraficoLineas, SeccionEstadistica, TranslatePipe],
   selector: 'app-dashboard-estadisticas',
   templateUrl: './dashboard-estadisticas.html',
 })
 export class DashboardEstadisticas implements OnInit, OnDestroy {
   private api = inject(EstadisticasApi);
   private idioma = inject(Idioma);
-  private pedido?: Subscription;
-  private pedidoComentarios?: Subscription;
 
   readonly hasta = signal(hoyEnBuenosAires());
   readonly desde = signal(sumarDias(this.hasta(), 1 - DIAS_POR_DEFECTO));
-  readonly datos = signal<PublicacionesDeUsuario[] | null>(null);
-  readonly cargando = signal(false);
-  readonly mensajeError = signal<string | null>(null);
-  readonly comentarios = signal<ComentariosDelDia[] | null>(null);
-  readonly cargandoComentarios = signal(false);
-  readonly mensajeErrorComentarios = signal<string | null>(null);
+
+  readonly publicaciones = new Carga<PublicacionesDeUsuario[]>((filas) => filas.length === 0);
+  readonly comentarios = new Carga<ComentariosDelDia[]>((dias) =>
+    dias.every((dia) => dia.cantidad === 0),
+  );
+  readonly ranking = new Carga<ComentariosDePublicacion[]>((filas) => filas.length === 0);
 
   readonly errorDeRango = computed(() => {
     const desde = this.desde();
@@ -51,18 +53,27 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
     }
     return diasDelRango(desde, hasta) > DIAS_MAXIMOS_DEL_RANGO ? 'estadisticas.rango_largo' : null;
   });
-  readonly etiquetas = computed(() => this.datos()?.map((fila) => `@${fila.nombreUsuario}`) ?? []);
-  readonly valores = computed(() => this.datos()?.map((fila) => fila.cantidad) ?? []);
+
+  readonly usuarios = computed(() =>
+    (this.publicaciones.datos() ?? []).map((f) => `@${f.nombreUsuario}`),
+  );
+  readonly publicacionesPorUsuario = computed(() =>
+    (this.publicaciones.datos() ?? []).map((fila) => fila.cantidad),
+  );
   readonly dias = computed(() =>
-    (this.comentarios() ?? []).map((dia) =>
+    (this.comentarios.datos() ?? []).map((dia) =>
       etiquetaDeDia(dia.fecha, this.idioma.actual() ?? undefined),
     ),
   );
   readonly comentariosPorDia = computed(() =>
-    (this.comentarios() ?? []).map((dia) => dia.cantidad),
+    (this.comentarios.datos() ?? []).map((dia) => dia.cantidad),
   );
-  readonly hayComentarios = computed(() =>
-    this.comentariosPorDia().some((cantidad) => cantidad > 0),
+  readonly titulos = computed(() => (this.ranking.datos() ?? []).map((fila) => fila.titulo));
+  readonly titulosCortos = computed(() =>
+    this.titulos().map((titulo) => acortar(titulo, LETRAS_DEL_TITULO)),
+  );
+  readonly comentariosPorPublicacion = computed(() =>
+    (this.ranking.datos() ?? []).map((fila) => fila.cantidad),
   );
 
   ngOnInit() {
@@ -70,8 +81,9 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.pedido?.unsubscribe();
-    this.pedidoComentarios?.unsubscribe();
+    this.publicaciones.detener();
+    this.comentarios.detener();
+    this.ranking.detener();
   }
 
   cambiarDesde(valor: string) {
@@ -87,47 +99,28 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
   cargar() {
     this.cargarPublicaciones();
     this.cargarComentarios();
+    this.cargarRanking();
   }
 
   cargarPublicaciones() {
-    this.pedido?.unsubscribe();
-    if (this.errorDeRango()) {
-      this.cargando.set(false);
-      return;
-    }
-
-    this.cargando.set(true);
-    this.mensajeError.set(null);
-    this.pedido = this.api.publicacionesPorUsuario(this.desde(), this.hasta()).subscribe({
-      next: (datos) => {
-        this.datos.set(datos);
-        this.cargando.set(false);
-      },
-      error: (error: HttpErrorResponse) => {
-        this.mensajeError.set(mensajeDeApi(error));
-        this.cargando.set(false);
-      },
-    });
+    this.pedir(this.publicaciones, () =>
+      this.api.publicacionesPorUsuario(this.desde(), this.hasta()),
+    );
   }
 
   cargarComentarios() {
-    this.pedidoComentarios?.unsubscribe();
+    this.pedir(this.comentarios, () => this.api.comentariosPorDia(this.desde(), this.hasta()));
+  }
+
+  cargarRanking() {
+    this.pedir(this.ranking, () => this.api.comentariosPorPublicacion(this.desde(), this.hasta()));
+  }
+
+  private pedir<T>(carga: Carga<T>, origen: () => Observable<T>) {
     if (this.errorDeRango()) {
-      this.cargandoComentarios.set(false);
+      carga.detener();
       return;
     }
-
-    this.cargandoComentarios.set(true);
-    this.mensajeErrorComentarios.set(null);
-    this.pedidoComentarios = this.api.comentariosPorDia(this.desde(), this.hasta()).subscribe({
-      next: (dias) => {
-        this.comentarios.set(dias);
-        this.cargandoComentarios.set(false);
-      },
-      error: (error: HttpErrorResponse) => {
-        this.mensajeErrorComentarios.set(mensajeDeApi(error));
-        this.cargandoComentarios.set(false);
-      },
-    });
+    carga.cargar(origen());
   }
 }

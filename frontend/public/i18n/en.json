@@ -349,6 +349,9 @@
     "comentarios_por_dia": "Comments per day",
     "serie_comentarios": "Comments",
     "descripcion_comentarios": "Line chart with the number of comments for each day in the selected range",
-    "vacio_comentarios": "There are no comments in the selected range."
+    "vacio_comentarios": "There are no comments in the selected range.",
+    "comentarios_por_publicacion": "Most commented posts",
+    "descripcion_ranking": "Bar chart with the 10 posts that received the most comments in the selected range",
+    "vacio_ranking": "There are no commented posts in the selected range."
   }
 }

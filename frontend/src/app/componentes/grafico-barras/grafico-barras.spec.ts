@@ -35,4 +35,25 @@ describe('GraficoBarras', () => {
     expect(caja.style.height).toBe('29rem');
     await banco.dibujados(2);
   });
+
+  it('[O] sin detalles el tooltip muestra la etiqueta de la barra', async () => {
+    banco.poner(['@laura_c'], [3]);
+
+    await banco.dibujados(1);
+
+    const titulo = graficos[0].config.options.plugins!.tooltip!.callbacks.title;
+    expect(titulo([{ dataIndex: 0, label: '@laura_c' }])).toBe('@laura_c');
+  });
+
+  it('[O] con detalles el tooltip muestra el texto completo de cada barra', async () => {
+    banco.fixture().componentRef.setInput('detalles', ['Título completo de la publicación']);
+    banco.poner(['Título compl…'], [3]);
+
+    await banco.dibujados(1);
+
+    const titulo = graficos[0].config.options.plugins!.tooltip!.callbacks.title;
+    expect(titulo([{ dataIndex: 0, label: 'Título compl…' }])).toBe(
+      'Título completo de la publicación',
+    );
+  });
 });
