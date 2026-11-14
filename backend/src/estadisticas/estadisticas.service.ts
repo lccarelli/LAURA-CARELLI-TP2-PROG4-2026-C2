@@ -1,10 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { TIPOS_PUBLICACION } from '../publicaciones/dto/crear-publicacion.dto.js';
 import { EstadisticasRepositorio } from './estadisticas.repositorio.js';
 import { diasDelRango, limitesDelRango } from './rango.js';
 
 export type PublicacionesDeUsuario = {
   usuario: string;
   nombreUsuario: string;
+  cantidad: number;
+};
+
+export type PublicacionesDeTipo = {
+  tipo: string;
   cantidad: number;
 };
 
@@ -32,6 +38,19 @@ export class EstadisticasService {
     const { inicio, fin } = limitesDelRango(desde, hasta);
     const filas = await this.estadisticas.publicacionesPorUsuario(inicio, fin);
     return filas.map((fila) => ({ ...fila, usuario: fila.usuario.toString() }));
+  }
+
+  async publicacionesPorTipo(
+    desde: string,
+    hasta: string,
+  ): Promise<PublicacionesDeTipo[]> {
+    const { inicio, fin } = limitesDelRango(desde, hasta);
+    const filas = await this.estadisticas.publicacionesPorTipo(inicio, fin);
+    const porTipo = new Map(filas.map((fila) => [fila.tipo, fila.cantidad]));
+    return TIPOS_PUBLICACION.map((tipo) => ({
+      tipo,
+      cantidad: porTipo.get(tipo) ?? 0,
+    }));
   }
 
   async comentariosPorPublicacion(

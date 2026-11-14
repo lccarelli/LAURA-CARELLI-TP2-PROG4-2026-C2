@@ -9,6 +9,7 @@ import {
 describe('EstadisticasService', () => {
   const repositorio = {
     publicacionesPorUsuario: vi.fn(),
+    publicacionesPorTipo: vi.fn(),
     comentariosPorPublicacion: vi.fn(),
     comentariosPorDia: vi.fn(),
   };
@@ -16,6 +17,7 @@ describe('EstadisticasService', () => {
 
   const metodos = [
     ['publicacionesPorUsuario'],
+    ['publicacionesPorTipo'],
     ['comentariosPorPublicacion'],
     ['comentariosPorDia'],
   ] as const;
@@ -23,6 +25,7 @@ describe('EstadisticasService', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     repositorio.publicacionesPorUsuario.mockResolvedValue([]);
+    repositorio.publicacionesPorTipo.mockResolvedValue([]);
     repositorio.comentariosPorPublicacion.mockResolvedValue([]);
     repositorio.comentariosPorDia.mockResolvedValue([]);
     servicio = new EstadisticasService(
@@ -71,6 +74,48 @@ describe('EstadisticasService', () => {
       expect(filas).toEqual([
         { usuario: String(id), nombreUsuario: 'laura_c', cantidad: 2 },
       ]);
+    });
+  });
+
+  describe('publicacionesPorTipo', () => {
+    it('[O] devuelve siempre los tres tipos, en el mismo orden, con la cantidad de cada uno', async () => {
+      repositorio.publicacionesPorTipo.mockResolvedValue([
+        { tipo: 'experiencia', cantidad: 5 },
+        { tipo: 'receta', cantidad: 2 },
+      ]);
+
+      const filas = await servicio.publicacionesPorTipo(
+        '2026-03-01',
+        '2026-03-31',
+      );
+
+      expect(filas).toEqual([
+        { tipo: 'receta', cantidad: 2 },
+        { tipo: 'tip', cantidad: 0 },
+        { tipo: 'experiencia', cantidad: 5 },
+      ]);
+    });
+
+    it('[Z] sin publicaciones devuelve los tres tipos en cero', async () => {
+      const filas = await servicio.publicacionesPorTipo(
+        '2026-03-01',
+        '2026-03-31',
+      );
+
+      expect(filas.map((fila) => fila.cantidad)).toEqual([0, 0, 0]);
+    });
+
+    it('[S] ignora un tipo que no existe', async () => {
+      repositorio.publicacionesPorTipo.mockResolvedValue([
+        { tipo: 'otro', cantidad: 9 },
+      ]);
+
+      const filas = await servicio.publicacionesPorTipo(
+        '2026-03-01',
+        '2026-03-31',
+      );
+
+      expect(filas).toHaveLength(3);
     });
   });
 

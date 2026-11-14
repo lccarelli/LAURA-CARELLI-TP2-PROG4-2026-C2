@@ -19,6 +19,11 @@ export class EstadisticasController {
     return this.estadisticasService.comentariosPorDia(desde, hasta);
   }
 
+  @Get('publicaciones-por-tipo')
+  publicacionesPorTipo(@Query() { desde, hasta }: RangoFechasDto) {
+    return this.estadisticasService.publicacionesPorTipo(desde, hasta);
+  }
+
   @Get('comentarios-por-publicacion')
   comentariosPorPublicacion(@Query() { desde, hasta }: RangoFechasDto) {
     return this.estadisticasService.comentariosPorPublicacion(desde, hasta);

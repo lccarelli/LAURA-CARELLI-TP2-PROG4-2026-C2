@@ -14,3 +14,8 @@ export interface ComentariosDePublicacion {
   titulo: string;
   cantidad: number;
 }
+
+export interface PublicacionesDeTipo {
+  tipo: string;
+  cantidad: number;
+}

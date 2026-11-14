@@ -2,30 +2,35 @@ import { Type } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GraficoBase } from '../app/componentes/grafico-base';
 import { Tema } from '../app/servicios/tema/tema';
-import { graficos } from './chart-falso';
+import { ConfiguracionFalsa, graficos } from './chart-falso';
 
 export interface BancoDeGrafico {
+  variable: string;
   fixture: () => ComponentFixture<GraficoBase>;
   poner: (etiquetas: string[], valores: number[]) => void;
   dibujados: (cantidad: number) => Promise<void>;
 }
 
-export function prepararBancoDeGrafico(componente: Type<GraficoBase>): BancoDeGrafico {
+export function prepararBancoDeGrafico(
+  componente: Type<GraficoBase>,
+  variable = '--tema-serie-1',
+): BancoDeGrafico {
   let fixture: ComponentFixture<GraficoBase>;
 
   beforeEach(async () => {
     graficos.length = 0;
     localStorage.clear();
-    document.documentElement.style.setProperty('--tema-serie-1', '#112233');
+    document.documentElement.style.setProperty(variable, '#112233');
     await TestBed.configureTestingModule({ imports: [componente] }).compileComponents();
     fixture = TestBed.createComponent(componente);
     fixture.componentRef.setInput('serie', 'Serie de prueba');
     fixture.componentRef.setInput('descripcion', 'Descripción del gráfico');
   });
 
-  afterEach(() => document.documentElement.style.removeProperty('--tema-serie-1'));
+  afterEach(() => document.documentElement.style.removeProperty(variable));
 
   return {
+    variable,
     fixture: () => fixture,
     poner: (etiquetas, valores) => {
       fixture.componentRef.setInput('etiquetas', etiquetas);
@@ -39,8 +44,11 @@ export function prepararBancoDeGrafico(componente: Type<GraficoBase>): BancoDeGr
 }
 
 export function pruebasComunesDeGrafico(
-  { fixture, poner, dibujados }: BancoDeGrafico,
-  esperado: { tipo: string; colorEn: 'backgroundColor' | 'borderColor' },
+  { variable, fixture, poner, dibujados }: BancoDeGrafico,
+  esperado: {
+    tipo: string;
+    colorDe: (serie: ConfiguracionFalsa['data']['datasets'][number]) => unknown;
+  },
 ) {
   it('[O] dibuja el tipo de gráfico con las etiquetas, los valores y la serie', async () => {
     poner(['A', 'B'], [3, 1]);
@@ -59,7 +67,7 @@ export function pruebasComunesDeGrafico(
 
     await dibujados(1);
 
-    expect(graficos[0].config.data.datasets[0][esperado.colorEn]).toBe('#112233');
+    expect(esperado.colorDe(graficos[0].config.data.datasets[0])).toBe('#112233');
   });
 
   it('[O] el lienzo se describe para lectores de pantalla', async () => {
@@ -88,11 +96,11 @@ export function pruebasComunesDeGrafico(
     poner(['A'], [3]);
     await dibujados(1);
 
-    document.documentElement.style.setProperty('--tema-serie-1', '#aabbcc');
+    document.documentElement.style.setProperty(variable, '#aabbcc');
     TestBed.inject(Tema).alternar();
     await dibujados(2);
 
-    expect(graficos[1].config.data.datasets[0][esperado.colorEn]).toBe('#aabbcc');
+    expect(esperado.colorDe(graficos[1].config.data.datasets[0])).toBe('#aabbcc');
   });
 
   it('[I] al salir de la pantalla destruye el gráfico', async () => {

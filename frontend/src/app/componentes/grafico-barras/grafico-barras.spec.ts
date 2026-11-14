@@ -10,7 +10,7 @@ vi.mock('chart.js', async () => (await import('../../../testing/chart-falso')).m
 describe('GraficoBarras', () => {
   const banco = prepararBancoDeGrafico(GraficoBarras);
 
-  pruebasComunesDeGrafico(banco, { tipo: 'bar', colorEn: 'backgroundColor' });
+  pruebasComunesDeGrafico(banco, { tipo: 'bar', colorDe: (serie) => serie.backgroundColor });
 
   it('[O] las barras son horizontales para que los nombres largos se lean', async () => {
     banco.poner(['@laura_c'], [3]);
@@ -41,7 +41,7 @@ describe('GraficoBarras', () => {
 
     await banco.dibujados(1);
 
-    const titulo = graficos[0].config.options.plugins!.tooltip!.callbacks.title;
+    const titulo = graficos[0].config.options.plugins!.tooltip!.callbacks.title!;
     expect(titulo([{ dataIndex: 0, label: '@laura_c' }])).toBe('@laura_c');
   });
 
@@ -51,7 +51,7 @@ describe('GraficoBarras', () => {
 
     await banco.dibujados(1);
 
-    const titulo = graficos[0].config.options.plugins!.tooltip!.callbacks.title;
+    const titulo = graficos[0].config.options.plugins!.tooltip!.callbacks.title!;
     expect(titulo([{ dataIndex: 0, label: 'Título compl…' }])).toBe(
       'Título completo de la publicación',
     );

@@ -4,8 +4,12 @@ export interface ConfiguracionFalsa {
     indexAxis?: string;
     interaction?: { mode: string; intersect: boolean };
     plugins?: {
+      legend?: { position?: string };
       tooltip?: {
-        callbacks: { title: (elementos: { dataIndex: number; label: string }[]) => string };
+        callbacks: {
+          title?: (elementos: { dataIndex: number; label: string }[]) => string;
+          label?: (elemento: { label: string; parsed: number }) => string;
+        };
       };
     };
   };
@@ -14,8 +18,9 @@ export interface ConfiguracionFalsa {
     datasets: {
       label: string;
       data: number[];
-      backgroundColor: string;
+      backgroundColor: string | string[];
       borderColor?: string;
+      borderWidth?: number;
     }[];
   };
 }
@@ -36,6 +41,9 @@ class ChartFalso {
 export const moduloFalso = {
   Chart: ChartFalso,
   BarController: {},
+  PieController: {},
+  ArcElement: {},
+  Legend: {},
   LineController: {},
   LineElement: {},
   PointElement: {},

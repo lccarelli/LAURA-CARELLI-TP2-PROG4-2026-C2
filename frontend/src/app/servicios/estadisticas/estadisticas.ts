@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import {
   ComentariosDePublicacion,
   ComentariosDelDia,
+  PublicacionesDeTipo,
   PublicacionesDeUsuario,
 } from '../../interfaces/estadisticas';
 
@@ -28,6 +29,13 @@ export class EstadisticasApi {
   comentariosPorPublicacion(desde: string, hasta: string) {
     return this.http.get<ComentariosDePublicacion[]>(
       `${environment.API_URL}/estadisticas/comentarios-por-publicacion`,
+      { params: { desde, hasta } },
+    );
+  }
+
+  publicacionesPorTipo(desde: string, hasta: string) {
+    return this.http.get<PublicacionesDeTipo[]>(
+      `${environment.API_URL}/estadisticas/publicaciones-por-tipo`,
       { params: { desde, hasta } },
     );
   }

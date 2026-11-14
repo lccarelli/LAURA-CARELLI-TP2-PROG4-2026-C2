@@ -352,6 +352,8 @@
     "vacio_comentarios": "No hay comentarios en el rango elegido.",
     "comentarios_por_publicacion": "Publicaciones con más comentarios",
     "descripcion_ranking": "Gráfico de barras con las 10 publicaciones que más comentarios recibieron en el rango elegido",
-    "vacio_ranking": "No hay publicaciones con comentarios en el rango elegido."
+    "vacio_ranking": "No hay publicaciones con comentarios en el rango elegido.",
+    "publicaciones_por_tipo": "Publicaciones por tipo",
+    "descripcion_tipos": "Gráfico de torta con el reparto de las publicaciones activas del rango elegido entre receta, tip culinario y experiencia"
   }
 }
