@@ -1,7 +1,8 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, PendingTasks, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { PERFILES } from '../../interfaces/usuario';
+import { Imagenes } from '../../servicios/imagenes/imagenes';
 import { validarImagen } from '../../utilidades/imagen';
 import {
   PATRON_CLAVE,
@@ -19,6 +20,9 @@ import { CampoClave } from '../campo-clave/campo-clave';
 export class FormularioUsuario {
   private formBuilder = inject(FormBuilder);
   private traductor = inject(TranslateService);
+  private imagenes = inject(Imagenes);
+  private tareas = inject(PendingTasks);
+  private imagenesEnProceso = signal(0);
 
   readonly conPerfil = input(false);
   readonly enviando = input(false);
@@ -30,6 +34,7 @@ export class FormularioUsuario {
   readonly hoy = new Date().toISOString().slice(0, 10);
   readonly imagen = signal<File | null>(null);
   readonly errorImagen = signal<string | null>(null);
+  readonly preparandoImagen = computed(() => this.imagenesEnProceso() > 0);
 
   readonly formulario = this.formBuilder.nonNullable.group(
     {
@@ -85,15 +90,28 @@ export class FormularioUsuario {
   }
 
   elegirImagen(evento: Event) {
-    const archivo = (evento.target as HTMLInputElement).files?.[0] ?? null;
-    const error = validarImagen(archivo);
-    this.errorImagen.set(error);
-    this.imagen.set(error ? null : archivo);
+    const original = (evento.target as HTMLInputElement).files?.[0] ?? null;
+    this.imagenesEnProceso.update((n) => n + 1);
+    this.tareas.run(async () => {
+      try {
+        const archivo = original && (await this.imagenes.preparar(original));
+        const error = validarImagen(archivo);
+        this.errorImagen.set(error);
+        this.imagen.set(error ? null : archivo);
+      } finally {
+        this.imagenesEnProceso.update((n) => n - 1);
+      }
+    });
   }
 
   enviar() {
     this.formulario.markAllAsTouched();
-    if (this.formulario.invalid || this.errorImagen() || this.enviando()) {
+    if (
+      this.formulario.invalid ||
+      this.errorImagen() ||
+      this.enviando() ||
+      this.preparandoImagen()
+    ) {
       return;
     }
 

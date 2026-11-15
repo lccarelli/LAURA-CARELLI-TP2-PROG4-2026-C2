@@ -8,6 +8,7 @@ import { Auth } from '../../servicios/auth/auth';
 import { FotosBorrador } from '../../servicios/fotos-borrador/fotos-borrador';
 import { Idioma } from '../../servicios/idioma/idioma';
 import { Borrador } from '../../servicios/borrador/borrador';
+import { Imagenes } from '../../servicios/imagenes/imagenes';
 import { NuevaPublicacion } from './nueva-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { usuarioDePrueba } from '../../../testing/usuario';
@@ -777,6 +778,17 @@ describe('NuevaPublicacion', () => {
         globalThis.URL.revokeObjectURL = vi.fn();
       });
 
+      it('[O] una portada grande se reduce antes de mostrarse y de enviarse', async () => {
+        const reducida = foto('reducida.jpg', 'image/jpeg', 100);
+        vi.spyOn(TestBed.inject(Imagenes), 'preparar').mockResolvedValueOnce(reducida);
+
+        await elegirPortada(foto('original.jpg', 'image/jpeg', 5 * 1024 * 1024));
+
+        expect(fixture.componentInstance.imagen()).toBe(reducida);
+        expect(fixture.componentInstance.errorImagen()).toBeNull();
+        expect(fixture.nativeElement.querySelector('.portada-vista')).not.toBeNull();
+      });
+
       it('[O] la portada está arriba de todo, antes del título y de la descripción', () => {
         const portada = fixture.nativeElement.querySelector('.portada') as HTMLElement;
         const titulo = fixture.nativeElement.querySelector(
@@ -914,6 +926,17 @@ describe('NuevaPublicacion', () => {
           );
           expect(trazado).not.toContain('M12 5v14M5 12h14');
         }
+      });
+
+      it('[O] una foto grande de un paso se reduce antes de agregarse', async () => {
+        const reducida = foto('reducida.jpg', 'image/jpeg', 100);
+        vi.spyOn(TestBed.inject(Imagenes), 'preparar').mockResolvedValueOnce(reducida);
+
+        await elegir(0, foto('original.jpg', 'image/jpeg', 5 * 1024 * 1024));
+
+        const fotos = fixture.componentInstance.fotosDe(fixture.componentInstance.pasos.at(0));
+        expect(fotos.map(({ archivo }) => archivo)).toEqual([reducida]);
+        expect(fixture.componentInstance.erroresFotoPaso().size).toBe(0);
       });
 
       it('[O] al elegir una foto se ve la vista previa y el botón + sigue para agregar más', async () => {

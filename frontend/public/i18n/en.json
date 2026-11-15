@@ -154,7 +154,7 @@
     "portada_cambiar": "Change photo",
     "portada_quitar": "Remove photo",
     "portada_vista": "Cover preview",
-    "portada_ayuda": "JPG, PNG, WEBP or GIF, up to 2 MB",
+    "portada_ayuda": "JPG, PNG, WEBP or GIF. Large photos are shrunk automatically",
     "rinde_porciones": "Servings",
     "rinde_unidades": "Units",
     "campo_calorias_porciones": "Calories per serving",
@@ -277,8 +277,9 @@
     "claves_distintas": "The passwords do not match"
   },
   "imagen": {
+    "preparando": "Preparing the photo…",
     "tipo": "The image must be JPG, PNG, WEBP or GIF",
-    "pesada": "The image cannot be larger than 2 MB"
+    "pesada": "The image is larger than 2 MB and could not be reduced"
   },
   "errores": {
     "sin_conexion": "Could not connect to the server. Try again in a few seconds.",

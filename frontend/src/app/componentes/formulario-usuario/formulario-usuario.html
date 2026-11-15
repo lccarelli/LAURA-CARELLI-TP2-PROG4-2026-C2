@@ -108,12 +108,19 @@
   <label class="caja">
     <span class="etiqueta">{{ 'registro.imagen' | translate }}</span>
     <input class="campo-archivo" type="file" accept="image/*" (change)="elegirImagen($event)" />
+    @if (preparandoImagen()) {
+      <span class="meta" role="status">{{ 'imagen.preparando' | translate }}</span>
+    }
     @if (errorImagen(); as mensaje) {
       <span class="mensaje-error">{{ mensaje | translate }}</span>
     }
   </label>
 
-  <button type="submit" class="boton-principal w-full" [disabled]="enviando()">
+  <button
+    type="submit"
+    class="boton-principal w-full"
+    [disabled]="enviando() || preparandoImagen()"
+  >
     {{ (enviando() ? botonEnviando() : boton()) | translate }}
   </button>
 </form>

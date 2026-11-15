@@ -710,7 +710,14 @@
           </fieldset>
         }
 
-        <button type="submit" class="boton-principal w-full" [disabled]="publicando()">
+        @if (preparandoImagen()) {
+          <p class="meta" role="status">{{ 'imagen.preparando' | translate }}</p>
+        }
+        <button
+          type="submit"
+          class="boton-principal w-full"
+          [disabled]="publicando() || preparandoImagen()"
+        >
           {{ (publicando() ? 'publicaciones.publicando' : 'publicaciones.publicar') | translate }}
         </button>
       </div>
