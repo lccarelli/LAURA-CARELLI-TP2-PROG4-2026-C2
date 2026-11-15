@@ -23,6 +23,7 @@
           <dt class="etiqueta-seccion">{{ 'perfil.fecha_nacimiento' | translate }}</dt>
           <dd class="mt-1">
             {{ usuario.fechaNacimiento | date: ('formatos.fecha' | translate) : 'UTC' }}
+            <span class="texto-suave">({{ usuario.fechaNacimiento | edad }})</span>
           </dd>
         </div>
         <div class="dato">

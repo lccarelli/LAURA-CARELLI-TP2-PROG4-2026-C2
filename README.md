@@ -178,6 +178,11 @@ La cobertura de cada ejecución queda en el resumen del job y como archivo desca
 ### Pipes propios
 
 - **`fechaRelativa`** (`src/app/pipes/fecha-relativa.ts`): convierte una fecha en "ahora", "hace 3 horas", "ayer", "hace 2 semanas" o "el mes pasado", y en inglés "now", "3 hours ago", "yesterday", "2 weeks ago" o "last month". Usa `Intl.RelativeTimeFormat` con el idioma elegido, así que no necesita textos propios. Se ve en la tarjeta de cada publicación, en los comentarios, en los últimos comentarios de Mi perfil y en el detalle. La fecha completa queda en el tooltip (`title`) de cada una. Menos de 45 segundos es "ahora", una fecha un poco en el futuro (por la diferencia de reloj con el servidor) también, y el pipe es impuro para que el texto cambie al alternar es/en.
+<<<<<<< Updated upstream
+=======
+- **`textoLargo`** (`src/app/pipes/texto-largo.ts`): `{{ texto | textoLargo: 140 }}` corta un texto largo en una palabra entera y termina en "…", sin dejar una coma o dos puntos antes. Un texto que entra no se toca. Se usa en el recuadro de las publicaciones sin imagen (140 letras) y en los últimos comentarios de Mi perfil (120 letras, con el texto completo en el tooltip). Reutiliza la función `acortar` (con su modo "por palabra"), la misma que corta los títulos de los gráficos. No parte un emoji por la mitad.
+- **`edad`** (`src/app/pipes/edad.ts`): `{{ fechaNacimiento | edad }}` calcula los años cumplidos y los escribe con `Intl.NumberFormat` ("36 años", "1 año", "36 years", "1 year"). Se ve en Mi perfil, junto a la fecha de nacimiento. La fecha de nacimiento se toma como día de calendario (en UTC, igual que al mostrarla), así que no se corre un día según la zona horaria; la edad sube el día del cumpleaños, y quien nació un 29 de febrero cumple el 1 de marzo en los años comunes. Una fecha futura o inválida no muestra nada.
+>>>>>>> Stashed changes
 
 ### Nueva publicación
 
