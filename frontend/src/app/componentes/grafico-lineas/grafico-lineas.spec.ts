@@ -10,7 +10,7 @@ vi.mock('chart.js', async () => (await import('../../../testing/chart-falso')).m
 describe('GraficoLineas', () => {
   const banco = prepararBancoDeGrafico(GraficoLineas);
 
-  pruebasComunesDeGrafico(banco, { tipo: 'line', colorEn: 'borderColor' });
+  pruebasComunesDeGrafico(banco, { tipo: 'line', colorDe: (serie) => serie.borderColor });
 
   it('[O] la línea y los puntos usan el mismo color del tema', async () => {
     banco.poner(['10 mar'], [3]);

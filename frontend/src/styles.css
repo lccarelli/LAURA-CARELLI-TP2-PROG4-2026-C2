@@ -62,6 +62,9 @@
   --tema-serie-3: #2f3a4c;
   --tema-serie-4: #1fa3b8;
   --tema-serie-5: #f2a900;
+  --tema-torta-1: #404d63;
+  --tema-torta-2: #f2a900;
+  --tema-torta-3: #1fa3b8;
 }
 
 :root[data-tema='oscuro'] {
@@ -91,6 +94,9 @@
   --tema-serie-3: #ffb703;
   --tema-serie-4: #5cc8e8;
   --tema-serie-5: #c77dff;
+  --tema-torta-1: #abc9f7;
+  --tema-torta-2: #ffb703;
+  --tema-torta-3: #c77dff;
 }
 
 @utility anillo-foco {

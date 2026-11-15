@@ -11,6 +11,11 @@ export type FilaDePublicacionesPorUsuario = {
   cantidad: number;
 };
 
+export type FilaDePublicacionesPorTipo = {
+  tipo: string;
+  cantidad: number;
+};
+
 export type FilaDeComentariosPorPublicacion = {
   publicacion: Types.ObjectId;
   titulo: string;
@@ -53,6 +58,14 @@ export class EstadisticasRepositorio {
         },
       },
       { $sort: { cantidad: -1, nombreUsuario: 1 } },
+    ]);
+  }
+
+  publicacionesPorTipo(inicio: Date, fin: Date) {
+    return this.publicacionModel.aggregate<FilaDePublicacionesPorTipo>([
+      { $match: { activa: true, fecha: { $gte: inicio, $lt: fin } } },
+      { $group: { _id: '$tipo', cantidad: { $sum: 1 } } },
+      { $project: { _id: 0, tipo: '$_id', cantidad: 1 } },
     ]);
   }
 

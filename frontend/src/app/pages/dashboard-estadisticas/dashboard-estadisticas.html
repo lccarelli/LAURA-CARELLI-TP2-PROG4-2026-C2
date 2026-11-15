@@ -74,4 +74,20 @@
       />
     }
   </app-seccion-estadistica>
+
+  <app-seccion-estadistica
+    titulo="estadisticas.publicaciones_por_tipo"
+    textoVacio="estadisticas.vacio"
+    [carga]="tipos"
+    (reintentar)="cargarTipos()"
+  >
+    @if (tipos.estado() === 'datos') {
+      <app-grafico-torta
+        [etiquetas]="nombresDeTipos()"
+        [valores]="publicacionesPorTipo()"
+        [serie]="'estadisticas.serie_publicaciones' | translate"
+        [descripcion]="'estadisticas.descripcion_tipos' | translate"
+      />
+    }
+  </app-seccion-estadistica>
 </section>
