@@ -326,6 +326,18 @@
     "pizca": "pizca",
     "a_gusto": "a gusto"
   },
+  "medidas": {
+    "g": "gramos",
+    "kg": "kilogramos",
+    "ml": "mililitros",
+    "l": "litros",
+    "taza": "taza",
+    "cucharada": "cucharada",
+    "cucharadita": "cucharadita",
+    "unidad": "unidad",
+    "pizca": "pizca",
+    "a_gusto": "a gusto"
+  },
   "sesion": {
     "titulo": "Tu sesión está por vencer",
     "texto": "Por seguridad, la sesión está por cerrarse. ¿Querés extenderla?",

@@ -23,7 +23,6 @@ import {
   TIPOS,
   TIPOS_RINDE,
   Unidad,
-  UNIDADES,
 } from '../../interfaces/publicacion';
 import { Auth } from '../../servicios/auth/auth';
 import { Borrador, BorradorPublicacion } from '../../servicios/borrador/borrador';
@@ -38,6 +37,12 @@ const MAXIMO_FOTOS_PASOS = 20;
 const MAXIMO_FOTOS_POR_PASO = 5;
 const MAXIMO_TEXTO_PASO = 2000;
 const MAXIMO_TITULO_PASO = 80;
+const GRUPOS_DE_MEDIDAS: readonly (readonly Unidad[])[] = [
+  ['a_gusto', 'pizca', 'cucharadita', 'cucharada'],
+  ['g', 'kg', 'ml', 'l'],
+  ['taza', 'unidad'],
+];
+
 const UNIDADES_CON_FRACCION: readonly Unidad[] = [
   'kg',
   'l',
@@ -136,7 +141,7 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
 
   readonly publicando = signal(false);
   readonly tipos = TIPOS;
-  readonly unidades = UNIDADES;
+  readonly gruposDeMedidas = GRUPOS_DE_MEDIDAS;
   readonly maximoIngredientes = MAXIMO_INGREDIENTES;
   readonly maximoPasos = MAXIMO_PASOS;
   readonly maximoFotosPasos = MAXIMO_FOTOS_PASOS;
@@ -513,6 +518,11 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
 
   quitarIngrediente(posicion: number) {
     this.ingredientes.removeAt(posicion);
+  }
+
+  elegirMedida(fila: FilaIngrediente, unidad: Unidad) {
+    fila.controls.unidad.setValue(unidad);
+    this.alCambiarUnidad(fila);
   }
 
   alCambiarUnidad(fila: FilaIngrediente) {

@@ -42,12 +42,7 @@
     }}</app-aviso>
   }
 
-  <form
-    class="formulario formulario-pagina"
-    [formGroup]="formulario"
-    (ngSubmit)="publicar()"
-    novalidate
-  >
+  <form class="formulario" [formGroup]="formulario" (ngSubmit)="publicar()" novalidate>
     <div>
       <p class="etiqueta">{{ 'publicaciones.tipo_pregunta' | translate }}</p>
       <div
@@ -141,7 +136,7 @@
         @if (llevaLista()) {
           <fieldset>
             <legend class="etiqueta">{{ 'publicaciones.ficha' | translate }}</legend>
-            <div class="ficha-campos mt-2">
+            <div class="ficha-campos">
               <div class="caja">
                 <div
                   class="tipos"
@@ -405,6 +400,34 @@
             <div class="ingredientes">
               @for (fila of ingredientes.controls; track fila; let i = $index) {
                 <div class="ingrediente-fila" [formGroupName]="i">
+                  <span class="numero-paso" aria-hidden="true">{{ i + 1 }}</span>
+                  <input
+                    class="campo ingrediente-nombre"
+                    formControlName="nombre"
+                    [placeholder]="'publicaciones.ingrediente_nombre' | translate"
+                    [attr.aria-label]="'publicaciones.ingrediente_nombre' | translate"
+                  />
+                  <div
+                    class="medidas"
+                    role="group"
+                    [attr.aria-label]="'publicaciones.ingrediente_medida' | translate"
+                  >
+                    @for (grupo of gruposDeMedidas; track $index) {
+                      <div class="medidas-grupo">
+                        @for (medida of grupo; track medida) {
+                          <button
+                            type="button"
+                            class="medida-opcion"
+                            [class.activa]="fila.controls.unidad.value === medida"
+                            [attr.aria-pressed]="fila.controls.unidad.value === medida"
+                            (click)="elegirMedida(fila, medida)"
+                          >
+                            {{ 'medidas.' + medida | translate }}
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
                   <div class="cantidad-paso">
                     <button
                       type="button"
@@ -455,40 +478,6 @@
                       </svg>
                     </button>
                   </div>
-                  <select
-                    class="campo"
-                    formControlName="unidad"
-                    [attr.aria-label]="'publicaciones.ingrediente_medida' | translate"
-                    (change)="alCambiarUnidad(fila)"
-                  >
-                    @for (unidad of unidades; track unidad) {
-                      <option [value]="unidad">{{ 'unidades.' + unidad | translate }}</option>
-                    }
-                  </select>
-                  <input
-                    class="campo ingrediente-nombre"
-                    formControlName="nombre"
-                    [placeholder]="'publicaciones.ingrediente_nombre' | translate"
-                    [attr.aria-label]="'publicaciones.ingrediente_nombre' | translate"
-                  />
-                  <button
-                    type="button"
-                    class="boton-icono"
-                    [attr.aria-label]="'publicaciones.ingrediente_quitar' | translate"
-                    (click)="quitarIngrediente(i)"
-                  >
-                    <svg
-                      class="icono-chico"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                      stroke-linecap="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M5 12h14" />
-                    </svg>
-                  </button>
                   @if (usaFracciones(fila)) {
                     <div
                       class="fracciones"
@@ -508,6 +497,24 @@
                       }
                     </div>
                   }
+                  <button
+                    type="button"
+                    class="boton-icono"
+                    [attr.aria-label]="'publicaciones.ingrediente_quitar' | translate"
+                    (click)="quitarIngrediente(i)"
+                  >
+                    <svg
+                      class="icono-chico"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14" />
+                    </svg>
+                  </button>
                   @if (mensajeDeIngrediente(fila); as mensaje) {
                     <span class="mensaje-error ingrediente-error">{{ mensaje }}</span>
                   }

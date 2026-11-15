@@ -326,6 +326,18 @@
     "pizca": "pinch",
     "a_gusto": "to taste"
   },
+  "medidas": {
+    "g": "grams",
+    "kg": "kilograms",
+    "ml": "milliliters",
+    "l": "liters",
+    "taza": "cup",
+    "cucharada": "tablespoon",
+    "cucharadita": "teaspoon",
+    "unidad": "unit",
+    "pizca": "pinch",
+    "a_gusto": "to taste"
+  },
   "sesion": {
     "titulo": "Your session is about to expire",
     "texto": "For security, your session is about to close. Do you want to extend it?",

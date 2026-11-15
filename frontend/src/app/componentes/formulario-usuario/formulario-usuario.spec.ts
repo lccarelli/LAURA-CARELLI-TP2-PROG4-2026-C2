@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
+import { ESCRITURA_LITERAL, atributosDeEscrituraLiteral } from '../../../testing/teclado';
 import { datosDelFormulario } from '../../../testing/usuario';
 import { Idioma } from '../../servicios/idioma/idioma';
 import { FormularioUsuario } from './formulario-usuario';
@@ -41,6 +42,14 @@ describe('FormularioUsuario', () => {
     guardar = vi.fn<(datos: FormData) => void>();
     componente.guardar.subscribe(guardar);
     await fixture.whenStable();
+  });
+
+  it('[I] el correo y el nombre de usuario no se capitalizan ni se corrigen en el teléfono', () => {
+    for (const nombre of ['correo', 'nombreUsuario']) {
+      const campo = elemento().querySelector(`[formcontrolname="${nombre}"]`);
+
+      expect(atributosDeEscrituraLiteral(campo)).toEqual(ESCRITURA_LITERAL);
+    }
   });
 
   it('[Z] con el formulario vacío no envía nada y marca los campos', async () => {

@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { Auth } from '../../servicios/auth/auth';
 import { Login } from './login';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
+import { ESCRITURA_LITERAL, atributosDeEscrituraLiteral } from '../../../testing/teclado';
 
 const URL = `${environment.API_URL}/auth/ingresar`;
 
@@ -54,6 +55,12 @@ describe('Login', () => {
     http.expectOne(URL).flush({ token: 't', usuario: { _id: '1' } });
 
     expect(navegar).toHaveBeenCalledWith(['/publicaciones']);
+  });
+
+  it('[I] el identificador no se capitaliza ni se corrige en el teléfono', () => {
+    const campo = fixture.nativeElement.querySelector('[formcontrolname="identificador"]');
+
+    expect(atributosDeEscrituraLiteral(campo)).toEqual(ESCRITURA_LITERAL);
   });
 
   it('[I] manda el identificador sin espacios alrededor', async () => {

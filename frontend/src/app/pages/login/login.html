@@ -25,7 +25,14 @@
       <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
         <label class="caja">
           <span class="etiqueta">{{ 'login.identificador' | translate }}</span>
-          <input class="campo" formControlName="identificador" autocomplete="username" />
+          <input
+            class="campo"
+            formControlName="identificador"
+            autocomplete="username"
+            autocapitalize="none"
+            autocorrect="off"
+            spellcheck="false"
+          />
           @if (mensajeDeError('identificador'); as mensaje) {
             <span class="mensaje-error">{{ mensaje }}</span>
           }
