@@ -175,6 +175,10 @@ La cobertura de cada ejecución queda en el resumen del job y como archivo desca
 - **Me gusta:** botón de corazón en la tarjeta y dentro del detalle. Se puede dar y quitar; el contador sube y baja al instante con lo que responde el servidor. Si el servidor dice que ya estaba dado (o ya estaba quitado), el botón se corrige solo, sin mostrar un error.
 - **Eliminar:** quien publicó, o una persona con perfil administrador (que puede dar de baja **cualquier** publicación), la elimina desde la tarjeta del listado o desde el botón "Eliminar publicación" del detalle, siempre con confirmación. La baja es lógica: la publicación y sus comentarios dejan de estar disponibles (el detalle y los comentarios responden 404) y al terminar se vuelve al listado. Una persona común no ve el botón en publicaciones ajenas y, si lo intentara contra la API, recibe 403.
 
+### Pipes propios
+
+- **`fechaRelativa`** (`src/app/pipes/fecha-relativa.ts`): convierte una fecha en "ahora", "hace 3 horas", "ayer", "hace 2 semanas" o "el mes pasado", y en inglés "now", "3 hours ago", "yesterday", "2 weeks ago" o "last month". Usa `Intl.RelativeTimeFormat` con el idioma elegido, así que no necesita textos propios. Se ve en la tarjeta de cada publicación, en los comentarios, en los últimos comentarios de Mi perfil y en el detalle. La fecha completa queda en el tooltip (`title`) de cada una. Menos de 45 segundos es "ahora", una fecha un poco en el futuro (por la diferencia de reloj con el servidor) también, y el pipe es impuro para que el texto cambie al alternar es/en.
+
 ### Nueva publicación
 
 Pantalla `/publicaciones/nueva` (requiere sesión). Se elige un tipo y el formulario se adapta:

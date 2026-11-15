@@ -10,10 +10,12 @@ import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
 import { Aviso } from '../aviso/aviso';
 
+import { FechaRelativa } from '../../pipes/fecha-relativa';
+
 export const COMENTARIOS_EN_EL_PERFIL = 3;
 
 @Component({
-  imports: [DatePipe, RouterLink, TranslatePipe, Aviso],
+  imports: [DatePipe, FechaRelativa, RouterLink, TranslatePipe, Aviso],
   selector: 'app-ultimos-comentarios',
   templateUrl: './ultimos-comentarios.html',
 })

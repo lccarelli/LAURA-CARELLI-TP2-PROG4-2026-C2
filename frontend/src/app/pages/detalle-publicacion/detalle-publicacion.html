@@ -41,8 +41,11 @@
               {{ publicacion.usuario.nombre }} {{ publicacion.usuario.apellido }}
               <span class="detalle-publicacion">&#64;{{ publicacion.usuario.nombreUsuario }}</span>
             </p>
-            <p class="detalle-publicacion">
-              {{ publicacion.fecha | date: ('formatos.fecha_hora' | translate) }}
+            <p
+              class="detalle-publicacion"
+              [attr.title]="publicacion.fecha | date: ('formatos.fecha_hora' | translate)"
+            >
+              {{ publicacion.fecha | fechaRelativa }}
             </p>
           </div>
         </header>
