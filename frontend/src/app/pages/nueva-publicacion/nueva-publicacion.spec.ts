@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { Publicacion } from '../../interfaces/publicacion';
 import { Auth } from '../../servicios/auth/auth';
 import { FotosBorrador } from '../../servicios/fotos-borrador/fotos-borrador';
+import { Idioma } from '../../servicios/idioma/idioma';
 import { Borrador } from '../../servicios/borrador/borrador';
 import { NuevaPublicacion } from './nueva-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
@@ -384,13 +385,68 @@ describe('NuevaPublicacion', () => {
       expect(Array.from(campos).map((campo) => campo.value)).toEqual(['1234', '1234', '1234']);
     });
 
-    it('[I] cada ingrediente es una sola línea: cantidad, medida y nombre', async () => {
+    it('[I] cada ingrediente pide primero el nombre, luego la medida y al final la cantidad', async () => {
       const fila = fixture.nativeElement.querySelector('.ingrediente-fila') as HTMLElement;
       const controles = Array.from(fila.querySelectorAll('[formcontrolname]')).map((control) =>
         control.getAttribute('formcontrolname'),
       );
 
-      expect(controles).toEqual(['cantidad', 'unidad', 'nombre']);
+      expect(controles).toEqual(['nombre', 'cantidad']);
+      expect(fila.querySelector('.medidas')).not.toBeNull();
+    });
+
+    it('[I] los ingredientes se numeran en el orden en que se agregan', async () => {
+      const agregar = Array.from(fixture.nativeElement.querySelectorAll('.boton-agregar')).find(
+        (boton) => (boton as HTMLElement).textContent?.includes('Agregar ingrediente'),
+      );
+      (agregar as HTMLButtonElement).click();
+      (agregar as HTMLButtonElement).click();
+      await actualizar();
+
+      const numeros = Array.from(
+        fixture.nativeElement.querySelectorAll('.ingrediente-fila .numero-paso'),
+      ).map((numero) => (numero as HTMLElement).textContent?.trim());
+      expect(numeros).toEqual(['1', '2', '3']);
+    });
+
+    const nombresDeMedidas = () =>
+      Array.from(fixture.nativeElement.querySelectorAll('.ingrediente-fila .medidas-grupo')).map(
+        (grupo) =>
+          Array.from((grupo as HTMLElement).querySelectorAll('button')).map((boton) =>
+            boton.textContent?.trim(),
+          ),
+      );
+
+    it('[I] las medidas van por tamaño, de menor a mayor, en tres líneas y con la palabra completa', () => {
+      expect(nombresDeMedidas()).toEqual([
+        ['a gusto', 'pizca', 'cucharadita', 'cucharada'],
+        ['gramos', 'kilogramos', 'mililitros', 'litros'],
+        ['taza', 'unidad'],
+      ]);
+    });
+
+    it('[S] al cambiar a inglés las medidas se traducen y mantienen su orden', async () => {
+      TestBed.inject(Idioma).cambiar('en');
+      await actualizar();
+
+      expect(nombresDeMedidas()).toEqual([
+        ['to taste', 'pinch', 'teaspoon', 'tablespoon'],
+        ['grams', 'kilograms', 'milliliters', 'liters'],
+        ['cup', 'unit'],
+      ]);
+    });
+
+    it('[O] la medida elegida queda marcada y las demás no', async () => {
+      const botones = Array.from(
+        fixture.nativeElement.querySelectorAll('.medidas button'),
+      ) as HTMLButtonElement[];
+      botones.find((boton) => boton.textContent?.trim() === 'kilogramos')!.click();
+      await actualizar();
+
+      const marcadas = Array.from(
+        fixture.nativeElement.querySelectorAll('.medidas [aria-pressed="true"]'),
+      ).map((boton) => (boton as HTMLElement).textContent?.trim());
+      expect(marcadas).toEqual(['kilogramos']);
     });
 
     describe('plantillas con solapa', () => {
@@ -594,11 +650,22 @@ describe('NuevaPublicacion', () => {
       });
 
       const elegirUnidad = async (unidad: string) => {
-        const select = fixture.nativeElement.querySelector(
-          '.ingrediente-fila select',
-        ) as HTMLSelectElement;
-        select.value = unidad;
-        select.dispatchEvent(new Event('change'));
+        const nombre = {
+          g: 'gramos',
+          kg: 'kilogramos',
+          ml: 'mililitros',
+          l: 'litros',
+          taza: 'taza',
+          cucharada: 'cucharada',
+          cucharadita: 'cucharadita',
+          unidad: 'unidad',
+          pizca: 'pizca',
+          a_gusto: 'a gusto',
+        }[unidad];
+        const botones = Array.from(
+          fixture.nativeElement.querySelectorAll('.medidas button'),
+        ) as HTMLButtonElement[];
+        botones.find((boton) => boton.textContent?.trim() === nombre)!.click();
         await actualizar();
       };
       const fraccion = (texto: string) =>

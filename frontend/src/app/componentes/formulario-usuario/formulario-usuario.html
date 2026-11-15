@@ -18,7 +18,15 @@
 
   <label class="caja">
     <span class="etiqueta">{{ 'registro.correo' | translate }}</span>
-    <input class="campo" type="email" formControlName="correo" autocomplete="email" />
+    <input
+      class="campo"
+      type="email"
+      formControlName="correo"
+      autocomplete="email"
+      autocapitalize="none"
+      autocorrect="off"
+      spellcheck="false"
+    />
     @if (mensajeDeError('correo'); as mensaje) {
       <span class="mensaje-error">{{ mensaje }}</span>
     }
@@ -26,7 +34,14 @@
 
   <label class="caja">
     <span class="etiqueta">{{ 'registro.nombre_usuario' | translate }}</span>
-    <input class="campo" formControlName="nombreUsuario" autocomplete="username" />
+    <input
+      class="campo"
+      formControlName="nombreUsuario"
+      autocomplete="username"
+      autocapitalize="none"
+      autocorrect="off"
+      spellcheck="false"
+    />
     @if (mensajeDeError('nombreUsuario'); as mensaje) {
       <span class="mensaje-error">{{ mensaje }}</span>
     }

@@ -4,11 +4,11 @@
     <span class="lema">{{ 'barra.lema' | translate }}</span>
   </a>
 
-  <nav class="barra-nav">
+  <nav class="barra-nav" [class.subiendo]="subiendo()">
     @if (auth.usuario(); as usuario) {
       <a class="item-nav" routerLink="/publicaciones" routerLinkActive="activo">
         <svg
-          class="icono md:hidden"
+          class="icono lg:hidden"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -24,7 +24,7 @@
       </a>
       <a class="item-nav" routerLink="/perfil" routerLinkActive="activo">
         <svg
-          class="icono md:hidden"
+          class="icono lg:hidden"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -41,7 +41,7 @@
       @if (usuario.perfil === 'administrador') {
         <a class="item-nav" routerLink="/dashboard/usuarios" routerLinkActive="activo">
           <svg
-            class="icono md:hidden"
+            class="icono lg:hidden"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -57,7 +57,7 @@
         </a>
         <a class="item-nav" routerLink="/dashboard/estadisticas" routerLinkActive="activo">
           <svg
-            class="icono md:hidden"
+            class="icono lg:hidden"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -71,11 +71,10 @@
           {{ 'barra.estadisticas' | translate }}
         </a>
       }
-      <span class="nombre-barra hidden md:inline">&#64;{{ usuario.nombreUsuario }}</span>
     } @else {
       <a class="item-nav" routerLink="/login" routerLinkActive="activo">
         <svg
-          class="icono md:hidden"
+          class="icono lg:hidden"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -91,7 +90,7 @@
       </a>
       <a class="item-nav" routerLink="/registro" routerLinkActive="activo">
         <svg
-          class="icono md:hidden"
+          class="icono lg:hidden"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -105,6 +104,12 @@
         </svg>
         {{ 'barra.registrarme' | translate }}
       </a>
+    }
+  </nav>
+
+  <div class="barra-utiles">
+    @if (auth.usuario(); as usuario) {
+      <span class="nombre-barra hidden lg:inline">&#64;{{ usuario.nombreUsuario }}</span>
     }
 
     <div class="flex gap-1" role="group" [attr.aria-label]="'barra.idioma' | translate">
@@ -133,9 +138,9 @@
     </button>
 
     @if (auth.usuario()) {
-      <button type="button" class="item-nav" (click)="salir()">
+      <button type="button" class="boton-salir" (click)="salir()">
         <svg
-          class="icono md:hidden"
+          class="icono lg:hidden"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -147,8 +152,8 @@
           <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" />
           <path d="M15 8l4 4-4 4M19 12H9" />
         </svg>
-        {{ 'barra.salir' | translate }}
+        <span class="texto-de-escritorio">{{ 'barra.salir' | translate }}</span>
       </button>
     }
-  </nav>
+  </div>
 </header>
