@@ -1,8 +1,9 @@
-import { Component, ElementRef, afterNextRender, input, output, viewChild } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
+import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
 
 @Component({
-  imports: [TranslatePipe],
+  imports: [AutoFoco, TranslatePipe],
   selector: 'app-modal-confirmacion',
   templateUrl: './modal-confirmacion.html',
 })
@@ -17,13 +18,6 @@ export class ModalConfirmacion {
   readonly enviando = input(false);
   readonly confirmado = output<void>();
   readonly cancelado = output<void>();
-
-  private readonly botonCancelar =
-    viewChild.required<ElementRef<HTMLButtonElement>>('cancelarBoton');
-
-  constructor() {
-    afterNextRender(() => this.botonCancelar().nativeElement.focus());
-  }
 
   salir() {
     if (!this.enviando()) {
