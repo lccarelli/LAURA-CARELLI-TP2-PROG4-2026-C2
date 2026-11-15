@@ -3,6 +3,7 @@ import { Component, computed, inject, input, output, signal } from '@angular/cor
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Publicacion } from '../../interfaces/publicacion';
+import { FechaRelativa } from '../../pipes/fecha-relativa';
 import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
@@ -12,7 +13,7 @@ import { BotonMeGusta } from '../boton-me-gusta/boton-me-gusta';
 import { Icono } from '../icono/icono';
 
 @Component({
-  imports: [BotonMeGusta, RouterLink, TranslatePipe, Icono],
+  imports: [BotonMeGusta, FechaRelativa, RouterLink, TranslatePipe, Icono],
   selector: 'app-tarjeta-publicacion',
   templateUrl: './tarjeta-publicacion.html',
   host: { class: 'pin-contenedor' },

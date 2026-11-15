@@ -9,6 +9,7 @@ import { BotonMeGusta } from '../../componentes/boton-me-gusta/boton-me-gusta';
 import { Comentarios } from '../../componentes/comentarios/comentarios';
 import { EliminarPublicacion } from '../../componentes/eliminar-publicacion/eliminar-publicacion';
 import { Ingrediente, Paso, Publicacion, UNIDADES } from '../../interfaces/publicacion';
+import { FechaRelativa } from '../../pipes/fecha-relativa';
 import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
@@ -42,6 +43,7 @@ const esIngrediente = (valor: unknown): valor is Ingrediente => {
     CubreplatoLoading,
     EliminarPublicacion,
     DatePipe,
+    FechaRelativa,
     RouterLink,
     Aviso,
     Comentarios,

@@ -51,6 +51,8 @@ describe('UltimosComentarios', () => {
     fixture = TestBed.createComponent(UltimosComentarios);
   });
 
+  afterEach(() => vi.useRealTimers());
+
   it('[Z] una publicación sin comentarios lo dice y no pide nada', async () => {
     await abrir(0);
 
@@ -70,14 +72,17 @@ describe('UltimosComentarios', () => {
     solicitud.flush(pagina(2));
   });
 
-  it('[O] muestra quién comentó, la fecha y el mensaje', async () => {
+  it('[O] muestra quién comentó, la fecha relativa y el mensaje', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-25T15:30:00'));
     await abrir(2);
     pedido().flush(pagina(2));
     await actualizar();
 
     expect(items()).toHaveLength(2);
     expect(texto()).toContain('@laura_c');
-    expect(texto()).toContain('22/10/2026');
+    expect(texto()).toContain('hace 3 días');
+    expect(fixture.nativeElement.querySelector('[title="22/10/2026 15:30"]')).not.toBeNull();
     expect(texto()).toContain('Comentario 1');
     expect(texto()).toContain('Comentario 2');
   });

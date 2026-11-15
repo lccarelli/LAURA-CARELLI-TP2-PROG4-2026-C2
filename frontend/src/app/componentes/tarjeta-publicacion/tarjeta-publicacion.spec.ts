@@ -65,6 +65,17 @@ describe('TarjetaPublicacion', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
+  afterEach(() => vi.useRealTimers());
+
+  it('[O] muestra cuánto hace que se publicó, en el idioma elegido', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-25T15:30:00'));
+
+    const tarjeta = await crear(base);
+
+    expect(tarjeta.querySelector('.pin-fecha')?.textContent).toBe('hace 3 días');
+  });
+
   it('[O] muestra el título y el autor', async () => {
     const texto = (await crear(base)).textContent;
 
