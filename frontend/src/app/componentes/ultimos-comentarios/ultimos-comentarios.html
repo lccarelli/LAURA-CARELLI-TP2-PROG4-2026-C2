@@ -30,7 +30,11 @@
             [alt]="'comun.foto_de' | translate: { nombre: comentario.usuario.nombreUsuario }"
           />
           <span class="comentario-autor">&#64;{{ comentario.usuario.nombreUsuario }}</span>
-          <span class="meta">{{ comentario.fecha | date: ('formatos.fecha' | translate) }}</span>
+          <span
+            class="meta"
+            [attr.title]="comentario.fecha | date: ('formatos.fecha_hora' | translate)"
+            >{{ comentario.fecha | fechaRelativa }}</span
+          >
         </div>
         <p class="comentario-texto">{{ comentario.mensaje }}</p>
       </li>

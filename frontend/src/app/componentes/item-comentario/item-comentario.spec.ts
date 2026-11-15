@@ -65,11 +65,16 @@ describe('ItemComentario', () => {
   });
 
   describe('cómo se ve', () => {
-    it('[I] muestra el autor, la fecha y el mensaje', async () => {
+    afterEach(() => vi.useRealTimers());
+
+    it('[I] muestra el autor, la fecha relativa con la fecha completa al pasar el mouse y el mensaje', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date('2026-10-25T15:30:00'));
       await abrir();
 
       expect(texto()).toContain('@laura_c');
-      expect(texto()).toContain('22/10/2026');
+      expect(texto()).toContain('hace 3 días');
+      expect(fixture.nativeElement.querySelector('[title="22/10/2026 15:30"]')).not.toBeNull();
       expect(texto()).toContain('Me salió riquísimo');
     });
 

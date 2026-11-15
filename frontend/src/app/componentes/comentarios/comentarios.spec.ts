@@ -83,6 +83,8 @@ describe('Comentarios', () => {
     await actualizar();
   });
 
+  afterEach(() => vi.useRealTimers());
+
   it('[I] pide la primera página de los comentarios de la publicación y muestra Cargando', () => {
     pedir(0);
 
@@ -98,7 +100,9 @@ describe('Comentarios', () => {
     expect(botonVerMas()).toBeUndefined();
   });
 
-  it('[O] muestra el autor, la fecha y el mensaje de cada comentario, en el orden recibido', async () => {
+  it('[O] muestra el autor, la fecha relativa y el mensaje de cada comentario, en el orden recibido', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-25T15:30:00'));
     pedir(0).flush(pagina(1, 3, false));
     await actualizar();
 
@@ -106,7 +110,7 @@ describe('Comentarios', () => {
 
     expect(lista).toHaveLength(3);
     expect(lista[0]).toContain('@laura_c');
-    expect(lista[0]).toContain('22/10/2026');
+    expect(lista[0]).toContain('hace 3 días');
     expect(lista[0]).toContain('Comentario 1');
     expect(lista[2]).toContain('Comentario 3');
   });

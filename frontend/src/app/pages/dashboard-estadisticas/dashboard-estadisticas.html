@@ -22,9 +22,51 @@
     </label>
   </div>
 
+  <div class="tipos" role="group" [attr.aria-label]="'estadisticas.atajos' | translate">
+    @for (atajo of atajos; track atajo.dias) {
+      <button
+        type="button"
+        class="tipo-opcion"
+        [class.activo]="atajoActivo() === atajo.dias"
+        [attr.aria-pressed]="atajoActivo() === atajo.dias"
+        (click)="elegirAtajo(atajo.dias)"
+      >
+        {{ atajo.clave | translate }}
+      </button>
+    }
+  </div>
+
   @if (errorDeRango(); as mensaje) {
     <p class="mensaje-error" role="alert">{{ mensaje | translate }}</p>
   }
+
+  <app-seccion-estadistica
+    titulo="estadisticas.resumen"
+    textoVacio="estadisticas.vacio"
+    [carga]="resumen"
+    (reintentar)="cargarResumen()"
+  >
+    @if (resumen.estado() === 'datos' && resumen.datos(); as datos) {
+      <div class="indicadores">
+        <app-indicador
+          etiqueta="estadisticas.resumen_publicaciones"
+          [valor]="datos.actual.publicaciones"
+          [anterior]="datos.anterior.publicaciones"
+        />
+        <app-indicador
+          etiqueta="estadisticas.resumen_comentarios"
+          [valor]="datos.actual.comentarios"
+          [anterior]="datos.anterior.comentarios"
+        />
+        <app-indicador
+          etiqueta="estadisticas.resumen_personas"
+          [valor]="datos.actual.personasActivas"
+          [anterior]="datos.anterior.personasActivas"
+        />
+      </div>
+      <p class="meta mt-4">{{ 'estadisticas.resumen_nota' | translate: notaDelResumen() }}</p>
+    }
+  </app-seccion-estadistica>
 
   <app-seccion-estadistica
     titulo="estadisticas.publicaciones_por_usuario"

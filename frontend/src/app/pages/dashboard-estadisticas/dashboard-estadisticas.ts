@@ -4,12 +4,14 @@ import { Observable } from 'rxjs';
 import { GraficoBarras } from '../../componentes/grafico-barras/grafico-barras';
 import { GraficoLineas } from '../../componentes/grafico-lineas/grafico-lineas';
 import { GraficoTorta } from '../../componentes/grafico-torta/grafico-torta';
+import { Indicador } from '../../componentes/indicador/indicador';
 import { SeccionEstadistica } from '../../componentes/seccion-estadistica/seccion-estadistica';
 import {
   ComentariosDePublicacion,
   ComentariosDelDia,
   PublicacionesDeTipo,
   PublicacionesDeUsuario,
+  ResumenDelRango,
 } from '../../interfaces/estadisticas';
 import { EstadisticasApi } from '../../servicios/estadisticas/estadisticas';
 import { Idioma } from '../../servicios/idioma/idioma';
@@ -26,8 +28,22 @@ import { acortar } from '../../utilidades/textos';
 const DIAS_POR_DEFECTO = 30;
 const LETRAS_DEL_TITULO = 30;
 
+const ATAJOS = [
+  { dias: 7, clave: 'estadisticas.atajo_7' },
+  { dias: 30, clave: 'estadisticas.atajo_30' },
+  { dias: 90, clave: 'estadisticas.atajo_90' },
+  { dias: 365, clave: 'estadisticas.atajo_365' },
+] as const;
+
 @Component({
-  imports: [GraficoBarras, GraficoLineas, GraficoTorta, SeccionEstadistica, TranslatePipe],
+  imports: [
+    GraficoBarras,
+    GraficoLineas,
+    GraficoTorta,
+    Indicador,
+    SeccionEstadistica,
+    TranslatePipe,
+  ],
   selector: 'app-dashboard-estadisticas',
   templateUrl: './dashboard-estadisticas.html',
 })
@@ -39,6 +55,8 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
   readonly hasta = signal(hoyEnBuenosAires());
   readonly desde = signal(sumarDias(this.hasta(), 1 - DIAS_POR_DEFECTO));
 
+  readonly atajos = ATAJOS;
+  readonly resumen = new Carga<ResumenDelRango>(() => false);
   readonly publicaciones = new Carga<PublicacionesDeUsuario[]>((filas) => filas.length === 0);
   readonly comentarios = new Carga<ComentariosDelDia[]>((dias) =>
     dias.every((dia) => dia.cantidad === 0),
@@ -58,6 +76,21 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
       return 'estadisticas.rango_invalido';
     }
     return diasDelRango(desde, hasta) > DIAS_MAXIMOS_DEL_RANGO ? 'estadisticas.rango_largo' : null;
+  });
+
+  readonly atajoActivo = computed(() =>
+    this.hasta() === hoyEnBuenosAires() && !this.errorDeRango()
+      ? diasDelRango(this.desde(), this.hasta())
+      : null,
+  );
+
+  readonly notaDelResumen = computed(() => {
+    const idioma = this.idioma.actual() ?? undefined;
+    const anterior = this.resumen.datos()?.anterior;
+    return {
+      desde: anterior ? etiquetaDeDia(anterior.desde, idioma) : '',
+      hasta: anterior ? etiquetaDeDia(anterior.hasta, idioma) : '',
+    };
   });
 
   readonly usuarios = computed(() =>
@@ -95,10 +128,18 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.resumen.detener();
     this.publicaciones.detener();
     this.comentarios.detener();
     this.ranking.detener();
     this.tipos.detener();
+  }
+
+  elegirAtajo(dias: number) {
+    const hoy = hoyEnBuenosAires();
+    this.hasta.set(hoy);
+    this.desde.set(sumarDias(hoy, 1 - dias));
+    this.cargar();
   }
 
   cambiarDesde(valor: string) {
@@ -112,10 +153,15 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
   }
 
   cargar() {
+    this.cargarResumen();
     this.cargarPublicaciones();
     this.cargarComentarios();
     this.cargarRanking();
     this.cargarTipos();
+  }
+
+  cargarResumen() {
+    this.pedir(this.resumen, () => this.api.resumen(this.desde(), this.hasta()));
   }
 
   cargarPublicaciones() {

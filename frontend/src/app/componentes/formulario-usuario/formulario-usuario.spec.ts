@@ -3,6 +3,7 @@ import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { ESCRITURA_LITERAL, atributosDeEscrituraLiteral } from '../../../testing/teclado';
 import { datosDelFormulario } from '../../../testing/usuario';
 import { Idioma } from '../../servicios/idioma/idioma';
+import { Imagenes } from '../../servicios/imagenes/imagenes';
 import { FormularioUsuario } from './formulario-usuario';
 
 describe('FormularioUsuario', () => {
@@ -151,12 +152,48 @@ describe('FormularioUsuario', () => {
     expect(componente.mensajeDeError('clave')).toContain('8 y 12');
   });
 
-  it('[E] una imagen inválida muestra el error y no se adjunta', () => {
+  it('[O] una foto grande se reduce antes de adjuntarse y no da error', async () => {
+    const reducida = new File(['x'], 'foto.jpg', { type: 'image/jpeg' });
+    const preparar = vi.spyOn(TestBed.inject(Imagenes), 'preparar').mockResolvedValueOnce(reducida);
+    const grande = new File([new Uint8Array(5 * 1024 * 1024)], 'foto.jpg', { type: 'image/jpeg' });
+
+    componente.elegirImagen({ target: { files: [grande] } } as unknown as Event);
+    await fixture.whenStable();
+
+    expect(preparar).toHaveBeenCalledWith(grande);
+    expect(componente.imagen()).toBe(reducida);
+    expect(componente.errorImagen()).toBeNull();
+    expect(componente.preparandoImagen()).toBe(false);
+  });
+
+  it('[S] mientras se prepara la foto lo avisa y no envía', async () => {
+    let terminar!: (archivo: File) => void;
+    vi.spyOn(TestBed.inject(Imagenes), 'preparar').mockReturnValueOnce(
+      new Promise((resolver) => (terminar = resolver)),
+    );
+    componente.formulario.setValue(datosDelFormulario);
+
+    componente.elegirImagen({
+      target: { files: [new File(['x'], 'foto.jpg', { type: 'image/jpeg' })] },
+    } as unknown as Event);
+    elemento().querySelector('form')!.dispatchEvent(new Event('submit'));
+    fixture.detectChanges();
+
+    expect(componente.preparandoImagen()).toBe(true);
+    expect(elemento().textContent).toContain('Preparando la foto');
+    expect(guardar).not.toHaveBeenCalled();
+    terminar(new File(['x'], 'foto.jpg', { type: 'image/jpeg' }));
+    await fixture.whenStable();
+    expect(componente.preparandoImagen()).toBe(false);
+  });
+
+  it('[E] una imagen inválida muestra el error y no se adjunta', async () => {
     const evento = {
       target: { files: [new File(['x'], 'nota.pdf', { type: 'application/pdf' })] },
     } as unknown as Event;
 
     componente.elegirImagen(evento);
+    await fixture.whenStable();
 
     expect(componente.errorImagen()).toBe('imagen.tipo');
     expect(componente.imagen()).toBeNull();

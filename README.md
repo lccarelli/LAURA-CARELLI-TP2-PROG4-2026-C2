@@ -175,6 +175,10 @@ La cobertura de cada ejecución queda en el resumen del job y como archivo desca
 - **Me gusta:** botón de corazón en la tarjeta y dentro del detalle. Se puede dar y quitar; el contador sube y baja al instante con lo que responde el servidor. Si el servidor dice que ya estaba dado (o ya estaba quitado), el botón se corrige solo, sin mostrar un error.
 - **Eliminar:** quien publicó, o una persona con perfil administrador (que puede dar de baja **cualquier** publicación), la elimina desde la tarjeta del listado o desde el botón "Eliminar publicación" del detalle, siempre con confirmación. La baja es lógica: la publicación y sus comentarios dejan de estar disponibles (el detalle y los comentarios responden 404) y al terminar se vuelve al listado. Una persona común no ve el botón en publicaciones ajenas y, si lo intentara contra la API, recibe 403.
 
+### Pipes propios
+
+- **`fechaRelativa`** (`src/app/pipes/fecha-relativa.ts`): convierte una fecha en "ahora", "hace 3 horas", "ayer", "hace 2 semanas" o "el mes pasado", y en inglés "now", "3 hours ago", "yesterday", "2 weeks ago" o "last month". Usa `Intl.RelativeTimeFormat` con el idioma elegido, así que no necesita textos propios. Se ve en la tarjeta de cada publicación, en los comentarios, en los últimos comentarios de Mi perfil y en el detalle. La fecha completa queda en el tooltip (`title`) de cada una. Menos de 45 segundos es "ahora", una fecha un poco en el futuro (por la diferencia de reloj con el servidor) también, y el pipe es impuro para que el texto cambie al alternar es/en.
+
 ### Nueva publicación
 
 Pantalla `/publicaciones/nueva` (requiere sesión). Se elige un tipo y el formulario se adapta:
@@ -191,7 +195,7 @@ Pantalla `/publicaciones/nueva` (requiere sesión). Se elige un tipo y el formul
 | --- | --- |
 | Título | Obligatorio, hasta 55 caracteres |
 | Mensaje | Obligatorio, hasta 2000 caracteres, con contador |
-| Portada | Opcional. JPG, PNG, WebP o GIF de hasta 2 MB. Se ve una vista previa y se puede quitar |
+| Portada | Opcional. JPG, PNG, WebP o GIF de hasta 2 MB. Una foto más pesada (por ejemplo, una sacada con el teléfono) se reduce sola en el navegador antes de subirse. Se ve una vista previa y se puede quitar |
 
 **Ficha de la receta** (todo opcional)
 
@@ -264,10 +268,12 @@ Sólo para administradores. El enlace "Estadísticas" de la barra lleva a `/dash
 - **Comentarios por día:** gráfico de **líneas** con un punto por día del rango; los días sin comentarios valen 0, así que la línea no se corta. Con más de 40 días se ocultan los puntos y el cursor muestra el valor del día. Estados de carga, vacío (ningún comentario en el rango) y error con "Reintentar" propios: si falla uno, el otro gráfico se sigue viendo.
 - **Publicaciones con más comentarios:** gráfico de **barras horizontales** con el top 10 del rango. Los títulos largos se cortan a 30 caracteres con puntos suspensivos y el texto completo aparece en el tooltip al pasar el mouse. Mismos estados (carga, vacío, error con "Reintentar") que las otras dos secciones, cada una independiente.
 - **Publicaciones por tipo:** gráfico de **torta** con el reparto de las publicaciones activas del rango entre receta, tip culinario y experiencia (el único gráfico que muestra partes de un todo). La leyenda va abajo, así que cada porción se identifica sin depender del color, y el tooltip muestra la cantidad y el porcentaje. Sus tres colores son variables propias del tema (`--tema-torta-1` a `3`), distintos en claro y oscuro.
+- **Resumen del período y rango rápido:** arriba de los gráficos, tres números grandes (publicaciones, comentarios y personas activas) y, debajo de cada uno, cuánto cambió contra el lapso anterior de igual largo (por ejemplo "100 % más" o "20 % menos"; "Sin datos previos" si antes no había nada), con una nota que dice con qué fechas se compara. El cambio se escribe con palabras y con un símbolo, no sólo con color. Debajo de las fechas hay botones de **7 días, 30 días, 90 días y 1 año** que fijan las dos fechas hasta hoy; el botón queda marcado mientras el rango coincida con él.
 - **API:** `GET /estadisticas/publicaciones-por-usuario?desde=YYYY-MM-DD&hasta=YYYY-MM-DD` devuelve `[{ usuario, nombreUsuario, cantidad }]`, ordenado por cantidad y luego por nombre de usuario. Cuenta sólo publicaciones **activas**. Los dos extremos están incluidos y se interpretan en la hora de Buenos Aires (UTC-3, sin horario de verano): `desde` empieza a las 00:00 y `hasta` termina a las 23:59:59 de ese día. 400 `DATOS_INVALIDOS` si falta una fecha, no es `YYYY-MM-DD` o hay un parámetro de más; 400 `RANGO_INVALIDO` si `desde` es posterior a `hasta`; 400 `RANGO_DEMASIADO_LARGO` si supera 366 días; 403 `NO_ES_ADMINISTRADOR` con el token de una persona común y 401 sin token.
 - **API de comentarios:** `GET /estadisticas/comentarios-por-dia?desde=YYYY-MM-DD&hasta=YYYY-MM-DD` devuelve `[{ fecha, cantidad }]`, un elemento por cada día del rango en orden cronológico, con `cantidad: 0` en los días sin comentarios. El día se calcula en la hora de Buenos Aires (un comentario de las 22:00 cuenta en ese día aunque en UTC sea el siguiente). Cuenta sólo los comentarios de publicaciones **activas**. Mismo rango, mismos errores y mismos permisos que la anterior.
 - **API de comentarios por publicación:** `GET /estadisticas/comentarios-por-publicacion?desde=YYYY-MM-DD&hasta=YYYY-MM-DD` devuelve como máximo **10** elementos `{ publicacion, titulo, cantidad }`, de más a menos comentarios y, si empatan, por título. Cuenta los comentarios hechos en el rango y sólo de publicaciones **activas** (una publicación dada de baja no ocupa un lugar del ranking). Mismo rango, mismos errores y mismos permisos que las anteriores.
 - **API de publicaciones por tipo:** `GET /estadisticas/publicaciones-por-tipo?desde=YYYY-MM-DD&hasta=YYYY-MM-DD` devuelve siempre los tres tipos, en el orden `receta`, `tip`, `experiencia`, como `[{ tipo, cantidad }]`, con `cantidad: 0` si no hubo. Cuenta sólo publicaciones **activas**. Mismo rango, mismos errores y mismos permisos que las anteriores.
+- **API del resumen:** `GET /estadisticas/resumen?desde=YYYY-MM-DD&hasta=YYYY-MM-DD` devuelve `{ actual, anterior }`, y cada uno trae `desde`, `hasta`, `publicaciones` (activas), `comentarios` (de publicaciones activas) y `personasActivas` (quienes publicaron o comentaron, contadas una sola vez). `anterior` es el lapso de igual largo que termina el día anterior a `desde`, para poder comparar. Mismo rango, mismos errores y mismos permisos que las anteriores.
 
 
 ### Pantalla de carga

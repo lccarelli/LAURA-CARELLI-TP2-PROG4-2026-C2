@@ -118,6 +118,26 @@ body {
     @apply font-serif text-3xl leading-tight font-black break-words md:text-5xl;
   }
 
+  .indicadores {
+    @apply grid grid-cols-3 gap-3 md:gap-8;
+  }
+
+  .indicador {
+    @apply flex min-w-0 flex-col gap-1;
+  }
+
+  .indicador-etiqueta {
+    @apply text-xs leading-tight text-suave md:text-sm;
+  }
+
+  .indicador-valor {
+    @apply font-serif text-3xl leading-none font-black md:text-5xl;
+  }
+
+  .indicador-variacion {
+    @apply text-xs leading-tight text-suave md:text-sm;
+  }
+
   .subtitulo {
     @apply font-serif text-2xl leading-tight font-medium break-words;
   }
@@ -645,6 +665,10 @@ body {
 
   .pin-titulo {
     @apply font-serif text-base leading-snug font-semibold text-tinta;
+  }
+
+  .pin-fecha {
+    @apply text-xs text-suave;
   }
 
   .pin-autor {

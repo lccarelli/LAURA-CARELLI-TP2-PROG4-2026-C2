@@ -9,11 +9,12 @@ import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { errorDeComentario, VALIDADORES_COMENTARIO } from '../../utilidades/comentario';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
+import { FechaRelativa } from '../../pipes/fecha-relativa';
 import { ContadorTexto } from '../contador-texto/contador-texto';
 import { Aviso } from '../aviso/aviso';
 
 @Component({
-  imports: [DatePipe, ReactiveFormsModule, Aviso, ContadorTexto, TranslatePipe],
+  imports: [DatePipe, FechaRelativa, ReactiveFormsModule, Aviso, ContadorTexto, TranslatePipe],
   selector: 'app-item-comentario',
   templateUrl: './item-comentario.html',
 })

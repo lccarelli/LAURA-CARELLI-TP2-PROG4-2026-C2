@@ -1,6 +1,14 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  OnDestroy,
+  OnInit,
+  PendingTasks,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -29,6 +37,7 @@ import { Borrador, BorradorPublicacion } from '../../servicios/borrador/borrador
 import { FotosBorrador } from '../../servicios/fotos-borrador/fotos-borrador';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
+import { Imagenes } from '../../servicios/imagenes/imagenes';
 import { validarImagen } from '../../utilidades/imagen';
 
 const MAXIMO_INGREDIENTES = 40;
@@ -138,6 +147,9 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
   private router = inject(Router);
   private formBuilder = inject(FormBuilder);
   private traductor = inject(TranslateService);
+  private imagenes = inject(Imagenes);
+  private tareas = inject(PendingTasks);
+  private imagenesEnProceso = signal(0);
 
   readonly publicando = signal(false);
   readonly tipos = TIPOS;
@@ -163,6 +175,7 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
   readonly imagen = signal<File | null>(null);
   readonly vistaPortada = signal<string | null>(null);
   readonly errorImagen = signal<string | null>(null);
+  readonly preparandoImagen = computed(() => this.imagenesEnProceso() > 0);
   readonly mensajeError = signal<string | null>(null);
   readonly avisoSesion = signal<string | null>(null);
   readonly borradorRecuperado = signal<string | null>(null);
@@ -236,24 +249,38 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
 
   agregarFotosPaso(paso: AbstractControl, evento: Event) {
     const entrada = evento.target as HTMLInputElement;
-    const archivos = Array.from(entrada.files ?? []);
+    const originales = Array.from(entrada.files ?? []);
     entrada.value = '';
-    let error: string | null = null;
-    for (const archivo of archivos) {
-      error = this.errorDeFotoPaso(paso, archivo);
-      if (error) {
-        break;
+    this.preparar(async () => {
+      let error: string | null = null;
+      for (const original of originales) {
+        const archivo = await this.imagenes.preparar(original);
+        error = this.errorDeFotoPaso(paso, archivo);
+        if (error) {
+          break;
+        }
+        this.colocarFotoPaso(paso, archivo);
       }
-      this.colocarFotoPaso(paso, archivo);
-    }
-    this.erroresFotoPaso.update((errores) => {
-      const nuevos = new Map(errores);
-      if (error) {
-        nuevos.set(paso, error);
-      } else {
-        nuevos.delete(paso);
+      this.erroresFotoPaso.update((errores) => {
+        const nuevos = new Map(errores);
+        if (error) {
+          nuevos.set(paso, error);
+        } else {
+          nuevos.delete(paso);
+        }
+        return nuevos;
+      });
+    });
+  }
+
+  private preparar(tarea: () => Promise<void>) {
+    this.imagenesEnProceso.update((n) => n + 1);
+    this.tareas.run(async () => {
+      try {
+        await tarea();
+      } finally {
+        this.imagenesEnProceso.update((n) => n - 1);
       }
-      return nuevos;
     });
   }
 
@@ -716,15 +743,18 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
 
   elegirImagen(evento: Event) {
     const entrada = evento.target as HTMLInputElement;
-    const archivo = entrada.files?.[0] ?? null;
+    const original = entrada.files?.[0] ?? null;
     entrada.value = '';
-    const error = validarImagen(archivo);
-    this.errorImagen.set(error);
-    if (archivo && !error) {
-      this.colocarPortada(archivo);
-    } else if (error) {
-      this.soltarPortada();
-    }
+    this.preparar(async () => {
+      const archivo = original && (await this.imagenes.preparar(original));
+      const error = validarImagen(archivo);
+      this.errorImagen.set(error);
+      if (archivo && !error) {
+        this.colocarPortada(archivo);
+      } else if (error) {
+        this.soltarPortada();
+      }
+    });
   }
 
   publicar() {
@@ -734,7 +764,8 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
       this.formulario.invalid ||
       this.errorImagen() ||
       this.hayPasosIncompletos() ||
-      this.publicando()
+      this.publicando() ||
+      this.preparandoImagen()
     ) {
       return;
     }
