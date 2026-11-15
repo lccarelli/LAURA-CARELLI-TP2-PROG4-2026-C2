@@ -1,0 +1,119 @@
+<form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+  <div class="fila-campos">
+    <label class="caja">
+      <span class="etiqueta">{{ 'registro.nombre' | translate }}</span>
+      <input class="campo" formControlName="nombre" autocomplete="given-name" />
+      @if (mensajeDeError('nombre'); as mensaje) {
+        <span class="mensaje-error">{{ mensaje }}</span>
+      }
+    </label>
+    <label class="caja">
+      <span class="etiqueta">{{ 'registro.apellido' | translate }}</span>
+      <input class="campo" formControlName="apellido" autocomplete="family-name" />
+      @if (mensajeDeError('apellido'); as mensaje) {
+        <span class="mensaje-error">{{ mensaje }}</span>
+      }
+    </label>
+  </div>
+
+  <label class="caja">
+    <span class="etiqueta">{{ 'registro.correo' | translate }}</span>
+    <input
+      class="campo"
+      type="email"
+      formControlName="correo"
+      autocomplete="email"
+      autocapitalize="none"
+      autocorrect="off"
+      spellcheck="false"
+    />
+    @if (mensajeDeError('correo'); as mensaje) {
+      <span class="mensaje-error">{{ mensaje }}</span>
+    }
+  </label>
+
+  <label class="caja">
+    <span class="etiqueta">{{ 'registro.nombre_usuario' | translate }}</span>
+    <input
+      class="campo"
+      formControlName="nombreUsuario"
+      autocomplete="username"
+      autocapitalize="none"
+      autocorrect="off"
+      spellcheck="false"
+    />
+    @if (mensajeDeError('nombreUsuario'); as mensaje) {
+      <span class="mensaje-error">{{ mensaje }}</span>
+    }
+  </label>
+
+  <div class="fila-campos">
+    <label class="caja">
+      <span class="etiqueta">{{ 'registro.clave' | translate }}</span>
+      <app-campo-clave>
+        <input class="campo" type="password" formControlName="clave" autocomplete="new-password" />
+      </app-campo-clave>
+      @if (mensajeDeError('clave'); as mensaje) {
+        <span class="mensaje-error">{{ mensaje }}</span>
+      }
+    </label>
+    <label class="caja">
+      <span class="etiqueta">{{ 'registro.repetir_clave' | translate }}</span>
+      <app-campo-clave>
+        <input
+          class="campo"
+          type="password"
+          formControlName="repetirClave"
+          autocomplete="new-password"
+        />
+      </app-campo-clave>
+      @if (mensajeDeError('repetirClave'); as mensaje) {
+        <span class="mensaje-error">{{ mensaje }}</span>
+      }
+    </label>
+  </div>
+
+  <label class="caja">
+    <span class="etiqueta">{{ 'registro.fecha_nacimiento' | translate }}</span>
+    <input class="campo" type="date" formControlName="fechaNacimiento" [max]="hoy" />
+    @if (mensajeDeError('fechaNacimiento'); as mensaje) {
+      <span class="mensaje-error">{{ mensaje }}</span>
+    }
+  </label>
+
+  <label class="caja">
+    <span class="etiqueta">{{ 'registro.descripcion' | translate }}</span>
+    <textarea class="campo" rows="3" formControlName="descripcion"></textarea>
+    @if (mensajeDeError('descripcion'); as mensaje) {
+      <span class="mensaje-error">{{ mensaje }}</span>
+    }
+  </label>
+
+  @if (conPerfil()) {
+    <div class="caja">
+      <fieldset class="flex flex-col gap-2">
+        <legend class="etiqueta mb-2">{{ 'usuarios.perfil' | translate }}</legend>
+        <div class="grupo-radio">
+          @for (opcion of perfiles; track opcion) {
+            <label class="opcion-radio">
+              <input type="radio" formControlName="perfil" [value]="opcion" [attr.value]="opcion" />
+              {{ 'usuarios.perfil_' + opcion | translate }}
+            </label>
+          }
+        </div>
+      </fieldset>
+    </div>
+  }
+
+  <label class="caja">
+    <span class="etiqueta">{{ 'registro.imagen' | translate }}</span>
+    <input class="campo-archivo" type="file" accept="image/*" (change)="elegirImagen($event)" />
+    @if (errorImagen(); as mensaje) {
+      <span class="mensaje-error">{{ mensaje | translate }}</span>
+    }
+  </label>
+
+  <button type="submit" class="boton-principal w-full" [disabled]="enviando()">
+    {{ (enviando() ? botonEnviando() : boton()) | translate }}
+  </button>
+</form>

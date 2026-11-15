@@ -23,6 +23,16 @@ describe('Barra', () => {
       (boton as HTMLElement).textContent?.includes('Salir'),
     ) as HTMLButtonElement;
 
+  const desplazarA = (posicion: number) => {
+    Object.defineProperty(window, 'scrollY', { value: posicion, configurable: true });
+    window.dispatchEvent(new Event('scroll'));
+    fixture.detectChanges();
+  };
+
+  const barraInferior = () => fixture.nativeElement.querySelector('.barra-nav') as HTMLElement;
+
+  afterEach(() => desplazarA(0));
+
   beforeEach(async () => {
     localStorage.clear();
     await TestBed.configureTestingModule({
@@ -51,6 +61,34 @@ describe('Barra', () => {
     expect(texto()).toContain('Mi perfil');
     expect(texto()).toContain('Salir');
     expect(texto()).not.toContain('Registrarme');
+  });
+
+  it('[O] un administrador ve el enlace a Administración y lleva a los usuarios', async () => {
+    TestBed.inject(Auth).usuario.set({
+      nombreUsuario: 'laura_c',
+      perfil: 'administrador',
+    } as never);
+    TestBed.inject(Auth).token.set('abc');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const enlace = fixture.nativeElement.querySelector('a[href="/dashboard/usuarios"]');
+
+    expect(enlace.textContent).toContain('Administración');
+  });
+
+  it('[E] una persona común no ve el enlace a Administración', async () => {
+    TestBed.inject(Auth).usuario.set({ nombreUsuario: 'laura_c', perfil: 'usuario' } as never);
+    TestBed.inject(Auth).token.set('abc');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelector('a[href="/dashboard/usuarios"]')).toBeNull();
+    expect(texto()).not.toContain('Administración');
+  });
+
+  it('[Z] sin sesión tampoco aparece Administración', () => {
+    expect(texto()).not.toContain('Administración');
   });
 
   it('[I] ofrece español e inglés y marca el idioma actual', () => {
@@ -93,5 +131,39 @@ describe('Barra', () => {
 
     expect(TestBed.inject(Auth).token()).toBeNull();
     expect(navegar).toHaveBeenCalledWith(['/']);
+  });
+
+  describe('movimiento al volver hacia arriba', () => {
+    it('[Z] al abrir la página no se mueve', () => {
+      expect(barraInferior().classList).not.toContain('subiendo');
+    });
+
+    it('[I] al bajar no se mueve y al subir sí', () => {
+      desplazarA(300);
+      expect(barraInferior().classList).not.toContain('subiendo');
+
+      desplazarA(200);
+      expect(barraInferior().classList).toContain('subiendo');
+    });
+
+    it('[S] al volver a bajar deja de moverse y al subir de nuevo se repite', () => {
+      desplazarA(300);
+      desplazarA(200);
+      desplazarA(400);
+      expect(barraInferior().classList).not.toContain('subiendo');
+
+      desplazarA(350);
+      expect(barraInferior().classList).toContain('subiendo');
+    });
+
+    it('[B] un desplazamiento de 7 píxeles no cuenta y uno de 8 sí', () => {
+      desplazarA(300);
+
+      desplazarA(293);
+      expect(barraInferior().classList).not.toContain('subiendo');
+
+      desplazarA(292);
+      expect(barraInferior().classList).toContain('subiendo');
+    });
   });
 });

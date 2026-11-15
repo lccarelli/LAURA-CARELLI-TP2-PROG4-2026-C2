@@ -1,8 +1,9 @@
 import { Component, ElementRef, inject, signal } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
+import { Icono } from '../icono/icono';
 
 @Component({
-  imports: [TranslatePipe],
+  imports: [Icono, TranslatePipe],
   selector: 'app-campo-clave',
   templateUrl: './campo-clave.html',
 })

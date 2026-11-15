@@ -11,6 +11,12 @@ const CODIGOS_DE_LA_API = [
   'TOKEN_AUSENTE',
   'TOKEN_INVALIDO',
   'DEMASIADAS_SOLICITUDES',
+  'NO_ES_ADMINISTRADOR',
+  'USUARIO_DESHABILITADO',
+  'CUENTA_PROPIA',
+  'USUARIO_NO_ENCONTRADO',
+  'RANGO_INVALIDO',
+  'RANGO_DEMASIADO_LARGO',
 ];
 
 function aplanar(objeto: object, prefijo = ''): Record<string, string> {
@@ -22,7 +28,9 @@ function aplanar(objeto: object, prefijo = ''): Record<string, string> {
   }, {});
 }
 
-const parametros = (texto: string) => (texto.match(/{{\s*\w+\s*}}/g) ?? []).sort();
+const porNombre = (a: string, b: string) => a.localeCompare(b);
+
+const parametros = (texto: string) => (texto.match(/{{\s*\w+\s*}}/g) ?? []).sort(porNombre);
 
 describe('traducciones', () => {
   const textosEs = aplanar(es);
@@ -33,7 +41,7 @@ describe('traducciones', () => {
   });
 
   it('[I] español e inglés tienen exactamente las mismas claves', () => {
-    expect(Object.keys(textosEn).sort()).toEqual(Object.keys(textosEs).sort());
+    expect(Object.keys(textosEn).sort(porNombre)).toEqual(Object.keys(textosEs).sort(porNombre));
   });
 
   it('[I] cada clave usa los mismos parámetros en los dos idiomas', () => {

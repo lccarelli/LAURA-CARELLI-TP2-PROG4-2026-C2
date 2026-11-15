@@ -152,8 +152,8 @@ describe('Publicaciones', () => {
     pedir(0).flush(pagina(1, 10, true));
     await actualizar();
 
-    fixture.componentInstance.cargarMas();
-    fixture.componentInstance.cargarMas();
+    fixture.componentInstance.listado.cargarMas();
+    fixture.componentInstance.listado.cargarMas();
 
     const solicitud = pedir(10);
     expect(solicitud.request.params.get('offset')).toBe('10');

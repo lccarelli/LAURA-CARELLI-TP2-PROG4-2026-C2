@@ -1,7 +1,9 @@
 import { DestroyRef, computed, inject, Service, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { finalize, interval } from 'rxjs';
+import { mensajeDeApi } from '../../utilidades/errores';
 import { Auth } from '../auth/auth';
 
 const PASO_MS = 1000;
@@ -47,7 +49,12 @@ export class Sesion {
       .pipe(finalize(() => this.extendiendo.set(false)))
       .subscribe({
         next: () => this.ahora.set(Date.now()),
-        error: () => undefined,
+        error: (error: HttpErrorResponse) => {
+          if (error.status === 401) {
+            this.auth.salir(mensajeDeApi(error));
+            this.router.navigateByUrl('/login');
+          }
+        },
       });
   }
 
@@ -58,10 +65,24 @@ export class Sesion {
 
   private pasar() {
     this.ahora.set(Date.now());
+    if (this.redirectALoginConTokenBorrado()) {
+      return;
+    }
+
     if (this.segundosRestantes() === 0) {
       this.auth.salir('api.SESION_VENCIDA');
       this.router.navigateByUrl('/login');
     }
+  }
+
+  private redirectALoginConTokenBorrado() {
+    const habiaSesion = this.auth.token() !== null;
+    this.auth.sincronizar();
+    if (habiaSesion && this.auth.token() === null) {
+      this.router.navigateByUrl('/login');
+      return true;
+    }
+    return false;
   }
 
   private verificar() {

@@ -1,0 +1,138 @@
+<section class="pagina-ancha">
+  <div class="encabezado-pagina">
+    <h1 class="titulo">{{ 'usuarios.titulo' | translate }}</h1>
+    <a class="boton-principal" routerLink="/dashboard/usuarios/nuevo">{{
+      'usuarios.crear' | translate
+    }}</a>
+  </div>
+
+  @if (creado(); as nombreUsuario) {
+    <app-aviso titulo="usuarios.creado" [info]="true" (cerrar)="creado.set(null)">{{
+      'usuarios.creado_detalle' | translate: { nombreUsuario }
+    }}</app-aviso>
+  }
+
+  @if (hecho(); as listo) {
+    <app-aviso
+      [titulo]="'usuarios.' + listo.accion + '_hecha'"
+      [info]="true"
+      (cerrar)="hecho.set(null)"
+      >{{
+        'usuarios.' + listo.accion + '_hecha_detalle'
+          | translate: { nombreUsuario: listo.nombreUsuario }
+      }}</app-aviso
+    >
+  }
+
+  @if (error(); as fallo) {
+    <app-aviso [titulo]="'usuarios.error_' + fallo.accion" (cerrar)="error.set(null)">{{
+      fallo.mensaje | translate
+    }}</app-aviso>
+  }
+
+  @if (listado.mensajeError(); as mensaje) {
+    <app-aviso titulo="usuarios.error_cargar" (cerrar)="listado.mensajeError.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+
+  @if (listado.items().length > 0) {
+    <div class="tarjeta overflow-x-auto">
+      <table class="tabla" [attr.aria-label]="'usuarios.titulo' | translate">
+        <thead>
+          <tr>
+            <th scope="col" [attr.aria-label]="'usuarios.foto' | translate"></th>
+            <th scope="col">{{ 'usuarios.nombre' | translate }}</th>
+            <th scope="col">{{ 'usuarios.usuario' | translate }}</th>
+            <th scope="col">{{ 'usuarios.correo' | translate }}</th>
+            <th scope="col">{{ 'usuarios.perfil' | translate }}</th>
+            <th scope="col">{{ 'usuarios.estado' | translate }}</th>
+            <th scope="col">{{ 'usuarios.acciones' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (usuario of listado.items(); track usuario._id) {
+            <tr>
+              <td>
+                <img
+                  class="avatar-chico"
+                  [src]="urlImagen(usuario.imagenPerfil)"
+                  [alt]="'comun.foto_de' | translate: { nombre: usuario.nombreUsuario }"
+                />
+              </td>
+              <td>{{ usuario.nombre }} {{ usuario.apellido }}</td>
+              <td>&#64;{{ usuario.nombreUsuario }}</td>
+              <td class="break-all">{{ usuario.correo }}</td>
+              <td>
+                <span class="chip">{{ 'roles.' + usuario.perfil | translate }}</span>
+              </td>
+              <td>
+                <span class="chip" [class.activo]="usuario.habilitado">{{
+                  (usuario.habilitado ? 'usuarios.habilitado' : 'usuarios.deshabilitado')
+                    | translate
+                }}</span>
+              </td>
+              <td>
+                @if (puedeDeshabilitar(usuario)) {
+                  <button
+                    type="button"
+                    class="boton-peligro"
+                    [attr.aria-label]="
+                      'usuarios.deshabilitar_aria'
+                        | translate: { nombreUsuario: usuario.nombreUsuario }
+                    "
+                    (click)="pedir('deshabilitar', usuario)"
+                  >
+                    {{ 'usuarios.deshabilitar' | translate }}
+                  </button>
+                } @else if (!usuario.habilitado) {
+                  <button
+                    type="button"
+                    class="boton-secundario"
+                    [attr.aria-label]="
+                      'usuarios.habilitar_aria'
+                        | translate: { nombreUsuario: usuario.nombreUsuario }
+                    "
+                    (click)="pedir('habilitar', usuario)"
+                  >
+                    {{ 'usuarios.habilitar' | translate }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (listado.items().length === 0 && !listado.cargando() && !listado.fallaLaCarga()) {
+    <p class="tarjeta estado-vacio">{{ 'usuarios.vacio' | translate }}</p>
+  }
+
+  @if (listado.cargando()) {
+    <app-cubreplato-loading />
+  }
+
+  @if (listado.hayMas() && !listado.cargando()) {
+    <app-ver-mas
+      texto="usuarios.ver_mas"
+      [automatico]="!listado.fallaLaCarga()"
+      (cargar)="listado.cargarMas()"
+    />
+  }
+
+  @if (pendiente(); as confirmacion) {
+    <app-modal-confirmacion
+      [titulo]="'usuarios.' + confirmacion.accion + '_titulo'"
+      [texto]="'usuarios.' + confirmacion.accion + '_texto'"
+      [confirmar]="'usuarios.' + confirmacion.accion"
+      [confirmando]="'usuarios.' + confirmacion.accion + '_enviando'"
+      [parametros]="{ nombreUsuario: confirmacion.usuario.nombreUsuario }"
+      [peligroso]="confirmacion.accion === 'deshabilitar'"
+      [enviando]="enviando()"
+      (confirmado)="confirmar()"
+      (cancelado)="cancelar()"
+    />
+  }
+</section>

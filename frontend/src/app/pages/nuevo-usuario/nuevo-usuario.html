@@ -1,0 +1,21 @@
+<section class="pagina-amplia">
+  <a class="enlace" routerLink="/dashboard/usuarios">{{ 'usuarios.volver' | translate }}</a>
+  <h1 class="titulo">{{ 'usuarios.nuevo' | translate }}</h1>
+
+  @if (mensajeError(); as mensaje) {
+    <app-aviso titulo="usuarios.error_crear" (cerrar)="mensajeError.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+
+  <app-formulario-usuario
+    boton="usuarios.crear_boton"
+    botonEnviando="usuarios.crear_enviando"
+    [conPerfil]="true"
+    [enviando]="enviando()"
+    (guardar)="crear($event)"
+  />
+  <a class="boton-secundario" routerLink="/dashboard/usuarios">{{
+    'usuarios.cancelar' | translate
+  }}</a>
+</section>

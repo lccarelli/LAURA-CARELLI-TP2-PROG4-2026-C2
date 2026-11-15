@@ -1,5 +1,5 @@
 import {
-  BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -8,13 +8,11 @@ import type { ConfigType } from '@nestjs/config';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Types } from 'mongoose';
-import { Destino } from '../imagenes/destinos.js';
 import {
   EVENTOS_DE_LOG,
   LoggerFactory,
   ContextLogger,
 } from '../logs/logs.factory.js';
-import { ImagenesService } from '../imagenes/imagenes.service.js';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
 import { authConfig } from './auth.config.js';
 import { IngresarDto } from './dto/ingresar.dto.js';
@@ -28,45 +26,17 @@ export class AuthService {
     @Inject(authConfig.KEY)
     private readonly config: ConfigType<typeof authConfig>,
     private readonly usuariosService: UsuariosService,
-    private readonly imagenesService: ImagenesService,
     loggerFactory: LoggerFactory,
   ) {
     this.logger = loggerFactory.crear(AuthService.name);
   }
 
   async registro(dto: RegistroDto, imagen?: Express.Multer.File) {
-    const fechaNacimiento = new Date(dto.fechaNacimiento);
-    if (fechaNacimiento > new Date()) {
-      throw new BadRequestException({
-        message: 'fechaNacimiento no puede ser una fecha futura',
-        codigo: 'FECHA_FUTURA',
-      });
-    }
-
     const perfil =
       dto.correo.toLowerCase() === this.config.correoAdmin
         ? 'administrador'
         : 'usuario';
-    const clave = await bcrypt.hash(dto.clave, this.config.rondasBcrypt);
-    const usuarioId = new Types.ObjectId();
-    const imagenPerfil = imagen
-      ? (
-          await this.imagenesService.guardar(
-            imagen,
-            Destino.PERFILES,
-            String(usuarioId),
-          )
-        ).url
-      : undefined;
-
-    const usuario = await this.usuariosService.crear({
-      ...dto,
-      _id: usuarioId,
-      clave,
-      fechaNacimiento,
-      perfil,
-      imagenPerfil,
-    });
+    const usuario = await this.usuariosService.registrar(dto, perfil, imagen);
     this.logger.info(EVENTOS_DE_LOG.USUARIO_REGISTRADO, 'Usuario registrado', {
       id_usuario: String(usuario!._id),
       nombre_usuario: usuario!.nombreUsuario,
@@ -89,6 +59,21 @@ export class AuthService {
       throw new UnauthorizedException({
         message: 'Credenciales inválidas',
         codigo: 'CREDENCIALES_INVALIDAS',
+      });
+    }
+
+    if (!encontrado.habilitado) {
+      this.logger.advertir(
+        EVENTOS_DE_LOG.INGRESO_RECHAZADO,
+        'Ingreso rechazado: usuario deshabilitado',
+        {
+          id_usuario: String(encontrado._id),
+          nombre_usuario: encontrado.nombreUsuario,
+        },
+      );
+      throw new ForbiddenException({
+        message: 'Usuario deshabilitado',
+        codigo: 'USUARIO_DESHABILITADO',
       });
     }
 
@@ -125,24 +110,10 @@ export class AuthService {
   }
 
   async autorizar(usuario: { id: string; nombreUsuario?: string }) {
-    const encontrado = Types.ObjectId.isValid(usuario.id)
-      ? await this.usuariosService.buscarPorId(usuario.id)
-      : null;
-    if (!encontrado?.habilitado) {
-      this.logger.advertir(
-        EVENTOS_DE_LOG.USUARIO_NO_AUTORIZADO,
-        'Usuario inexistente o deshabilitado',
-        { id_usuario: usuario.id, nombre_usuario: usuario.nombreUsuario },
-      );
-      throw new UnauthorizedException({
-        message: 'Usuario no autorizado',
-        codigo: 'USUARIO_NO_AUTORIZADO',
-      });
-    }
-    return { usuario: encontrado };
+    return { usuario: await this.buscarHabilitado(usuario) };
   }
 
-  refrescar(usuario: {
+  async refrescar(usuario: {
     id: string;
     perfil: string;
     nombreUsuario?: string;
@@ -161,20 +132,33 @@ export class AuthService {
       });
     }
 
+    const encontrado = await this.buscarHabilitado(usuario);
     this.logger.info(EVENTOS_DE_LOG.TOKEN_REFRESCADO, 'Token refrescado', {
       id_usuario: usuario.id,
       nombre_usuario: usuario.nombreUsuario,
     });
-    return {
-      token: this.generarToken(
-        {
-          _id: usuario.id,
-          perfil: usuario.perfil,
-          nombreUsuario: usuario.nombreUsuario,
-        },
-        usuario.inicio,
-      ),
-    };
+    return { token: this.generarToken(encontrado, usuario.inicio) };
+  }
+
+  private async buscarHabilitado(usuario: {
+    id: string;
+    nombreUsuario?: string;
+  }) {
+    const encontrado = Types.ObjectId.isValid(usuario.id)
+      ? await this.usuariosService.buscarPorId(usuario.id)
+      : null;
+    if (!encontrado?.habilitado) {
+      this.logger.advertir(
+        EVENTOS_DE_LOG.USUARIO_NO_AUTORIZADO,
+        'Usuario inexistente o deshabilitado',
+        { id_usuario: usuario.id, nombre_usuario: usuario.nombreUsuario },
+      );
+      throw new UnauthorizedException({
+        message: 'Usuario no autorizado',
+        codigo: 'USUARIO_NO_AUTORIZADO',
+      });
+    }
+    return encontrado;
   }
 
   private generarToken(

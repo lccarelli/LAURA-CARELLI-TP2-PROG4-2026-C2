@@ -62,6 +62,9 @@
   --tema-serie-3: #2f3a4c;
   --tema-serie-4: #1fa3b8;
   --tema-serie-5: #f2a900;
+  --tema-torta-1: #404d63;
+  --tema-torta-2: #f2a900;
+  --tema-torta-3: #1fa3b8;
 }
 
 :root[data-tema='oscuro'] {
@@ -91,6 +94,9 @@
   --tema-serie-3: #ffb703;
   --tema-serie-4: #5cc8e8;
   --tema-serie-5: #c77dff;
+  --tema-torta-1: #abc9f7;
+  --tema-torta-2: #ffb703;
+  --tema-torta-3: #c77dff;
 }
 
 @utility anillo-foco {
@@ -110,6 +116,14 @@ body {
 @layer components {
   .titulo {
     @apply font-serif text-3xl leading-tight font-black break-words md:text-5xl;
+  }
+
+  .subtitulo {
+    @apply font-serif text-2xl leading-tight font-medium break-words;
+  }
+
+  .grafico {
+    @apply relative w-full;
   }
 
   .titulo-tarjeta {
@@ -137,7 +151,7 @@ body {
   }
 
   .numero-paso {
-    @apply grid size-7 shrink-0 place-items-center rounded-full bg-primario font-sans text-sm font-semibold text-sobre-primario;
+    @apply grid size-6 shrink-0 place-items-center rounded-full bg-primario font-sans text-xs md:size-7 md:text-sm font-semibold text-sobre-primario;
   }
 
   .lista-receta {
@@ -145,11 +159,11 @@ body {
   }
 
   .ingredientes {
-    @apply mt-3 flex flex-col gap-4;
+    @apply flex flex-col gap-3;
   }
 
   .ingrediente-fila {
-    @apply grid grid-cols-[1fr_6.5rem_auto] items-center gap-2 sm:grid-cols-[10.5rem_8rem_1fr_auto];
+    @apply grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-linea/25 p-2 sm:gap-3 sm:p-3;
   }
 
   .cantidad-paso {
@@ -180,15 +194,15 @@ body {
   }
 
   .boton-contador {
-    @apply grid size-8 shrink-0 place-items-center rounded-full bg-secundario text-secundario-tinta anillo-foco hover:bg-secundario/70 disabled:opacity-40;
+    @apply grid size-7 shrink-0 place-items-center rounded-full bg-secundario text-secundario-tinta anillo-foco hover:bg-secundario/70 disabled:opacity-40 md:size-8;
   }
 
   .fracciones {
-    @apply order-last col-span-full flex gap-1.5;
+    @apply col-span-full flex gap-1.5;
   }
 
   .fraccion {
-    @apply inline-flex min-h-8 min-w-10 items-center justify-center rounded-full bg-secundario px-3 text-base text-secundario-tinta anillo-foco hover:bg-secundario/70;
+    @apply inline-flex min-h-8 min-w-10 items-center justify-center rounded-full bg-secundario px-3 text-sm text-secundario-tinta sm:text-base anillo-foco hover:bg-secundario/70;
   }
 
   .fraccion.activo {
@@ -196,7 +210,7 @@ body {
   }
 
   .ficha-campos {
-    @apply mt-4 grid gap-4 sm:grid-cols-2;
+    @apply grid gap-3 sm:grid-cols-2 sm:gap-4;
   }
 
   .costos {
@@ -217,8 +231,40 @@ body {
     @apply mt-0;
   }
 
-  .ingrediente-nombre {
-    @apply order-last col-span-full sm:order-none sm:col-span-1;
+  .ingrediente-fila > .numero-paso {
+    @apply col-start-1 row-start-1;
+  }
+
+  .ingrediente-fila > .cantidad-paso {
+    @apply col-span-full sm:max-w-xs;
+  }
+
+  .ingrediente-fila > .medidas {
+    @apply col-span-full;
+  }
+
+  .ingrediente-fila > .ingrediente-nombre {
+    @apply col-start-2 row-start-1;
+  }
+
+  .ingrediente-fila > .boton-icono {
+    @apply col-start-3 row-start-1 size-9 sm:size-11;
+  }
+
+  .medidas {
+    @apply flex flex-col gap-1.5;
+  }
+
+  .medidas-grupo {
+    @apply flex flex-wrap gap-1;
+  }
+
+  .medida-opcion {
+    @apply inline-flex min-h-8 items-center rounded-full bg-secundario px-2 text-xs font-medium text-secundario-tinta anillo-foco hover:bg-secundario/70 sm:min-h-9 sm:px-3 sm:text-sm;
+  }
+
+  .medida-opcion.activa {
+    @apply bg-primario text-sobre-primario hover:bg-primario-fuerte;
   }
 
   .ingrediente-error {
@@ -226,7 +272,7 @@ body {
   }
 
   .paso-fila {
-    @apply grid grid-cols-[auto_auto_1fr_auto] items-start gap-3 rounded-2xl;
+    @apply grid grid-cols-[auto_auto_1fr_auto] items-center gap-2 rounded-2xl sm:items-start sm:gap-3;
   }
 
   .paso-fila .campo {
@@ -254,7 +300,7 @@ body {
   }
 
   .paso-cuerpo {
-    @apply flex min-w-0 flex-col gap-3;
+    @apply order-last col-span-full flex min-w-0 flex-col gap-3 sm:order-none sm:col-span-1;
   }
 
   .paso-titulo {
@@ -314,19 +360,23 @@ body {
   }
 
   .paso-fila .numero-paso {
-    @apply mt-2;
+    @apply sm:mt-2;
   }
 
   .paso-fila .boton-icono {
-    @apply mt-0;
+    @apply mt-0 size-9 sm:size-11;
+  }
+
+  .paso-fila > .boton-icono {
+    @apply col-start-4;
   }
 
   .paso-error {
-    @apply col-start-3;
+    @apply col-span-full sm:col-span-1 sm:col-start-3;
   }
 
   .manija {
-    @apply mt-1 grid size-9 shrink-0 cursor-grab touch-none place-items-center rounded-full text-suave anillo-foco hover:bg-secundario/40 active:cursor-grabbing;
+    @apply grid size-9 shrink-0 cursor-grab touch-none place-items-center rounded-full text-suave anillo-foco hover:bg-secundario/40 active:cursor-grabbing sm:mt-1;
   }
 
   .cdk-drag-preview {
@@ -394,15 +444,15 @@ body {
   }
 
   .acceso {
-    @apply grid min-h-[calc(100svh-4rem)] md:grid-cols-2;
+    @apply grid min-h-[calc(100svh-4rem)] content-start md:grid-cols-2 md:content-stretch;
   }
 
   .acceso-formulario {
-    @apply mx-auto flex w-full max-w-lg flex-col justify-center gap-4 p-6 md:p-12;
+    @apply mx-auto flex w-full max-w-lg flex-col justify-start gap-4 p-6 md:justify-center md:p-12;
   }
 
   .mosaico-contenedor {
-    @apply relative block h-44 md:h-auto;
+    @apply relative block h-28 md:h-auto;
   }
 
   .mosaico {
@@ -423,6 +473,10 @@ body {
 
   .pagina-angosta {
     @apply mx-auto flex w-full max-w-lg flex-col gap-4 p-4;
+  }
+
+  .pagina-amplia {
+    @apply mx-auto flex w-full flex-col gap-4 p-4 md:w-[70%];
   }
 
   .pagina-formulario {
@@ -473,6 +527,18 @@ body {
     @apply ml-auto;
   }
 
+  .eliminar-publicacion {
+    @apply flex flex-wrap items-center gap-3 rounded-2xl border border-error/25 bg-error/5 p-3;
+  }
+
+  .eliminar-publicacion-pregunta {
+    @apply mr-auto font-medium text-error;
+  }
+
+  .eliminar-publicacion-aviso {
+    @apply block text-sm font-normal text-suave;
+  }
+
   .pin-confirmar {
     @apply flex items-center gap-2 border-t border-error/25 bg-error/5 px-3 py-2;
   }
@@ -498,7 +564,7 @@ body {
   }
 
   .pin-texto {
-    @apply bg-acento line-clamp-6 p-4 font-serif text-lg leading-snug break-words text-acento-tinta;
+    @apply bg-acento line-clamp-6 p-4 font-serif text-base leading-snug md:text-lg break-words text-acento-tinta;
   }
 
   .metricas {
@@ -546,15 +612,23 @@ body {
   }
 
   .plantilla {
-    @apply relative flex flex-col gap-7 rounded-b-2xl rounded-tr-2xl border-2 border-barra p-5 md:p-8;
+    @apply relative flex flex-col gap-4 md:gap-6 rounded-b-2xl rounded-tr-2xl border-2 border-barra p-3 md:p-8;
   }
 
   .plantilla legend {
-    @apply mb-1 w-full;
+    @apply mb-2 w-full;
   }
 
   .orden {
     @apply flex flex-wrap items-center gap-2;
+  }
+
+  .orden .etiqueta {
+    @apply w-full md:w-auto;
+  }
+
+  .orden .tipo-opcion {
+    @apply flex-1 justify-center md:flex-none;
   }
 
   .tipos {
@@ -612,7 +686,7 @@ body {
   }
 
   .boton-flotante {
-    @apply fixed right-4 bottom-24 z-30 inline-flex h-14 items-center gap-2 rounded-full bg-primario px-6 text-base font-bold text-sobre-primario shadow-flota anillo-foco hover:bg-primario-fuerte md:right-8 md:bottom-8;
+    @apply fixed right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-30 inline-flex size-12 items-center justify-center gap-2 rounded-full bg-primario text-base font-bold text-sobre-primario shadow-hoja anillo-foco hover:bg-primario-fuerte lg:right-8 lg:bottom-8 lg:h-14 lg:w-auto lg:px-6 lg:shadow-flota;
   }
 
   .aviso {
@@ -635,16 +709,32 @@ body {
     @apply flex flex-col gap-6;
   }
 
-  .formulario-pagina fieldset:not(:first-child) {
-    @apply border-t border-linea-fuerte/40 pt-5;
+  .plantilla > fieldset {
+    @apply mt-4;
+  }
+
+  .encabezado-pagina {
+    @apply flex flex-wrap items-center justify-between gap-3;
+  }
+
+  .grupo-radio {
+    @apply flex flex-wrap gap-x-6 gap-y-2;
+  }
+
+  .opcion-radio {
+    @apply inline-flex cursor-pointer items-center gap-2 text-sm font-medium;
+  }
+
+  .opcion-radio input {
+    @apply size-4 cursor-pointer accent-barra;
   }
 
   .fila-campos {
-    @apply grid grid-cols-2 gap-4;
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2;
   }
 
   .campo {
-    @apply mt-1 min-h-11 w-full rounded-2xl border-2 border-transparent bg-hoja px-4 py-2.5 text-sm font-medium placeholder:font-normal placeholder:text-suave/70 focus:border-barra focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-barra)_18%,transparent)] focus:outline-none;
+    @apply mt-1 min-h-11 w-full rounded-2xl border-2 border-transparent bg-hoja px-4 py-2.5 text-base font-medium md:text-sm placeholder:font-normal placeholder:text-suave/70 focus:border-barra focus:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-barra)_18%,transparent)] focus:outline-none;
   }
 
   .campo.ng-invalid.ng-touched {
@@ -664,7 +754,7 @@ body {
   }
 
   .caja {
-    @apply flex flex-col gap-2 rounded-2xl border-2 border-transparent bg-hoja px-5 py-3.5 transition-shadow focus-within:border-barra focus-within:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-barra)_18%,transparent)] has-[.campo.ng-invalid.ng-touched]:border-error;
+    @apply flex flex-col gap-1.5 rounded-2xl border-2 border-transparent bg-hoja px-4 py-2.5 transition-shadow md:gap-2 md:px-5 md:py-3.5 focus-within:border-barra focus-within:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-barra)_18%,transparent)] has-[.campo.ng-invalid.ng-touched]:border-error;
   }
 
   .caja .etiqueta {
@@ -696,7 +786,19 @@ body {
   }
 
   .boton-tema {
-    @apply grid size-9 shrink-0 place-items-center rounded-full anillo-foco hover:bg-secundario/40 md:hover:bg-hoja/40;
+    @apply grid size-9 shrink-0 place-items-center rounded-full anillo-foco hover:bg-hoja/40;
+  }
+
+  .boton-salir {
+    @apply grid size-9 shrink-0 place-items-center rounded-full anillo-foco hover:bg-hoja/40 lg:flex lg:size-auto lg:gap-2 lg:px-4 lg:py-1.5 lg:text-base lg:font-bold;
+  }
+
+  .texto-de-escritorio {
+    @apply sr-only lg:not-sr-only;
+  }
+
+  .barra-utiles {
+    @apply flex items-center gap-1 lg:gap-2;
   }
 
   .boton-ojo {
@@ -736,11 +838,11 @@ body {
   }
 
   .barra {
-    @apply flex items-center justify-between gap-4 bg-barra px-4 py-3 text-barra-tinta md:px-8 md:py-4;
+    @apply flex items-center justify-between gap-3 bg-barra px-4 py-3 text-barra-tinta lg:gap-4 lg:px-8 lg:py-4;
   }
 
   .marca {
-    @apply block font-serif text-3xl leading-none font-black tracking-tight md:text-4xl;
+    @apply block font-serif text-3xl leading-none font-black tracking-tight max-[22rem]:text-2xl md:text-4xl;
   }
 
   .lema {
@@ -748,11 +850,11 @@ body {
   }
 
   .barra-nav {
-    @apply fixed inset-x-4 bottom-4 z-40 flex items-center justify-around rounded-full bg-hoja/90 px-2 py-2 text-tinta shadow-flota backdrop-blur-md md:static md:inset-auto md:justify-end md:gap-2 md:bg-transparent md:text-barra-tinta md:p-0 md:shadow-none md:backdrop-blur-none;
+    @apply fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-md flex items-stretch justify-around gap-0.5 rounded-full bg-hoja/90 p-1.5 text-tinta shadow-flota backdrop-blur-md lg:static lg:inset-auto lg:mx-0 lg:ml-auto lg:max-w-none lg:justify-end lg:gap-2 lg:rounded-none lg:bg-transparent lg:p-0 lg:text-barra-tinta lg:shadow-none lg:backdrop-blur-none;
   }
 
   .item-nav {
-    @apply flex flex-col items-center gap-0.5 rounded-full px-4 whitespace-nowrap py-1.5 text-xs anillo-foco hover:bg-secundario/40 md:flex-row md:gap-2 md:text-base md:font-bold md:hover:bg-hoja/40;
+    @apply flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-full px-0.5 py-1.5 text-center text-[0.7rem] leading-tight anillo-foco hover:bg-secundario/40 lg:flex-none lg:flex-row lg:gap-2 lg:rounded-full lg:px-4 lg:text-base lg:font-bold lg:whitespace-nowrap lg:hover:bg-hoja/40;
   }
 
   .item-nav.activo {
@@ -761,6 +863,12 @@ body {
 
   .icono {
     @apply size-5 shrink-0;
+  }
+
+  @media (width < 64rem) {
+    .barra-nav.subiendo {
+      animation: empujon 0.28s ease-out;
+    }
   }
 
   app-icono {
@@ -963,5 +1071,14 @@ body {
   100% {
     opacity: 0;
     transform: translateY(-14px);
+  }
+}
+
+@keyframes empujon {
+  from {
+    transform: translateY(0.5rem);
+  }
+  to {
+    transform: translateY(0);
   }
 }

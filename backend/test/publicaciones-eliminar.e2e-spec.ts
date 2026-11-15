@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import request from 'supertest';
 import { Publicacion } from '../src/publicaciones/schemas/publicacion.schema.js';
 import { cloudinaryFalso, crearApp, limpiarBase } from './ayudas/app.js';
+import { cargarComentarios } from './ayudas/comentarios.js';
 import { registrarYObtenerSesion } from './ayudas/datos.js';
 import { sembrarPublicaciones } from './ayudas/publicaciones.js';
 import { tokenDeAdministrador } from './ayudas/sesiones.js';
@@ -111,6 +112,35 @@ describe('DELETE /publicaciones/:id', () => {
         .get(`/publicaciones/${creada.id}`)
         .set('Authorization', `Bearer ${token}`)
         .expect(404);
+    });
+
+    it('[O] al eliminarla un administrador, la publicación y sus comentarios dejan de estar disponibles', async () => {
+      const otra = await otraPersona();
+      const [ajena] = await sembrarPublicaciones(app, otra.usuario._id, 1);
+      const [comentario] = await cargarComentarios(app, ajena.id, usuarioId, 2);
+      const administrador = tokenDeAdministrador(usuarioId);
+      const conToken = (solicitud: request.Test) =>
+        solicitud.set('Authorization', `Bearer ${administrador}`);
+      await eliminar(ajena.id, administrador).expect(204);
+
+      await conToken(
+        request(app.getHttpServer()).get(`/publicaciones/${ajena.id}`),
+      ).expect(404);
+      await conToken(
+        request(app.getHttpServer()).get(
+          `/publicaciones/${ajena.id}/comentarios`,
+        ),
+      ).expect(404);
+      await conToken(
+        request(app.getHttpServer())
+          .post(`/publicaciones/${ajena.id}/comentarios`)
+          .send({ mensaje: 'Tarde' }),
+      ).expect(404);
+      await conToken(
+        request(app.getHttpServer())
+          .put(`/publicaciones/${ajena.id}/comentarios/${comentario.id}`)
+          .send({ mensaje: 'Editado' }),
+      ).expect(404);
     });
 
     it('[M] sólo se elimina la elegida: las demás siguen', async () => {

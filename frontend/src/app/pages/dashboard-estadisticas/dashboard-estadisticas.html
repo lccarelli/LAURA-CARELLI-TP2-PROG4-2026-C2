@@ -1,0 +1,93 @@
+<section class="pagina-ancha">
+  <h1 class="titulo">{{ 'estadisticas.titulo' | translate }}</h1>
+
+  <div class="flex flex-wrap items-end gap-4">
+    <label class="caja">
+      <span class="etiqueta">{{ 'estadisticas.desde' | translate }}</span>
+      <input
+        class="campo"
+        type="date"
+        [value]="desde()"
+        (change)="cambiarDesde($any($event.target).value)"
+      />
+    </label>
+    <label class="caja">
+      <span class="etiqueta">{{ 'estadisticas.hasta' | translate }}</span>
+      <input
+        class="campo"
+        type="date"
+        [value]="hasta()"
+        (change)="cambiarHasta($any($event.target).value)"
+      />
+    </label>
+  </div>
+
+  @if (errorDeRango(); as mensaje) {
+    <p class="mensaje-error" role="alert">{{ mensaje | translate }}</p>
+  }
+
+  <app-seccion-estadistica
+    titulo="estadisticas.publicaciones_por_usuario"
+    textoVacio="estadisticas.vacio"
+    [carga]="publicaciones"
+    (reintentar)="cargarPublicaciones()"
+  >
+    @if (publicaciones.estado() === 'datos') {
+      <app-grafico-barras
+        [etiquetas]="usuarios()"
+        [valores]="publicacionesPorUsuario()"
+        [serie]="'estadisticas.serie_publicaciones' | translate"
+        [descripcion]="'estadisticas.descripcion_publicaciones' | translate"
+      />
+    }
+  </app-seccion-estadistica>
+
+  <app-seccion-estadistica
+    titulo="estadisticas.comentarios_por_dia"
+    textoVacio="estadisticas.vacio_comentarios"
+    [carga]="comentarios"
+    (reintentar)="cargarComentarios()"
+  >
+    @if (comentarios.estado() === 'datos') {
+      <app-grafico-lineas
+        [etiquetas]="dias()"
+        [valores]="comentariosPorDia()"
+        [serie]="'estadisticas.serie_comentarios' | translate"
+        [descripcion]="'estadisticas.descripcion_comentarios' | translate"
+      />
+    }
+  </app-seccion-estadistica>
+
+  <app-seccion-estadistica
+    titulo="estadisticas.comentarios_por_publicacion"
+    textoVacio="estadisticas.vacio_ranking"
+    [carga]="ranking"
+    (reintentar)="cargarRanking()"
+  >
+    @if (ranking.estado() === 'datos') {
+      <app-grafico-barras
+        [etiquetas]="titulosCortos()"
+        [valores]="comentariosPorPublicacion()"
+        [detalles]="titulos()"
+        [serie]="'estadisticas.serie_comentarios' | translate"
+        [descripcion]="'estadisticas.descripcion_ranking' | translate"
+      />
+    }
+  </app-seccion-estadistica>
+
+  <app-seccion-estadistica
+    titulo="estadisticas.publicaciones_por_tipo"
+    textoVacio="estadisticas.vacio"
+    [carga]="tipos"
+    (reintentar)="cargarTipos()"
+  >
+    @if (tipos.estado() === 'datos') {
+      <app-grafico-torta
+        [etiquetas]="nombresDeTipos()"
+        [valores]="publicacionesPorTipo()"
+        [serie]="'estadisticas.serie_publicaciones' | translate"
+        [descripcion]="'estadisticas.descripcion_tipos' | translate"
+      />
+    }
+  </app-seccion-estadistica>
+</section>
