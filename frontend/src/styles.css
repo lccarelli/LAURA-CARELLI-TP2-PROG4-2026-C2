@@ -523,6 +523,11 @@ body {
     @apply columns-2 gap-4 md:columns-3 lg:columns-4;
   }
 
+  .resaltado {
+    @apply outline-3 outline-offset-2 outline-solid;
+    outline-color: var(--color-resaltado, var(--color-acento));
+  }
+
   .pin-contenedor {
     @apply mb-4 block overflow-hidden rounded-2xl bg-hoja shadow-hoja transition-shadow break-inside-avoid hover:shadow-flota;
   }
