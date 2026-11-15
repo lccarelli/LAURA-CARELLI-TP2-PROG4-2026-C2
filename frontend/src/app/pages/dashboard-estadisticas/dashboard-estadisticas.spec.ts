@@ -12,8 +12,24 @@ const URL = `${environment.API_URL}/estadisticas/publicaciones-por-usuario`;
 const URL_COMENTARIOS = `${environment.API_URL}/estadisticas/comentarios-por-dia`;
 const URL_RANKING = `${environment.API_URL}/estadisticas/comentarios-por-publicacion`;
 const URL_TIPOS = `${environment.API_URL}/estadisticas/publicaciones-por-tipo`;
+const URL_RESUMEN = `${environment.API_URL}/estadisticas/resumen`;
 const LAURA = { usuario: 'u1', nombreUsuario: 'laura_c', cantidad: 3 };
 const JUAN = { usuario: 'u2', nombreUsuario: 'juan_p', cantidad: 1 };
+const totales = (
+  desde: string,
+  hasta: string,
+  [publicaciones, comentarios, personasActivas]: number[],
+) => ({
+  desde,
+  hasta,
+  publicaciones,
+  comentarios,
+  personasActivas,
+});
+const RESUMEN = {
+  actual: totales('2026-03-02', '2026-03-31', [8, 20, 5]),
+  anterior: totales('2026-01-31', '2026-03-01', [4, 25, 5]),
+};
 
 describe('DashboardEstadisticas', () => {
   let fixture: ComponentFixture<DashboardEstadisticas>;
@@ -48,6 +64,14 @@ describe('DashboardEstadisticas', () => {
         solicitud.params.get('desde') === desde &&
         solicitud.params.get('hasta') === hasta,
     );
+  const pedirResumen = (desde: string, hasta: string) =>
+    http.expectOne(
+      (solicitud) =>
+        solicitud.url === URL_RESUMEN &&
+        solicitud.params.get('desde') === desde &&
+        solicitud.params.get('hasta') === hasta,
+    );
+  const resumenPedidos = () => http.match((solicitud) => solicitud.url === URL_RESUMEN);
   const tiposPedidos = () => http.match((solicitud) => solicitud.url === URL_TIPOS);
   const rankingPedidos = () => http.match((solicitud) => solicitud.url === URL_RANKING);
   const comentariosPedidos = () => http.match((solicitud) => solicitud.url === URL_COMENTARIOS);
@@ -126,6 +150,7 @@ describe('DashboardEstadisticas', () => {
     pedirComentarios('2026-03-02', '2026-03-31').flush([]);
     pedirRanking('2026-03-02', '2026-03-31').flush([]);
     pedirTipos('2026-03-02', '2026-03-31').flush([]);
+    pedirResumen('2026-03-02', '2026-03-31').flush(RESUMEN);
     await actualizar();
     await vi.waitFor(() => expect(graficos).toHaveLength(1));
 
@@ -600,6 +625,175 @@ describe('DashboardEstadisticas', () => {
       fixture.destroy();
 
       expect(solicitud.cancelled).toBe(true);
+    });
+  });
+
+  describe('resumen y rango rápido', () => {
+    const abrirConLasDemas = async () => {
+      await abrir('2026-03-31T15:00:00Z');
+      pedir('2026-03-02', '2026-03-31').flush([]);
+      pedirComentarios('2026-03-02', '2026-03-31').flush([]);
+      pedirRanking('2026-03-02', '2026-03-31').flush([]);
+      pedirTipos('2026-03-02', '2026-03-31').flush([]);
+    };
+    const botonesDeAtajo = () =>
+      Array.from(
+        fixture.nativeElement.querySelectorAll('.tipos button') as NodeListOf<HTMLButtonElement>,
+      );
+    const atajo = (nombre: string) =>
+      botonesDeAtajo().find((boton) => boton.textContent?.trim() === nombre)!;
+    const marcados = () =>
+      botonesDeAtajo()
+        .filter((boton) => boton.getAttribute('aria-pressed') === 'true')
+        .map((boton) => boton.textContent?.trim());
+    const valores = () =>
+      Array.from(
+        fixture.nativeElement.querySelectorAll('.indicador-valor') as NodeListOf<HTMLElement>,
+      ).map((valor) => valor.textContent?.trim());
+
+    const flushDeTodo = (desde: string, hasta: string) => {
+      pedirResumen(desde, hasta).flush(RESUMEN);
+      pedir(desde, hasta).flush([]);
+      pedirComentarios(desde, hasta).flush([]);
+      pedirRanking(desde, hasta).flush([]);
+      pedirTipos(desde, hasta).flush([]);
+    };
+
+    it('[I] al abrir pide el resumen de los últimos 30 días hasta hoy', async () => {
+      await abrirConLasDemas();
+
+      const solicitud = pedirResumen('2026-03-02', '2026-03-31');
+
+      expect(solicitud.request.method).toBe('GET');
+      solicitud.flush(RESUMEN);
+    });
+
+    it('[O] muestra los tres totales y cuánto cambiaron contra el lapso anterior', async () => {
+      await abrirConLasDemas();
+      pedirResumen('2026-03-02', '2026-03-31').flush(RESUMEN);
+      await actualizar();
+
+      expect(valores()).toEqual(['8', '20', '5']);
+      expect(texto()).toContain('100 % más');
+      expect(texto()).toContain('20 % menos');
+      expect(texto()).toContain('Sin cambios');
+    });
+
+    it('[O] aclara con qué fechas se compara', async () => {
+      await abrirConLasDemas();
+      pedirResumen('2026-03-02', '2026-03-31').flush(RESUMEN);
+      await actualizar();
+
+      expect(texto()).toContain('del 31 ene al 1 mar');
+    });
+
+    it('[Z] sin actividad en ninguno de los dos lapsos muestra ceros, no el mensaje de vacío', async () => {
+      await abrirConLasDemas();
+      pedirResumen('2026-03-02', '2026-03-31').flush({
+        actual: totales('2026-03-02', '2026-03-31', [0, 0, 0]),
+        anterior: totales('2026-01-31', '2026-03-01', [0, 0, 0]),
+      });
+      await actualizar();
+
+      expect(valores()).toEqual(['0', '0', '0']);
+      expect(fixture.nativeElement.querySelectorAll('.indicador-variacion')).toHaveLength(3);
+    });
+
+    it('[E] si falla, Reintentar vuelve a pedir sólo el resumen', async () => {
+      await abrirConLasDemas();
+      pedirResumen('2026-03-02', '2026-03-31').flush({}, { status: 500, statusText: 'Error' });
+      await actualizar();
+      const reintentar = Array.from(
+        fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
+      ).find((boton) => boton.textContent?.includes('Reintentar'))!;
+
+      reintentar.click();
+      await actualizar();
+
+      expect(pedidos()).toHaveLength(0);
+      pedirResumen('2026-03-02', '2026-03-31').flush(RESUMEN);
+    });
+
+    it('[E] con un rango inválido no pide el resumen', async () => {
+      await abrirConLasDemas();
+      pedirResumen('2026-03-02', '2026-03-31').flush(RESUMEN);
+      await actualizar();
+
+      await escribir(0, '2026-04-05');
+
+      expect(resumenPedidos()).toHaveLength(0);
+    });
+
+    it('[O] ofrece 7, 30 y 90 días y 1 año, con 30 días marcado al abrir', async () => {
+      await abrirConLasDemas();
+      pedirResumen('2026-03-02', '2026-03-31').flush(RESUMEN);
+      await actualizar();
+
+      expect(botonesDeAtajo().map((boton) => boton.textContent?.trim())).toEqual([
+        '7 días',
+        '30 días',
+        '90 días',
+        '1 año',
+      ]);
+      expect(marcados()).toEqual(['30 días']);
+    });
+
+    it('[O] 7 días cambia las dos fechas y vuelve a pedir todo', async () => {
+      await abrirConLasDemas();
+      pedirResumen('2026-03-02', '2026-03-31').flush(RESUMEN);
+      await actualizar();
+
+      atajo('7 días').click();
+      await actualizar();
+
+      flushDeTodo('2026-03-25', '2026-03-31');
+      await actualizar();
+      expect(campo(0).value).toBe('2026-03-25');
+      expect(campo(1).value).toBe('2026-03-31');
+      expect(marcados()).toEqual(['7 días']);
+    });
+
+    it('[B] 1 año son 365 días, dentro del tope de 366', async () => {
+      await abrirConLasDemas();
+      pedirResumen('2026-03-02', '2026-03-31').flush(RESUMEN);
+      await actualizar();
+
+      atajo('1 año').click();
+      await actualizar();
+
+      flushDeTodo('2025-04-01', '2026-03-31');
+      await actualizar();
+      expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+      expect(marcados()).toEqual(['1 año']);
+    });
+
+    it('[S] si se cambia una fecha a mano ya no queda ningún atajo marcado', async () => {
+      await abrirConLasDemas();
+      pedirResumen('2026-03-02', '2026-03-31').flush(RESUMEN);
+      await actualizar();
+
+      await escribir(0, '2026-03-10');
+
+      expect(marcados()).toEqual([]);
+    });
+
+    it('[S] si las fechas vuelven a coincidir con un atajo, se marca', async () => {
+      await abrirConLasDemas();
+      pedirResumen('2026-03-02', '2026-03-31').flush(RESUMEN);
+      await actualizar();
+      await escribir(0, '2026-03-25');
+
+      expect(marcados()).toEqual(['7 días']);
+    });
+
+    it('[E] con un rango inválido no hay ningún atajo marcado', async () => {
+      await abrirConLasDemas();
+      pedirResumen('2026-03-02', '2026-03-31').flush(RESUMEN);
+      await actualizar();
+
+      await escribir(0, '2026-04-05');
+
+      expect(marcados()).toEqual([]);
     });
   });
 });

@@ -19,3 +19,16 @@ export interface PublicacionesDeTipo {
   tipo: string;
   cantidad: number;
 }
+
+export interface TotalesDelRango {
+  desde: string;
+  hasta: string;
+  publicaciones: number;
+  comentarios: number;
+  personasActivas: number;
+}
+
+export interface ResumenDelRango {
+  actual: TotalesDelRango;
+  anterior: TotalesDelRango;
+}

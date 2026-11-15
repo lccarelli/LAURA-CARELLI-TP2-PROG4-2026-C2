@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { TIPOS_PUBLICACION } from '../publicaciones/dto/crear-publicacion.dto.js';
-import { EstadisticasRepositorio } from './estadisticas.repositorio.js';
-import { diasDelRango, limitesDelRango } from './rango.js';
+import {
+  EstadisticasRepositorio,
+  TotalesDeUnLapso,
+} from './estadisticas.repositorio.js';
+import { diasDelRango, limitesDelRango, rangoAnterior } from './rango.js';
 
 export type PublicacionesDeUsuario = {
   usuario: string;
@@ -25,11 +28,35 @@ export type ComentariosDePublicacion = {
   cantidad: number;
 };
 
+export type TotalesDelRango = TotalesDeUnLapso & {
+  desde: string;
+  hasta: string;
+};
+
+export type ResumenDelRango = {
+  actual: TotalesDelRango;
+  anterior: TotalesDelRango;
+};
+
 export const PUBLICACIONES_EN_EL_RANKING = 10;
 
 @Injectable()
 export class EstadisticasService {
   constructor(private readonly estadisticas: EstadisticasRepositorio) {}
+
+  async resumen(desde: string, hasta: string): Promise<ResumenDelRango> {
+    const actual = limitesDelRango(desde, hasta);
+    const previo = rangoAnterior(desde, hasta);
+    const anterior = limitesDelRango(previo.desde, previo.hasta);
+    const [totalesActual, totalesAnterior] = await Promise.all([
+      this.estadisticas.totales(actual.inicio, actual.fin),
+      this.estadisticas.totales(anterior.inicio, anterior.fin),
+    ]);
+    return {
+      actual: { desde, hasta, ...totalesActual },
+      anterior: { ...previo, ...totalesAnterior },
+    };
+  }
 
   async publicacionesPorUsuario(
     desde: string,

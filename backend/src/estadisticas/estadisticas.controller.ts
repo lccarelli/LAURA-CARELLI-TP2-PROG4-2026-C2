@@ -9,6 +9,11 @@ import { EstadisticasService } from './estadisticas.service.js';
 export class EstadisticasController {
   constructor(private readonly estadisticasService: EstadisticasService) {}
 
+  @Get('resumen')
+  resumen(@Query() { desde, hasta }: RangoFechasDto) {
+    return this.estadisticasService.resumen(desde, hasta);
+  }
+
   @Get('publicaciones-por-usuario')
   publicacionesPorUsuario(@Query() { desde, hasta }: RangoFechasDto) {
     return this.estadisticasService.publicacionesPorUsuario(desde, hasta);
