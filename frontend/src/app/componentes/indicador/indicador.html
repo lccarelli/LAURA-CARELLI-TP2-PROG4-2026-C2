@@ -1,0 +1,8 @@
+<div class="indicador">
+  <span class="indicador-etiqueta">{{ etiqueta() | translate }}</span>
+  <span class="indicador-valor">{{ valorTexto() }}</span>
+  <span class="indicador-variacion">
+    <span aria-hidden="true">{{ variacion().simbolo }}</span>
+    {{ variacion().clave | translate: { n: variacion().porcentaje } }}
+  </span>
+</div>

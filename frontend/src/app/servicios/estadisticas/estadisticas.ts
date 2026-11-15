@@ -6,11 +6,18 @@ import {
   ComentariosDelDia,
   PublicacionesDeTipo,
   PublicacionesDeUsuario,
+  ResumenDelRango,
 } from '../../interfaces/estadisticas';
 
 @Service()
 export class EstadisticasApi {
   private http = inject(HttpClient);
+
+  resumen(desde: string, hasta: string) {
+    return this.http.get<ResumenDelRango>(`${environment.API_URL}/estadisticas/resumen`, {
+      params: { desde, hasta },
+    });
+  }
 
   publicacionesPorUsuario(desde: string, hasta: string) {
     return this.http.get<PublicacionesDeUsuario[]>(

@@ -13,6 +13,17 @@ export function diasDelRango(desde: string, hasta: string) {
   );
 }
 
+export function rangoAnterior(desde: string, hasta: string) {
+  const dias = diasDelRango(desde, hasta).length;
+  const primero = Date.parse(`${desde}T00:00:00Z`);
+  const fecha = (milisegundos: number) =>
+    new Date(milisegundos).toISOString().slice(0, 10);
+  return {
+    desde: fecha(primero - dias * MS_POR_DIA),
+    hasta: fecha(primero - MS_POR_DIA),
+  };
+}
+
 export function limitesDelRango(desde: string, hasta: string) {
   const inicio = new Date(`${desde}T00:00:00${DESFASE_BUENOS_AIRES}`);
   const ultimoDia = new Date(`${hasta}T00:00:00${DESFASE_BUENOS_AIRES}`);

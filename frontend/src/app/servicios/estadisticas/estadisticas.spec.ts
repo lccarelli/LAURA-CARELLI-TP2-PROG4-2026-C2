@@ -33,6 +33,20 @@ describe('EstadisticasApi', () => {
     ]);
   });
 
+  it('[O] pide el resumen con desde y hasta', () => {
+    const recibido = vi.fn();
+    api.resumen('2026-03-01', '2026-03-31').subscribe(recibido);
+
+    const solicitud = http.expectOne(
+      `${environment.API_URL}/estadisticas/resumen?desde=2026-03-01&hasta=2026-03-31`,
+    );
+    const resumen = { actual: {}, anterior: {} };
+    solicitud.flush(resumen);
+
+    expect(solicitud.request.method).toBe('GET');
+    expect(recibido).toHaveBeenCalledWith(resumen);
+  });
+
   it('[E] un error de la API le llega a quien llamó', () => {
     const fallo = vi.fn();
     api.publicacionesPorUsuario('2026-03-31', '2026-03-01').subscribe({ error: fallo });

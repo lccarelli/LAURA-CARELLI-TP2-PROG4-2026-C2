@@ -6,12 +6,15 @@ import {
   PUBLICACIONES_EN_EL_RANKING,
 } from './estadisticas.service.js';
 
+const sinTotales = { publicaciones: 0, comentarios: 0, personasActivas: 0 };
+
 describe('EstadisticasService', () => {
   const repositorio = {
     publicacionesPorUsuario: vi.fn(),
     publicacionesPorTipo: vi.fn(),
     comentariosPorPublicacion: vi.fn(),
     comentariosPorDia: vi.fn(),
+    totales: vi.fn(),
   };
   let servicio: EstadisticasService;
 
@@ -28,6 +31,7 @@ describe('EstadisticasService', () => {
     repositorio.publicacionesPorTipo.mockResolvedValue([]);
     repositorio.comentariosPorPublicacion.mockResolvedValue([]);
     repositorio.comentariosPorDia.mockResolvedValue([]);
+    repositorio.totales.mockResolvedValue(sinTotales);
     servicio = new EstadisticasService(
       repositorio as unknown as EstadisticasRepositorio,
     );
@@ -191,6 +195,77 @@ describe('EstadisticasService', () => {
       const dias = await servicio.comentariosPorDia('2026-03-10', '2026-03-10');
 
       expect(dias).toEqual([{ fecha: '2026-03-10', cantidad: 0 }]);
+    });
+  });
+
+  describe('resumen', () => {
+    it('[I] pide los totales del rango y los del lapso anterior de igual largo, pegado al rango', async () => {
+      await servicio.resumen('2026-03-01', '2026-03-31');
+
+      const [actual, anterior] = repositorio.totales.mock.calls as Date[][];
+      expect(actual.map((fecha) => fecha.toISOString())).toEqual([
+        '2026-03-01T03:00:00.000Z',
+        '2026-04-01T03:00:00.000Z',
+      ]);
+      expect(anterior.map((fecha) => fecha.toISOString())).toEqual([
+        '2026-01-29T03:00:00.000Z',
+        '2026-03-01T03:00:00.000Z',
+      ]);
+    });
+
+    it('[O] devuelve los totales de cada lapso con sus fechas', async () => {
+      repositorio.totales
+        .mockResolvedValueOnce({
+          publicaciones: 8,
+          comentarios: 20,
+          personasActivas: 5,
+        })
+        .mockResolvedValueOnce({
+          publicaciones: 4,
+          comentarios: 10,
+          personasActivas: 3,
+        });
+
+      const resumen = await servicio.resumen('2026-03-01', '2026-03-31');
+
+      expect(resumen).toEqual({
+        actual: {
+          desde: '2026-03-01',
+          hasta: '2026-03-31',
+          publicaciones: 8,
+          comentarios: 20,
+          personasActivas: 5,
+        },
+        anterior: {
+          desde: '2026-01-29',
+          hasta: '2026-02-28',
+          publicaciones: 4,
+          comentarios: 10,
+          personasActivas: 3,
+        },
+      });
+    });
+
+    it.each([
+      ['desde posterior a hasta', '2026-03-31', '2026-03-01', 'RANGO_INVALIDO'],
+      ['más de 366 días', '2025-02-28', '2026-03-01', 'RANGO_DEMASIADO_LARGO'],
+    ])(
+      '[E] con %s lanza 400 y no consulta',
+      async (_caso, desde, hasta, codigo) => {
+        const intento = servicio.resumen(desde, hasta);
+
+        await expect(intento).rejects.toMatchObject({ response: { codigo } });
+        expect(repositorio.totales).not.toHaveBeenCalled();
+      },
+    );
+
+    it('[B] un rango de 366 días también tiene su lapso anterior', async () => {
+      const resumen = await servicio.resumen('2025-03-01', '2026-03-01');
+
+      expect(resumen.anterior).toMatchObject({
+        desde: '2024-02-29',
+        hasta: '2025-02-28',
+      });
     });
   });
 });
