@@ -191,7 +191,7 @@ Pantalla `/publicaciones/nueva` (requiere sesión). Se elige un tipo y el formul
 | --- | --- |
 | Título | Obligatorio, hasta 55 caracteres |
 | Mensaje | Obligatorio, hasta 2000 caracteres, con contador |
-| Portada | Opcional. JPG, PNG, WebP o GIF de hasta 2 MB. Se ve una vista previa y se puede quitar |
+| Portada | Opcional. JPG, PNG, WebP o GIF de hasta 2 MB. Una foto más pesada (por ejemplo, una sacada con el teléfono) se reduce sola en el navegador antes de subirse. Se ve una vista previa y se puede quitar |
 
 **Ficha de la receta** (todo opcional)
 

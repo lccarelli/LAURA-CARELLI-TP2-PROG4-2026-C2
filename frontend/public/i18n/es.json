@@ -154,7 +154,7 @@
     "portada_cambiar": "Cambiar foto",
     "portada_quitar": "Quitar foto",
     "portada_vista": "Vista previa de la portada",
-    "portada_ayuda": "JPG, PNG, WEBP o GIF, hasta 2 MB",
+    "portada_ayuda": "JPG, PNG, WEBP o GIF. Las fotos grandes se reducen solas",
     "rinde_porciones": "Porciones",
     "rinde_unidades": "Unidades",
     "campo_calorias_porciones": "Calorías por porción",
@@ -277,8 +277,9 @@
     "claves_distintas": "Las claves no coinciden"
   },
   "imagen": {
+    "preparando": "Preparando la foto…",
     "tipo": "La imagen debe ser JPG, PNG, WEBP o GIF",
-    "pesada": "La imagen no puede pesar más de 2 MB"
+    "pesada": "La imagen pesa más de 2 MB y no se pudo reducir"
   },
   "errores": {
     "sin_conexion": "No se pudo conectar con el servidor. Intentá de nuevo en unos segundos.",
