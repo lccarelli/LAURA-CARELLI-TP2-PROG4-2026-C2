@@ -397,5 +397,16 @@
     "etiqueta": "Search posts",
     "placeholder": "Search posts",
     "limpiar": "Clear search"
+  },
+  "notificaciones": {
+    "titulo": "Notifications",
+    "abrir": "Notifications",
+    "abrir_con_n": "Notifications, {{n}} unread",
+    "cerrar": "Close notifications",
+    "marcar_todas": "Mark all as read",
+    "vacio": "You don't have any notifications yet",
+    "comentario": "{{actor}} commented on “{{titulo}}”",
+    "me_gusta": "{{actor}} liked “{{titulo}}”",
+    "error_cargar": "Notifications could not be loaded"
   }
 }

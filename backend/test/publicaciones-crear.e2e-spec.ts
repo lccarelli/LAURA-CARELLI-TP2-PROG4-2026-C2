@@ -12,6 +12,7 @@ import {
   registrarYObtenerSesion,
 } from './ayudas/datos.js';
 
+const CAMPOS_BASICOS = { titulo: 'Hola', mensaje: 'Primer mensaje' };
 describe('POST /publicaciones', () => {
   let app: INestApplication;
   let publicaciones: Model<Publicacion>;
@@ -19,10 +20,7 @@ describe('POST /publicaciones', () => {
   let usuarioId: string;
 
   const publicar = (
-    campos: Record<string, string> = {
-      titulo: 'Hola',
-      mensaje: 'Primer mensaje',
-    },
+    campos: Record<string, string> = CAMPOS_BASICOS,
     archivo?: { contenido: Buffer; nombre: string; tipo: string },
     tokenUsado: string | undefined = token,
   ) => {
@@ -282,7 +280,7 @@ describe('POST /publicaciones', () => {
       const recetaConFotos = (
         pasos: unknown,
         fotos: number,
-        extra: Record<string, string> = {},
+        extra?: Record<string, string>,
       ) => {
         const solicitud = request(app.getHttpServer())
           .post('/publicaciones')
@@ -291,7 +289,7 @@ describe('POST /publicaciones', () => {
           .field('titulo', 'Con fotos')
           .field('mensaje', 'Paso a paso')
           .field('pasos', JSON.stringify(pasos));
-        for (const [campo, valor] of Object.entries(extra)) {
+        for (const [campo, valor] of Object.entries(extra ?? {})) {
           solicitud.field(campo, valor);
         }
         for (let i = 0; i < fotos; i++) {

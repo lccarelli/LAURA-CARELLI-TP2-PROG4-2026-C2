@@ -115,4 +115,24 @@ describe('Buscador', () => {
   it('[E] el botón de borrar no aparece con el campo vacío', () => {
     expect(fixture.nativeElement.querySelector('.buscador-limpiar')).toBeNull();
   });
+
+  it('[S] si desde afuera cambia el valor, el campo lo muestra sin volver a buscar', () => {
+    fixture.componentRef.setInput('valor', 'tarta');
+    fixture.detectChanges();
+    vi.advanceTimersByTime(400);
+
+    expect(campo().value).toBe('tarta');
+    expect(consultas).toEqual([]);
+  });
+
+  it('[B] si el valor de afuera es el que ya se buscó, no pisa lo que se está escribiendo', () => {
+    escribir('tarta');
+    vi.advanceTimersByTime(400);
+    escribir('tarta de');
+
+    fixture.componentRef.setInput('valor', 'tarta');
+    fixture.detectChanges();
+
+    expect(campo().value).toBe('tarta de');
+  });
 });

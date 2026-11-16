@@ -501,4 +501,50 @@ describe('DetallePublicacion', () => {
       expect(navegar).not.toHaveBeenCalled();
     });
   });
+
+  describe('al llegar desde una notificación', () => {
+    const abrirConFragmento = async (fragmento: string | null) => {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [DetallePublicacion],
+        providers: [
+          proveerIdiomaDePrueba(),
+          provideRouter([]),
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          {
+            provide: ActivatedRoute,
+            useValue: {
+              snapshot: { paramMap: convertToParamMap({ id: 'id1' }), fragment: fragmento },
+            },
+          },
+        ],
+      }).compileComponents();
+      http = TestBed.inject(HttpTestingController);
+      fixture = TestBed.createComponent(DetallePublicacion);
+      await fixture.whenStable();
+      await abrir(publicacionDePrueba(1));
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+
+    it('[S] con #comentarios baja hasta los comentarios', async () => {
+      const bajar = vi.fn();
+      Element.prototype.scrollIntoView = bajar;
+
+      await abrirConFragmento('comentarios');
+
+      expect(bajar).toHaveBeenCalledTimes(1);
+      expect(bajar.mock.contexts[0]).toBe(document.getElementById('titulo-comentarios'));
+    });
+
+    it('[B] sin fragmento no se desplaza', async () => {
+      const bajar = vi.fn();
+      Element.prototype.scrollIntoView = bajar;
+
+      await abrirConFragmento(null);
+
+      expect(bajar).not.toHaveBeenCalled();
+    });
+  });
 });

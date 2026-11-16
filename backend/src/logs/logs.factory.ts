@@ -29,6 +29,8 @@ export const EVENTOS_DE_LOG = {
   USUARIO_HABILITADO: 'usuario_habilitado',
   USUARIO_NO_AUTORIZADO: 'usuario_no_autorizado',
   USUARIO_REGISTRADO: 'usuario_registrado',
+  NOTIFICACION_NO_REGISTRADA: 'notificacion_no_registrada',
+  WEBHOOK_NO_ENVIADO: 'webhook_no_enviado',
 } as const;
 
 export class ContextLogger {

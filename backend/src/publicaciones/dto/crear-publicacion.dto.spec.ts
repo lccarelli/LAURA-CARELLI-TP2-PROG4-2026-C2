@@ -17,11 +17,9 @@ describe('CrearPublicacionDto', () => {
   it('[Z] sin ningún dato falla en tipo, titulo y mensaje', async () => {
     const errores = await validate(plainToInstance(CrearPublicacionDto, {}));
 
-    expect(errores.map((error) => error.property).sort()).toEqual([
-      'mensaje',
-      'tipo',
-      'titulo',
-    ]);
+    expect(
+      errores.map((error) => error.property).sort((a, b) => a.localeCompare(b)),
+    ).toEqual(['mensaje', 'tipo', 'titulo']);
   });
 
   it('[O] con título y mensaje válidos no falla', async () => {

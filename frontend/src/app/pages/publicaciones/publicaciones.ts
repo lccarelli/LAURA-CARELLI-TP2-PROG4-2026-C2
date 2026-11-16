@@ -1,9 +1,9 @@
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { VerMas } from '../../componentes/ver-mas/ver-mas';
 import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
-import { Buscador } from '../../componentes/buscador/buscador';
 import { Aviso } from '../../componentes/aviso/aviso';
 import { TarjetaPublicacion } from '../../componentes/tarjeta-publicacion/tarjeta-publicacion';
 import {
@@ -17,20 +17,15 @@ import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { ListadoPaginado } from '../../utilidades/listado-paginado';
 
 @Component({
-  imports: [
-    Buscador,
-    VerMas,
-    CubreplatoLoading,
-    RouterLink,
-    Aviso,
-    TarjetaPublicacion,
-    TranslatePipe,
-  ],
+  imports: [VerMas, CubreplatoLoading, RouterLink, Aviso, TarjetaPublicacion, TranslatePipe],
   selector: 'app-publicaciones',
   templateUrl: './publicaciones.html',
 })
 export class Publicaciones implements OnInit, OnDestroy {
   private api = inject(PublicacionesApi);
+  private ruta = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
+  private iniciado = false;
 
   readonly ordenes = ORDENES;
   readonly orden = signal<OrdenPublicaciones>('fecha');
@@ -59,7 +54,9 @@ export class Publicaciones implements OnInit, OnDestroy {
   private alCambiarElAncho = () => this.columnas.set(this.cantidadDeColumnas());
 
   ngOnInit() {
-    this.listado.cargarMas();
+    this.ruta.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((parametros) => this.alCambiarLaBusqueda(parametros.get('q') ?? ''));
     window.addEventListener('resize', this.alCambiarElAncho);
   }
 
@@ -81,6 +78,16 @@ export class Publicaciones implements OnInit, OnDestroy {
     }
     this.orden.set(orden);
     this.listado.reiniciar();
+  }
+
+  private alCambiarLaBusqueda(texto: string) {
+    if (this.iniciado) {
+      this.buscar(texto);
+      return;
+    }
+    this.iniciado = true;
+    this.busqueda.set(texto);
+    this.listado.cargarMas();
   }
 
   buscar(texto: string) {

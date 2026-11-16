@@ -1,6 +1,14 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  inject,
+  Injector,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
@@ -59,6 +67,7 @@ export class DetallePublicacion implements OnInit {
   private ruta = inject(ActivatedRoute);
   private router = inject(Router);
   private auth = inject(Auth);
+  private injector = inject(Injector);
 
   readonly publicacion = signal<Publicacion | null>(null);
   readonly cargando = signal(true);
@@ -124,12 +133,23 @@ export class DetallePublicacion implements OnInit {
     this.router.navigate(['/publicaciones']);
   }
 
+  private irALosComentariosSiSePidio() {
+    if (this.ruta.snapshot.fragment !== 'comentarios') {
+      return;
+    }
+    afterNextRender(
+      () => document.getElementById('titulo-comentarios')?.scrollIntoView({ block: 'start' }),
+      { injector: this.injector },
+    );
+  }
+
   ngOnInit() {
     const id = this.ruta.snapshot.paramMap.get('id') ?? '';
     this.api.obtener(id).subscribe({
       next: (publicacion) => {
         this.publicacion.set(publicacion);
         this.cargando.set(false);
+        this.irALosComentariosSiSePidio();
       },
       error: (error: HttpErrorResponse) => {
         this.cargando.set(false);

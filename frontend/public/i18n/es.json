@@ -397,5 +397,16 @@
     "etiqueta": "Buscar publicaciones",
     "placeholder": "Buscar publicaciones",
     "limpiar": "Borrar la búsqueda"
+  },
+  "notificaciones": {
+    "titulo": "Notificaciones",
+    "abrir": "Notificaciones",
+    "abrir_con_n": "Notificaciones, {{n}} sin leer",
+    "cerrar": "Cerrar las notificaciones",
+    "marcar_todas": "Marcar todas como leídas",
+    "vacio": "Todavía no tenés notificaciones",
+    "comentario": "{{actor}} comentó en «{{titulo}}»",
+    "me_gusta": "A {{actor}} le gustó «{{titulo}}»",
+    "error_cargar": "No se pudieron cargar las notificaciones"
   }
 }

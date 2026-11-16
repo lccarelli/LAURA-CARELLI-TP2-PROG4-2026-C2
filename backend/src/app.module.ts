@@ -13,6 +13,7 @@ import { LogsModule } from './logs/logs.module.js';
 import { imagenesConfig } from './imagenes/imagenes.config.js';
 import { ImagenesModule } from './imagenes/imagenes.module.js';
 import { LIMITES_GENERALES } from './configs/throttler.config.js';
+import { NotificacionesModule } from './notificaciones/notificaciones.module.js';
 import { PublicacionesModule } from './publicaciones/publicaciones.module.js';
 import { UsuariosModule } from './usuarios/usuarios.module.js';
 
@@ -34,6 +35,7 @@ import { UsuariosModule } from './usuarios/usuarios.module.js';
     ImagenesModule,
     AuthModule,
     PublicacionesModule,
+    NotificacionesModule,
     EstadisticasModule,
     HealthModule,
   ],

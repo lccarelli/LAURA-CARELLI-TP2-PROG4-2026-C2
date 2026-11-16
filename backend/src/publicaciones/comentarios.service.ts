@@ -14,12 +14,14 @@ import {
   LoggerFactory,
 } from '../logs/logs.factory.js';
 import { PaginacionDto } from '../common/paginacion.dto.js';
+import { NotificacionesService } from '../notificaciones/notificaciones.service.js';
 import { CrearComentarioDto } from './dto/crear-comentario.dto.js';
 import { EditarComentarioDto } from './dto/editar-comentario.dto.js';
 import { Comentario } from './schemas/comentario.schema.js';
 import { Publicacion } from './schemas/publicacion.schema.js';
 
 type AutorDeLaPublicacion = {
+  titulo: string;
   usuario: { _id: Types.ObjectId; nombreUsuario: string };
 };
 
@@ -40,6 +42,7 @@ export class ComentariosService {
     @InjectModel(Publicacion.name)
     private readonly publicacionModel: Model<Publicacion>,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
+    private readonly notificaciones: NotificacionesService,
     loggerFactory: LoggerFactory,
   ) {
     this.logger = loggerFactory.crear(ComentariosService.name);
@@ -82,6 +85,16 @@ export class ComentariosService {
     );
     await this.cache.clear();
     await creado.populate('usuario', CAMPOS_AUTOR);
+
+    const nombreUsuario = (
+      creado.usuario as unknown as { nombreUsuario: string }
+    ).nombreUsuario;
+    await this.notificaciones.notificar({
+      tipo: 'comentario',
+      destinatarioId: String(publicacion.usuario._id),
+      actor: { id: usuarioId, nombreUsuario },
+      publicacion: { id: publicacionId, titulo: publicacion.titulo },
+    });
 
     this.logger.info(EVENTOS_DE_LOG.COMENTARIO_CREADO, 'Comentario creado', {
       id_comentario: creado.id,
@@ -150,7 +163,7 @@ export class ComentariosService {
   private async buscarPublicacionActiva(publicacionId: string) {
     const publicacion = await this.publicacionModel
       .findOne({ _id: publicacionId, activa: true })
-      .select('usuario')
+      .select('titulo usuario')
       .populate('usuario', 'nombreUsuario')
       .lean<AutorDeLaPublicacion>();
     if (!publicacion) {

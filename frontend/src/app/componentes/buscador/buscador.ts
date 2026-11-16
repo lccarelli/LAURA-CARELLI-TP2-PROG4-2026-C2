@@ -1,4 +1,4 @@
-import { Component, OnDestroy, output, signal } from '@angular/core';
+import { Component, effect, input, OnDestroy, output, signal } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Icono } from '../icono/icono';
 
@@ -16,12 +16,24 @@ const normalizar = (texto: string) =>
   templateUrl: './buscador.html',
 })
 export class Buscador implements OnDestroy {
+  readonly valor = input('');
   readonly buscar = output<string>();
 
   protected readonly texto = signal('');
   protected readonly largoMaximo = LARGO_MAXIMO;
   private espera?: ReturnType<typeof setTimeout>;
   private enviado = '';
+
+  constructor() {
+    effect(() => {
+      const valor = this.valor();
+      if (valor !== this.enviado) {
+        clearTimeout(this.espera);
+        this.texto.set(valor);
+        this.enviado = valor;
+      }
+    });
+  }
 
   ngOnDestroy() {
     clearTimeout(this.espera);
