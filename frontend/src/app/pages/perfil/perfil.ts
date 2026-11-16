@@ -9,6 +9,7 @@ import { Aviso } from '../../componentes/aviso/aviso';
 import { TarjetaPublicacion } from '../../componentes/tarjeta-publicacion/tarjeta-publicacion';
 import { UltimosComentarios } from '../../componentes/ultimos-comentarios/ultimos-comentarios';
 import { Publicacion } from '../../interfaces/publicacion';
+import { Edad } from '../../pipes/edad';
 import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
@@ -20,6 +21,7 @@ const CANTIDAD_DE_ULTIMAS = 3;
   imports: [
     CubreplatoLoading,
     DatePipe,
+    Edad,
     RouterLink,
     TranslatePipe,
     Aviso,

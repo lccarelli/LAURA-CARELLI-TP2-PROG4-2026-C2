@@ -5,6 +5,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { Resaltar } from '../../directivas/resaltar/resaltar';
 import { Publicacion, Tipo } from '../../interfaces/publicacion';
 import { FechaRelativa } from '../../pipes/fecha-relativa';
+import { TextoLargo } from '../../pipes/texto-largo';
 import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
@@ -18,9 +19,10 @@ const COLOR_DE_TIPO: Record<Tipo, string> = {
   tip: 'var(--tema-torta-2)',
   experiencia: 'var(--tema-torta-3)',
 };
+const LETRAS_DEL_MENSAJE = 140;
 
 @Component({
-  imports: [BotonMeGusta, FechaRelativa, RouterLink, TranslatePipe, Icono],
+  imports: [BotonMeGusta, FechaRelativa, RouterLink, TextoLargo, TranslatePipe, Icono],
   selector: 'app-tarjeta-publicacion',
   templateUrl: './tarjeta-publicacion.html',
   host: { class: 'pin-contenedor' },
@@ -30,6 +32,8 @@ export class TarjetaPublicacion {
   private api = inject(PublicacionesApi);
   private auth = inject(Auth);
   private resaltar = inject(Resaltar);
+
+  protected readonly letrasDelMensaje = LETRAS_DEL_MENSAJE;
 
   readonly publicacion = input.required<Publicacion>();
   readonly eliminada = output<string>();

@@ -11,15 +11,19 @@ import { urlImagen } from '../../utilidades/imagen';
 import { Aviso } from '../aviso/aviso';
 
 import { FechaRelativa } from '../../pipes/fecha-relativa';
+import { TextoLargo } from '../../pipes/texto-largo';
 
 export const COMENTARIOS_EN_EL_PERFIL = 3;
+const LETRAS_DEL_COMENTARIO = 120;
 
 @Component({
-  imports: [DatePipe, FechaRelativa, RouterLink, TranslatePipe, Aviso],
+  imports: [DatePipe, FechaRelativa, RouterLink, TextoLargo, TranslatePipe, Aviso],
   selector: 'app-ultimos-comentarios',
   templateUrl: './ultimos-comentarios.html',
 })
 export class UltimosComentarios implements OnInit, OnDestroy {
+  protected readonly letrasDelComentario = LETRAS_DEL_COMENTARIO;
+
   private api = inject(PublicacionesApi);
   private pedido?: Subscription;
 

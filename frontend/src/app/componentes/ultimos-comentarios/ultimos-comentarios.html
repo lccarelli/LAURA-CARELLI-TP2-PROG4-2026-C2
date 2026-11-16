@@ -36,7 +36,9 @@
             >{{ comentario.fecha | fechaRelativa }}</span
           >
         </div>
-        <p class="comentario-texto">{{ comentario.mensaje }}</p>
+        <p class="comentario-texto" [attr.title]="comentario.mensaje">
+          {{ comentario.mensaje | textoLargo: letrasDelComentario }}
+        </p>
       </li>
     }
   </ul>
