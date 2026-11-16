@@ -1,0 +1,12 @@
+@if (actualizacion.hayNueva() && !descartado()) {
+  <div class="pagina">
+    <app-aviso titulo="actualizacion.titulo" [info]="true" (cerrar)="descartado.set(true)">
+      {{ 'actualizacion.texto' | translate }}
+      <span class="acciones mt-2">
+        <button type="button" class="boton-principal" (click)="actualizacion.aplicar()">
+          {{ 'actualizacion.boton' | translate }}
+        </button>
+      </span>
+    </app-aviso>
+  </div>
+}

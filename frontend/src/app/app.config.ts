@@ -2,10 +2,12 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import {
   ApplicationConfig,
   inject,
+  isDevMode,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideServiceWorker } from '@angular/service-worker';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { routes } from './app.routes';
@@ -27,5 +29,9 @@ export const appConfig: ApplicationConfig = {
     provideTranslateHttpLoader({ prefix: '/i18n/', suffix: '.json' }),
     provideAppInitializer(() => inject(Idioma).iniciar()),
     provideAppInitializer(() => inject(Sesion).iniciar()),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
 };

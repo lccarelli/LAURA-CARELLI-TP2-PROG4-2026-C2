@@ -1,7 +1,16 @@
 <header class="barra">
-  <a routerLink="/">
-    <span class="marca">{{ 'barra.marca' | translate }}</span>
-    <span class="lema">{{ 'barra.lema' | translate }}</span>
+  <a class="enlace-marca" routerLink="/">
+    <img
+      class="logo"
+      [src]="tema.actual() === 'oscuro' ? 'favicon-oscuro.png' : 'favicon.png'"
+      alt=""
+      width="44"
+      height="44"
+    />
+    <span>
+      <span class="marca">{{ 'barra.marca' | translate }}</span>
+      <span class="lema">{{ 'barra.lema' | translate }}</span>
+    </span>
   </a>
 
   <nav class="barra-nav" [class.subiendo]="subiendo()">
