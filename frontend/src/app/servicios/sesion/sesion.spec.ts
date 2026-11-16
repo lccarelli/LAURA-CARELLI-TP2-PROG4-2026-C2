@@ -77,7 +77,7 @@ describe('Sesion: vencimiento del token', () => {
     expect(sesion.segundosRestantes()).toBe(SEGUNDOS_DE_AVISO);
   });
 
-  it('[S] el aviso no depende de la actividad ni pide nada solo', () => {
+  it('[S] sin actividad reciente el aviso no pide nada solo', () => {
     iniciarConToken(15 * 60);
 
     document.dispatchEvent(new Event('pointerdown'));
@@ -85,6 +85,47 @@ describe('Sesion: vencimiento del token', () => {
 
     expect(sesion.avisando()).toBe(true);
     expect(pedidos()).toHaveLength(0);
+  });
+
+  it.each(['pointerdown', 'keydown', 'input'])(
+    '[O] con actividad (%s) renueva el token solo al entrar en el aviso',
+    (evento) => {
+      iniciarConToken(15 * 60);
+      avanzar(10 * MINUTO - SEGUNDO);
+      document.dispatchEvent(new Event(evento));
+
+      avanzar(SEGUNDO);
+
+      const [pedido] = pedidos();
+      expect(pedido.request.method).toBe('POST');
+      pedido.flush({ token: tokenQueVenceEn(15 * 60) });
+      expect(sesion.avisando()).toBe(false);
+    },
+  );
+
+  it('[S] si la renovación automática falla, espera 30 segundos antes de reintentar', () => {
+    iniciarConToken(15 * 60);
+    avanzar(10 * MINUTO - SEGUNDO);
+    document.dispatchEvent(new Event('input'));
+    avanzar(SEGUNDO);
+    pedidos()[0].flush(null, { status: 0, statusText: 'sin red' });
+
+    avanzar(29 * SEGUNDO);
+    expect(pedidos()).toHaveLength(0);
+
+    avanzar(SEGUNDO);
+    expect(pedidos()).toHaveLength(1);
+  });
+
+  it('[O] al volver a la app con el token vencido cierra la sesión sin esperar al reloj', () => {
+    iniciarConToken(15 * 60);
+    vi.setSystemTime(Date.now() + 16 * MINUTO);
+
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    expect(auth.token()).toBeNull();
+    expect(auth.motivoDeSalida()).toBe('api.SESION_VENCIDA');
+    expect(irA).toHaveBeenCalledWith('/login');
   });
 
   it('[I] al cargar con un token que ya está por vencer, avisa enseguida', () => {

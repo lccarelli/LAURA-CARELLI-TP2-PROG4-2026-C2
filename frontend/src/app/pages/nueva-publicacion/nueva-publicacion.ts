@@ -653,7 +653,7 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
 
   ingresarDeNuevo() {
     this.guardarBorrador();
-    this.auth.salir();
+    this.auth.salir('api.SESION_VENCIDA');
     this.router.navigate(['/login']);
   }
 
