@@ -276,6 +276,11 @@
     "nombre_usuario": "3 to 20 characters: letters, numbers or underscore",
     "claves_distintas": "The passwords do not match"
   },
+  "actualizacion": {
+    "titulo": "There is a new version",
+    "texto": "Update to use the latest version of Banquete.",
+    "boton": "Update now"
+  },
   "imagen": {
     "preparando": "Preparing the photo…",
     "tipo": "The image must be JPG, PNG, WEBP or GIF",

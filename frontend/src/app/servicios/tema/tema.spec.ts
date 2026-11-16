@@ -7,14 +7,19 @@ describe('Tema', () => {
 
   const crear = () => TestBed.inject(Tema);
   const atributo = () => document.documentElement.dataset['tema'];
+  const icono = () => document.querySelector('link[rel="icon"]')?.getAttribute('href');
 
   beforeEach(() => {
+    document.head.insertAdjacentHTML('beforeend', '<link rel="icon" href="favicon.png">');
     localStorage.clear();
     delete document.documentElement.dataset['tema'];
     sistemaOscuro(false);
   });
 
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    document.querySelectorAll('link[rel="icon"]').forEach((enlace) => enlace.remove());
+  });
 
   it('[Z] sin nada guardado y con el sistema en claro, arranca en claro', () => {
     const tema = crear();
@@ -78,5 +83,36 @@ describe('Tema', () => {
     const tema = crear();
 
     expect(tema.actual()).toBe('claro');
+  });
+
+  describe('ícono de la pestaña', () => {
+    it('[O] en claro usa el ícono pizarra', () => {
+      crear();
+
+      expect(icono()).toBe('favicon.png');
+    });
+
+    it('[O] en oscuro usa el ícono terracota', () => {
+      sistemaOscuro(true);
+      crear();
+
+      expect(icono()).toBe('favicon-oscuro.png');
+    });
+
+    it('[S] al alternar el modo cambia el ícono, y al volver, vuelve', () => {
+      const tema = crear();
+
+      tema.alternar();
+      expect(icono()).toBe('favicon-oscuro.png');
+
+      tema.alternar();
+      expect(icono()).toBe('favicon.png');
+    });
+
+    it('[Z] si la página no tiene ícono, no falla', () => {
+      document.querySelectorAll('link[rel="icon"]').forEach((enlace) => enlace.remove());
+
+      expect(() => crear().alternar()).not.toThrow();
+    });
   });
 });
