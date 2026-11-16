@@ -217,6 +217,94 @@ describe('GET /publicaciones', () => {
       expect(body.hayMas).toBe(false);
     });
 
+    describe('por tipo', () => {
+      const sembrarTipos = async () => {
+        const base = Date.now() - 10000;
+        const tipos = ['receta', 'tip', 'experiencia', 'receta'] as const;
+        for (const [indice, tipo] of tipos.entries()) {
+          await modelo().create({
+            usuario: usuarioId,
+            tipo,
+            titulo: `${tipo} ${indice + 1}`,
+            mensaje: 'Mensaje',
+            fecha: new Date(base + indice * 1000),
+          });
+        }
+      };
+
+      it.each([
+        ['receta', ['receta 4', 'receta 1']],
+        ['tip', ['tip 2']],
+        ['experiencia', ['experiencia 3']],
+      ])('[O] tipo=%s trae sólo ese tipo', async (tipo, esperados) => {
+        await sembrarTipos();
+
+        const { body } = await listar(`?tipo=${tipo}`).expect(200);
+
+        expect(titulos(body)).toEqual(esperados);
+      });
+
+      it('[Z] sin tipo trae todos', async () => {
+        await sembrarTipos();
+
+        const { body } = await listar().expect(200);
+
+        expect(body.datos).toHaveLength(4);
+      });
+
+      it('[M] se combina con el orden, la persona y la paginación', async () => {
+        await sembrarTipos();
+        const recetas = await modelo()
+          .find({ tipo: 'receta' })
+          .sort({ fecha: 1 });
+        await darMeGusta(recetas[0].id, 5);
+
+        const { body } = await listar(
+          `?tipo=receta&usuario=${usuarioId}&orden=megusta&limit=1`,
+        ).expect(200);
+
+        expect(titulos(body)).toEqual(['receta 1']);
+        expect(body.hayMas).toBe(true);
+      });
+
+      it('[B] un tipo sin publicaciones devuelve la lista vacía', async () => {
+        await sembrarPublicaciones(app, usuarioId, 2);
+
+        const { body } = await listar('?tipo=receta').expect(200);
+
+        expect(body.datos).toEqual([]);
+        expect(body.hayMas).toBe(false);
+      });
+
+      it('[E] un tipo desconocido o con operadores responde 400', async () => {
+        for (const tipo of ['postre', '', 'RECETA', '[$ne]=x']) {
+          await listar(`?tipo=${tipo}`).expect(400);
+        }
+        await listar('?tipo[$ne]=receta').expect(400);
+      });
+
+      it('[S] cada tipo tiene su propio listado en el caché', async () => {
+        await sembrarTipos();
+
+        const recetas = await listar('?tipo=receta').expect(200);
+        const tips = await listar('?tipo=tip').expect(200);
+        const todos = await listar().expect(200);
+
+        expect(recetas.body.datos).toHaveLength(2);
+        expect(tips.body.datos).toHaveLength(1);
+        expect(todos.body.datos).toHaveLength(4);
+      });
+
+      it('[I] las dadas de baja no aparecen al filtrar', async () => {
+        await sembrarTipos();
+        await modelo().updateOne({ titulo: 'receta 1' }, { activa: false });
+
+        const { body } = await listar('?tipo=receta').expect(200);
+
+        expect(titulos(body)).toEqual(['receta 4']);
+      });
+    });
+
     it('[E] un orden desconocido responde 400', async () => {
       for (const orden of ['autor', '', 'FECHA', '%7B%22%24ne%22%3Anull%7D']) {
         await listar(`?orden=${orden}`).expect(400);

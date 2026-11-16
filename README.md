@@ -170,7 +170,7 @@ La cobertura de cada ejecución queda en el resumen del job y como archivo desca
 
 ### Publicaciones y me gusta
 
-- **Listado** (`/publicaciones`): tarjetas con imagen, tipo, título y autoría. Se ordena por más recientes o por más me gusta, 10 por página.
+- **Listado** (`/publicaciones`): tarjetas con imagen, tipo, título y autoría. Se ordena por más recientes o por más me gusta, y se filtra por tipo (todas, recetas, tips o experiencias), 10 por página. El orden y el tipo se combinan, y al cambiar cualquiera de los dos la lista vuelve a empezar. En la API: `GET /publicaciones?tipo=receta|tip|experiencia&orden=fecha|megusta&usuario=<id>&offset&limit`; un `tipo` desconocido responde 400 `DATOS_INVALIDOS` y cada combinación tiene su propio listado en el caché.
 - **Detalle** (`/publicaciones/:id`): la publicación completa con ficha, ingredientes, pasos con fotos y comentarios.
 - **Me gusta:** botón de corazón en la tarjeta y dentro del detalle. Se puede dar y quitar; el contador sube y baja al instante con lo que responde el servidor. Si el servidor dice que ya estaba dado (o ya estaba quitado), el botón se corrige solo, sin mostrar un error.
 - **Eliminar:** quien publicó, o una persona con perfil administrador (que puede dar de baja **cualquier** publicación), la elimina desde la tarjeta del listado o desde el botón "Eliminar publicación" del detalle, siempre con confirmación. La baja es lógica: la publicación y sus comentarios dejan de estar disponibles (el detalle y los comentarios responden 404) y al terminar se vuelve al listado. Una persona común no ve el botón en publicaciones ajenas y, si lo intentara contra la API, recibe 403.

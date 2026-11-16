@@ -1,19 +1,49 @@
 <section class="pagina-ancha">
   <h1 class="titulo">{{ 'publicaciones.titulo' | translate }}</h1>
 
-  <div class="orden" role="group" [attr.aria-label]="'publicaciones.ordenar_por' | translate">
-    <span class="etiqueta">{{ 'publicaciones.ordenar_por' | translate }}</span>
-    @for (opcion of ordenes; track opcion) {
+  <div class="controles-listado">
+    <div class="orden" role="group" [attr.aria-label]="'publicaciones.ordenar_por' | translate">
+      <span class="etiqueta">{{ 'publicaciones.ordenar_por' | translate }}</span>
+      @for (opcion of ordenes; track opcion) {
+        <button
+          type="button"
+          class="tipo-opcion"
+          [class.activo]="orden() === opcion"
+          [attr.aria-pressed]="orden() === opcion"
+          (click)="cambiarOrden(opcion)"
+        >
+          {{ 'publicaciones.orden_' + opcion | translate }}
+        </button>
+      }
+    </div>
+
+    <div
+      class="filtro-tipo"
+      role="group"
+      [attr.aria-label]="'publicaciones.filtrar_por' | translate"
+    >
+      <span class="etiqueta">{{ 'publicaciones.filtrar_por' | translate }}</span>
       <button
         type="button"
         class="tipo-opcion"
-        [class.activo]="orden() === opcion"
-        [attr.aria-pressed]="orden() === opcion"
-        (click)="cambiarOrden(opcion)"
+        [class.activo]="tipo() === null"
+        [attr.aria-pressed]="tipo() === null"
+        (click)="cambiarTipo(null)"
       >
-        {{ 'publicaciones.orden_' + opcion | translate }}
+        {{ 'publicaciones.tipo_todos' | translate }}
       </button>
-    }
+      @for (opcion of tipos; track opcion) {
+        <button
+          type="button"
+          class="tipo-opcion"
+          [class.activo]="tipo() === opcion"
+          [attr.aria-pressed]="tipo() === opcion"
+          (click)="cambiarTipo(opcion)"
+        >
+          {{ 'publicaciones.tipo_' + opcion | translate }}
+        </button>
+      }
+    </div>
   </div>
 
   @if (listado.mensajeError(); as mensaje) {
@@ -23,8 +53,15 @@
   }
 
   <div class="muro">
-    @for (publicacion of listado.items(); track publicacion._id) {
-      <app-tarjeta-publicacion [publicacion]="publicacion" (eliminada)="listado.quitar($event)" />
+    @for (columna of muro(); track $index) {
+      <div class="muro-columna">
+        @for (publicacion of columna; track publicacion._id) {
+          <app-tarjeta-publicacion
+            [publicacion]="publicacion"
+            (eliminada)="listado.quitar($event)"
+          />
+        }
+      </div>
     }
   </div>
 
