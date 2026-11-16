@@ -397,5 +397,22 @@
     "etiqueta": "Buscar publicaciones",
     "placeholder": "Buscar publicaciones",
     "limpiar": "Borrar la búsqueda"
+  },
+  "notificaciones": {
+    "titulo": "Notificaciones",
+    "abrir": "Notificaciones",
+    "abrir_con_n": "Notificaciones, {{n}} sin leer",
+    "cerrar": "Cerrar las notificaciones",
+    "marcar_todas": "Marcar todas como leídas",
+    "vacio": "Todavía no tenés notificaciones",
+    "comentario": "{{actor}} comentó en «{{titulo}}»",
+    "me_gusta": "A {{actor}} le gustó «{{titulo}}»",
+    "error_cargar": "No se pudieron cargar las notificaciones",
+    "borrar_una": "Borrar esta notificación",
+    "borrar_historial": "Borrar historial",
+    "borrar_historial_titulo": "¿Borrar todo el historial?",
+    "borrar_historial_texto": "Se van a borrar todas tus notificaciones, leídas y sin leer. No se puede deshacer.",
+    "borrar_historial_si": "Borrar todo",
+    "borrando": "Borrando…"
   }
 }

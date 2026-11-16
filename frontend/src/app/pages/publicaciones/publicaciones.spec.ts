@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
 import { PaginaPublicaciones } from '../../interfaces/publicacion';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { Auth } from '../../servicios/auth/auth';
 import { Publicaciones } from './publicaciones';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
@@ -279,6 +279,44 @@ describe('Publicaciones', () => {
 
       expect(tarjetas()).toHaveLength(2);
       expect(texto()).toContain('Título 1');
+    });
+  });
+
+  describe('búsqueda desde la dirección', () => {
+    it('[O] si la dirección trae q, la primera carga ya pide esa búsqueda', async () => {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [Publicaciones],
+        providers: [
+          proveerIdiomaDePrueba(),
+          provideRouter([{ path: 'publicaciones', component: Publicaciones }]),
+          provideHttpClient(),
+          provideHttpClientTesting(),
+        ],
+      }).compileComponents();
+      const enrutador = TestBed.inject(Router);
+      await enrutador.navigateByUrl('/publicaciones?q=tarta');
+      const abierto = TestBed.createComponent(Publicaciones);
+      await abierto.whenStable();
+
+      const solicitud = TestBed.inject(HttpTestingController).expectOne(
+        (s) => s.url === URL && s.params.get('q') === 'tarta' && s.params.get('offset') === '0',
+      );
+      expect(solicitud.request.method).toBe('GET');
+      solicitud.flush(pagina(1, 1, false));
+    });
+
+    it('[S] cuando cambia q en la dirección vuelve a pedir desde el principio', async () => {
+      pedir(0).flush(pagina(1, 10, true));
+      await actualizar();
+
+      await TestBed.inject(Router).navigate([], {
+        relativeTo: TestBed.inject(ActivatedRoute),
+        queryParams: { q: 'pizza' },
+      });
+      await actualizar();
+
+      expect(fixture.componentInstance.busqueda()).toBe('pizza');
     });
   });
 

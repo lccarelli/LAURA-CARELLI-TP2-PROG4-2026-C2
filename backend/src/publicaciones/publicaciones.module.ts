@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../auth/auth.module.js';
 import { ImagenesModule } from '../imagenes/imagenes.module.js';
+import { NotificacionesModule } from '../notificaciones/notificaciones.module.js';
 import { Usuario, UsuarioSchema } from '../usuarios/schemas/usuario.schema.js';
 import { ComentariosService } from './comentarios.service.js';
 import { EventosMeGustaService } from './eventos-me-gusta.service.js';
@@ -33,6 +34,7 @@ export const TTL_LISTADO_MS = 1000;
     CacheModule.register({ ttl: TTL_LISTADO_MS }),
     AuthModule,
     ImagenesModule,
+    NotificacionesModule,
   ],
   controllers: [PublicacionesController],
   providers: [PublicacionesService, ComentariosService, EventosMeGustaService],

@@ -464,7 +464,7 @@ body {
   }
 
   .acceso {
-    @apply grid min-h-[calc(100svh-4rem)] content-start md:grid-cols-2 md:content-stretch;
+    @apply grid min-h-[calc(100svh-4rem)] content-start md:grid-cols-2 md:content-stretch lg:-mb-8 lg:min-h-svh;
   }
 
   .acceso-formulario {
@@ -831,6 +831,91 @@ body {
 
   .caja .campo-archivo {
     @apply mt-1;
+  }
+
+  .barra-superior {
+    @apply sticky top-0 z-20 flex items-center gap-3 bg-papel px-4 py-3 lg:px-6;
+  }
+
+  .buscador-barra {
+    @apply block min-w-0 flex-1;
+  }
+
+  .boton-campanita {
+    @apply relative grid size-12 shrink-0 place-items-center rounded-full bg-secundario text-secundario-tinta anillo-foco hover:bg-secundario/70;
+  }
+
+  .boton-campanita .icono {
+    @apply size-7;
+  }
+
+  .campanita-aviso {
+    @apply absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-error px-1 text-[0.65rem] leading-5 font-bold text-hoja;
+  }
+
+  .notificaciones-fondo {
+    @apply fixed inset-0 z-40 bg-tinta/30;
+  }
+
+  .notificaciones-panel {
+    @apply fixed inset-0 z-50 flex flex-col gap-3 overflow-y-auto bg-hoja p-4 text-tinta shadow-flota sm:left-auto sm:w-96 sm:rounded-l-3xl;
+  }
+
+  .notificaciones-cabecera {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  .notificaciones-titulo {
+    @apply font-serif text-2xl font-black;
+  }
+
+  .notificaciones-acciones {
+    @apply flex flex-wrap items-center justify-between gap-2;
+  }
+
+  .notificacion-fila {
+    @apply flex items-start gap-1;
+  }
+
+  .notificacion-fila .notificacion {
+    @apply min-w-0 flex-1;
+  }
+
+  .notificacion-borrar {
+    @apply mt-1.5 grid size-8 shrink-0 place-items-center rounded-full text-suave anillo-foco hover:bg-secundario hover:text-tinta;
+  }
+
+  .notificaciones-marcar,
+  .notificaciones-borrar-historial {
+    @apply rounded-full px-3 py-1 text-sm font-medium text-suave underline anillo-foco hover:text-tinta;
+  }
+
+  .notificaciones-lista {
+    @apply flex flex-col gap-1;
+  }
+
+  .notificacion {
+    @apply flex flex-col gap-0.5 rounded-2xl px-3 py-2.5 anillo-foco hover:bg-secundario/60;
+  }
+
+  .notificacion.sin-leer {
+    @apply bg-secundario;
+  }
+
+  .notificacion-texto {
+    @apply text-sm text-tinta;
+  }
+
+  .notificacion.sin-leer .notificacion-texto {
+    @apply font-bold;
+  }
+
+  .notificacion-fecha {
+    @apply text-xs text-suave;
+  }
+
+  .notificaciones-vacio {
+    @apply py-6 text-center text-sm text-suave;
   }
 
   .boton-tema {

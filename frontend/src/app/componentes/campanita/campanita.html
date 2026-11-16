@@ -1,0 +1,125 @@
+@if (auth.usuario()) {
+  <button
+    type="button"
+    class="boton-campanita"
+    [attr.aria-label]="
+      (cantidad() > 0 ? 'notificaciones.abrir_con_n' : 'notificaciones.abrir')
+        | translate: { n: cantidad() }
+    "
+    [attr.aria-expanded]="abierto()"
+    aria-haspopup="dialog"
+    (click)="alternar()"
+  >
+    <app-icono nombre="campana" />
+    @if (cantidad() > 0) {
+      <span class="campanita-aviso" aria-hidden="true">{{ cantidadMostrada }}</span>
+    }
+  </button>
+
+  @if (abierto()) {
+    <div class="notificaciones-fondo" aria-hidden="true" (click)="cerrar()"></div>
+    <aside
+      class="notificaciones-panel"
+      role="dialog"
+      [attr.aria-label]="'notificaciones.titulo' | translate"
+    >
+      <header class="notificaciones-cabecera">
+        <h2 class="notificaciones-titulo">{{ 'notificaciones.titulo' | translate }}</h2>
+        <button
+          type="button"
+          class="boton-icono"
+          appAutoFoco
+          [attr.aria-label]="'notificaciones.cerrar' | translate"
+          (click)="cerrar()"
+        >
+          <app-icono nombre="cerrar" />
+        </button>
+      </header>
+
+      @if (listado.items().length > 0) {
+        <div class="notificaciones-acciones">
+          @if (cantidad() > 0) {
+            <button type="button" class="notificaciones-marcar" (click)="marcarTodasLeidas()">
+              {{ 'notificaciones.marcar_todas' | translate }}
+            </button>
+          }
+          <button
+            type="button"
+            class="notificaciones-borrar-historial"
+            (click)="confirmandoBorrado.set(true)"
+          >
+            {{ 'notificaciones.borrar_historial' | translate }}
+          </button>
+        </div>
+      }
+
+      @if (listado.mensajeError(); as mensaje) {
+        <app-aviso titulo="notificaciones.error_cargar" (cerrar)="listado.mensajeError.set(null)">{{
+          mensaje | translate
+        }}</app-aviso>
+      }
+
+      <ul class="notificaciones-lista">
+        @for (notificacion of listado.items(); track notificacion._id) {
+          <li class="notificacion-fila">
+            <a
+              class="notificacion"
+              [class.sin-leer]="!notificacion.leida"
+              [routerLink]="['/publicaciones', notificacion.publicacion._id]"
+              [fragment]="notificacion.tipo === 'comentario' ? 'comentarios' : undefined"
+              (click)="abrirNotificacion(notificacion)"
+            >
+              <span class="notificacion-texto">
+                {{
+                  'notificaciones.' + notificacion.tipo
+                    | translate
+                      : {
+                          actor: notificacion.actor.nombreUsuario,
+                          titulo: notificacion.publicacion.titulo,
+                        }
+                }}
+              </span>
+              <span class="notificacion-fecha">{{ notificacion.fecha | fechaRelativa }}</span>
+            </a>
+            <button
+              type="button"
+              class="notificacion-borrar"
+              [attr.aria-label]="'notificaciones.borrar_una' | translate"
+              (click)="eliminar(notificacion)"
+            >
+              <app-icono nombre="cerrar" [chico]="true" />
+            </button>
+          </li>
+        }
+      </ul>
+
+      @if (listado.items().length === 0 && !listado.cargando() && !listado.fallaLaCarga()) {
+        <p class="notificaciones-vacio">{{ 'notificaciones.vacio' | translate }}</p>
+      }
+
+      @if (listado.cargando()) {
+        <app-cubreplato-loading />
+      }
+
+      @if (listado.hayMas() && !listado.cargando()) {
+        <app-ver-mas
+          texto="publicaciones.ver_mas"
+          [automatico]="!listado.fallaLaCarga()"
+          (cargar)="listado.cargarMas()"
+        />
+      }
+    </aside>
+
+    @if (confirmandoBorrado()) {
+      <app-modal-confirmacion
+        titulo="notificaciones.borrar_historial_titulo"
+        texto="notificaciones.borrar_historial_texto"
+        confirmar="notificaciones.borrar_historial_si"
+        confirmando="notificaciones.borrando"
+        [enviando]="borrando()"
+        (confirmado)="borrarHistorial()"
+        (cancelado)="confirmandoBorrado.set(false)"
+      />
+    }
+  }
+}

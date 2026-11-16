@@ -22,6 +22,7 @@ import type { ArchivosPublicacion } from './archivos-publicacion.pipe.js';
 import { EventosMeGustaService } from './eventos-me-gusta.service.js';
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
 import { filtroDeBusqueda } from '../common/busqueda.js';
+import { NotificacionesService } from '../notificaciones/notificaciones.service.js';
 import { ListarPublicacionesDto } from './dto/listar-publicaciones.dto.js';
 import { MeGusta } from './schemas/me-gusta.schema.js';
 import { Publicacion } from './schemas/publicacion.schema.js';
@@ -69,6 +70,7 @@ export class PublicacionesService {
     @InjectModel(Usuario.name)
     private readonly usuarioModel: Model<Usuario>,
     private readonly eventos: EventosMeGustaService,
+    private readonly notificaciones: NotificacionesService,
     private readonly imagenesService: ImagenesService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     loggerFactory: LoggerFactory,
@@ -294,6 +296,15 @@ export class PublicacionesService {
     };
     if (tipo === 'dado') {
       this.logger.info(EVENTOS_DE_LOG.ME_GUSTA_DADO, 'Me gusta dado', datos);
+      await this.notificaciones.notificar({
+        tipo: 'me_gusta',
+        destinatarioId: String(publicacion.usuario._id),
+        actor: { id: usuarioId, nombreUsuario: nombreUsuario ?? '' },
+        publicacion: {
+          id: String(publicacion._id),
+          titulo: publicacion.titulo,
+        },
+      });
     } else {
       this.logger.info(
         EVENTOS_DE_LOG.ME_GUSTA_QUITADO,
