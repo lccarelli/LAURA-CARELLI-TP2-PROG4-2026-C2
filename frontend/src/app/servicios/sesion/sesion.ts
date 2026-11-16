@@ -2,12 +2,13 @@ import { DestroyRef, computed, inject, Service, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { finalize, interval } from 'rxjs';
+import { finalize, fromEvent, interval, merge } from 'rxjs';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { Auth } from '../auth/auth';
 
 const PASO_MS = 1000;
 export const SEGUNDOS_DE_AVISO = 5 * 60;
+const ESPERA_ENTRE_RENOVACIONES_MS = 30 * 1000;
 
 @Service()
 export class Sesion {
@@ -15,6 +16,8 @@ export class Sesion {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private ahora = signal(Date.now());
+  private ultimaActividad: number | null = null;
+  private ultimaRenovacion = 0;
   readonly verificando = signal(false);
   readonly extendiendo = signal(false);
 
@@ -36,6 +39,22 @@ export class Sesion {
     interval(PASO_MS)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.pasar());
+
+    merge(
+      fromEvent(document, 'pointerdown'),
+      fromEvent(document, 'keydown'),
+      fromEvent(document, 'input'),
+    )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => (this.ultimaActividad = Date.now()));
+
+    fromEvent(document, 'visibilitychange')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (document.visibilityState === 'visible') {
+          this.pasar();
+        }
+      });
   }
 
   extender() {
@@ -72,7 +91,24 @@ export class Sesion {
     if (this.segundosRestantes() === 0) {
       this.auth.salir('api.SESION_VENCIDA');
       this.router.navigateByUrl('/login');
+      return;
     }
+
+    if (this.avisando() && this.hayActividadReciente() && this.puedeRenovar()) {
+      this.ultimaRenovacion = Date.now();
+      this.extender();
+    }
+  }
+
+  private hayActividadReciente() {
+    return (
+      this.ultimaActividad !== null &&
+      this.ahora() - this.ultimaActividad < SEGUNDOS_DE_AVISO * 1000
+    );
+  }
+
+  private puedeRenovar() {
+    return this.ahora() - this.ultimaRenovacion >= ESPERA_ENTRE_RENOVACIONES_MS;
   }
 
   private redirectALoginConTokenBorrado() {

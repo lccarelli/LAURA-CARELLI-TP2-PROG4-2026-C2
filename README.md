@@ -301,6 +301,9 @@ El token JWT dura **15 minutos**. Un aviso modal pregunta si se quiere extender 
 | --- | --- |
 | Aviso a los 10 minutos | El frontend lee el vencimiento (`exp`) del propio token y lo compara con la hora cada segundo. Cuando faltan 5 minutos aparece un modal con la cuenta regresiva. No depende de un temporizador de 10 minutos, así que no se atrasa en pestañas en segundo plano y sobrevive a recargar la página |
 | Extender sesión | `POST /auth/refrescar` devuelve un token nuevo de 15 minutos para la misma persona, con el perfil que tiene hoy en la base; si la cuenta se deshabilitó o ya no existe responde `401` con `USUARIO_NO_AUTORIZADO` y el modal cierra la sesión y lleva al login con ese motivo. El modal se cierra y vuelve a avisar 10 minutos después. Si falla la red, el modal sigue y se puede reintentar |
+| Renovación mientras se usa la app | Si hubo actividad (tocar, escribir) en los últimos 5 minutos y el token entra en el aviso, se renueva solo con `POST /auth/refrescar`, sin modal. Si falla, reintenta a los 30 segundos. Sin actividad, el modal sigue como antes |
+| Al volver a la app | Al volver a primer plano se revisa el vencimiento enseguida (el teléfono congela el reloj en segundo plano), sin esperar al siguiente segundo |
+| Volver a donde se estaba | Si la sesión se cierra por vencimiento, el login recuerda la pantalla (por ejemplo `/publicaciones/nueva`, con su borrador) y vuelve ahí al ingresar. Solo acepta rutas propias de la app |
 | Cerrar sesión | Desde el modal: borra el token y lleva al login |
 | Si no se responde | Al llegar a cero se cierra la sesión y el login explica el motivo |
 | Si una petición devuelve 401 | Un interceptor cierra la sesión y lleva al login con el motivo, sin ventanas flotantes. Se ignoran los 401 de ingresar, registrar y refrescar (ahí significan credenciales inválidas) |

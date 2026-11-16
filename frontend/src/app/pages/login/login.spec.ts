@@ -36,7 +36,7 @@ describe('Login', () => {
     fixture = TestBed.createComponent(Login);
     componente = fixture.componentInstance;
     http = TestBed.inject(HttpTestingController);
-    navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    navegar = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     await fixture.whenStable();
   });
 
@@ -54,7 +54,26 @@ describe('Login', () => {
     await enviar();
     http.expectOne(URL).flush({ token: 't', usuario: { _id: '1' } });
 
-    expect(navegar).toHaveBeenCalledWith(['/publicaciones']);
+    expect(navegar).toHaveBeenCalledWith('/publicaciones');
+  });
+
+  it.each([
+    [
+      '[O] vuelve a la pantalla donde venció la sesión',
+      '/publicaciones/nueva',
+      '/publicaciones/nueva',
+    ],
+    ['[E] ignora un destino que sale de la aplicación', '//otro-sitio.com', '/publicaciones'],
+    ['[Z] sin destino recordado va a publicaciones', null, '/publicaciones'],
+  ])('%s', async (_nombre, recordado, esperado) => {
+    TestBed.inject(Auth).volverA.set(recordado);
+    componente.formulario.setValue({ identificador: 'laura_c', clave: 'Clave1234' });
+
+    await enviar();
+    http.expectOne(URL).flush({ token: 't', usuario: { _id: '1' } });
+
+    expect(navegar).toHaveBeenCalledWith(esperado);
+    expect(TestBed.inject(Auth).volverA()).toBeNull();
   });
 
   it('[I] el identificador no se capitaliza ni se corrige en el teléfono', () => {
