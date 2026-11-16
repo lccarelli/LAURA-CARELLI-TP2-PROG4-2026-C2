@@ -1,5 +1,5 @@
 <header class="barra">
-  <a class="enlace-marca" routerLink="/">
+  <a class="enlace-marca" routerLink="/" [attr.aria-label]="'barra.marca' | translate">
     <img
       class="logo"
       [src]="tema.actual() === 'oscuro' ? 'favicon-oscuro.png' : 'favicon.png'"
@@ -7,17 +7,18 @@
       width="44"
       height="44"
     />
-    <span>
-      <span class="marca">{{ 'barra.marca' | translate }}</span>
-      <span class="lema">{{ 'barra.lema' | translate }}</span>
-    </span>
   </a>
 
   <nav class="barra-nav" [class.subiendo]="subiendo()">
     @if (auth.usuario(); as usuario) {
-      <a class="item-nav" routerLink="/publicaciones" routerLinkActive="activo">
+      <a
+        class="item-nav"
+        routerLink="/publicaciones"
+        [attr.title]="'barra.publicaciones' | translate"
+        routerLinkActive="activo"
+      >
         <svg
-          class="icono lg:hidden"
+          class="icono"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -29,11 +30,16 @@
           <path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4z" />
           <path d="M9 8h6M9 12h6" />
         </svg>
-        {{ 'barra.publicaciones' | translate }}
+        <span class="etiqueta-nav">{{ 'barra.publicaciones' | translate }}</span>
       </a>
-      <a class="item-nav" routerLink="/perfil" routerLinkActive="activo">
+      <a
+        class="item-nav"
+        routerLink="/perfil"
+        [attr.title]="'barra.mi_perfil' | translate"
+        routerLinkActive="activo"
+      >
         <svg
-          class="icono lg:hidden"
+          class="icono"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -45,12 +51,17 @@
           <circle cx="12" cy="8" r="3.5" />
           <path d="M5 20a7 7 0 0 1 14 0" />
         </svg>
-        {{ 'barra.mi_perfil' | translate }}
+        <span class="etiqueta-nav">{{ 'barra.mi_perfil' | translate }}</span>
       </a>
       @if (usuario.perfil === 'administrador') {
-        <a class="item-nav" routerLink="/dashboard/usuarios" routerLinkActive="activo">
+        <a
+          class="item-nav"
+          routerLink="/dashboard/usuarios"
+          [attr.title]="'barra.administracion' | translate"
+          routerLinkActive="activo"
+        >
           <svg
-            class="icono lg:hidden"
+            class="icono"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -62,11 +73,16 @@
             <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" />
             <path d="M9.5 12l2 2 3.5-4" />
           </svg>
-          {{ 'barra.administracion' | translate }}
+          <span class="etiqueta-nav">{{ 'barra.administracion' | translate }}</span>
         </a>
-        <a class="item-nav" routerLink="/dashboard/estadisticas" routerLinkActive="activo">
+        <a
+          class="item-nav"
+          routerLink="/dashboard/estadisticas"
+          [attr.title]="'barra.estadisticas' | translate"
+          routerLinkActive="activo"
+        >
           <svg
-            class="icono lg:hidden"
+            class="icono"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -77,13 +93,18 @@
           >
             <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
           </svg>
-          {{ 'barra.estadisticas' | translate }}
+          <span class="etiqueta-nav">{{ 'barra.estadisticas' | translate }}</span>
         </a>
       }
     } @else {
-      <a class="item-nav" routerLink="/login" routerLinkActive="activo">
+      <a
+        class="item-nav"
+        routerLink="/login"
+        [attr.title]="'barra.ingresar' | translate"
+        routerLinkActive="activo"
+      >
         <svg
-          class="icono lg:hidden"
+          class="icono"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -95,11 +116,16 @@
           <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />
           <path d="M10 8l4 4-4 4M14 12H4" />
         </svg>
-        {{ 'barra.ingresar' | translate }}
+        <span class="etiqueta-nav">{{ 'barra.ingresar' | translate }}</span>
       </a>
-      <a class="item-nav" routerLink="/registro" routerLinkActive="activo">
+      <a
+        class="item-nav"
+        routerLink="/registro"
+        [attr.title]="'barra.registrarme' | translate"
+        routerLinkActive="activo"
+      >
         <svg
-          class="icono lg:hidden"
+          class="icono"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -111,17 +137,17 @@
           <circle cx="10" cy="8" r="3.5" />
           <path d="M3.5 20a6.5 6.5 0 0 1 13 0M19 8v6M16 11h6" />
         </svg>
-        {{ 'barra.registrarme' | translate }}
+        <span class="etiqueta-nav">{{ 'barra.registrarme' | translate }}</span>
       </a>
     }
   </nav>
 
   <div class="barra-utiles">
     @if (auth.usuario(); as usuario) {
-      <span class="nombre-barra hidden lg:inline">&#64;{{ usuario.nombreUsuario }}</span>
+      <span class="nombre-barra">&#64;{{ usuario.nombreUsuario }}</span>
     }
 
-    <div class="flex gap-1" role="group" [attr.aria-label]="'barra.idioma' | translate">
+    <div class="grupo-idioma" role="group" [attr.aria-label]="'barra.idioma' | translate">
       @for (codigo of idioma.disponibles; track codigo) {
         <button
           type="button"
@@ -149,7 +175,7 @@
     @if (auth.usuario()) {
       <button type="button" class="boton-salir" (click)="salir()">
         <svg
-          class="icono lg:hidden"
+          class="icono"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"

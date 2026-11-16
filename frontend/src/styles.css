@@ -821,24 +821,25 @@ body {
     @apply mt-1;
   }
 
-  .nombre-barra {
-    @apply px-2 text-sm;
-  }
-
   .boton-tema {
     @apply grid size-9 shrink-0 place-items-center rounded-full anillo-foco hover:bg-hoja/40;
   }
 
   .boton-salir {
-    @apply grid size-9 shrink-0 place-items-center rounded-full anillo-foco hover:bg-hoja/40 lg:flex lg:size-auto lg:gap-2 lg:px-4 lg:py-1.5 lg:text-base lg:font-bold;
+    @apply grid size-9 shrink-0 place-items-center rounded-full anillo-foco hover:bg-hoja/40 lg:size-11;
   }
 
-  .texto-de-escritorio {
-    @apply sr-only lg:not-sr-only;
+  .texto-de-escritorio,
+  .etiqueta-nav {
+    @apply sr-only;
   }
 
   .barra-utiles {
-    @apply flex items-center gap-1 lg:gap-2;
+    @apply flex items-center gap-1 lg:flex-col lg:gap-3;
+  }
+
+  .grupo-idioma {
+    @apply flex gap-1 lg:flex-col lg:items-center;
   }
 
   .boton-ojo {
@@ -878,35 +879,35 @@ body {
   }
 
   .barra {
-    @apply flex items-center justify-between gap-3 bg-barra px-4 py-3 text-barra-tinta lg:gap-4 lg:px-8 lg:py-4;
+    @apply flex items-center justify-between gap-3 bg-barra px-4 py-3 text-barra-tinta lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:w-20 lg:flex-col lg:justify-start lg:gap-6 lg:px-0 lg:py-5;
   }
 
   .enlace-marca {
-    @apply flex min-w-0 items-center gap-2 md:gap-3;
+    @apply flex shrink-0 items-center rounded-xl anillo-foco;
   }
 
   .logo {
     @apply size-9 shrink-0 rounded-lg md:size-12 md:rounded-xl;
   }
 
-  .marca {
-    @apply block font-serif text-2xl leading-none font-black tracking-tight max-[22rem]:sr-only sm:text-3xl md:text-4xl;
-  }
-
-  .lema {
-    @apply mt-1 hidden text-[0.65rem] tracking-[0.2em] uppercase sm:block;
+  .nombre-barra {
+    @apply sr-only;
   }
 
   .barra-nav {
-    @apply fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-md flex items-stretch justify-around gap-0.5 rounded-full bg-hoja/90 p-1.5 text-tinta shadow-flota backdrop-blur-md lg:static lg:inset-auto lg:mx-0 lg:ml-auto lg:max-w-none lg:justify-end lg:gap-2 lg:rounded-none lg:bg-transparent lg:p-0 lg:text-barra-tinta lg:shadow-none lg:backdrop-blur-none;
+    @apply fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-md items-stretch justify-around gap-0.5 rounded-full bg-hoja/90 p-1.5 text-tinta shadow-flota backdrop-blur-md lg:static lg:inset-auto lg:mx-0 lg:max-w-none lg:flex-col lg:items-center lg:justify-start lg:gap-2 lg:rounded-none lg:bg-transparent lg:p-0 lg:text-barra-tinta lg:shadow-none lg:backdrop-blur-none;
   }
 
   .item-nav {
-    @apply flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-full px-0.5 py-1.5 text-center text-[0.7rem] leading-tight anillo-foco hover:bg-secundario/40 lg:flex-none lg:flex-row lg:gap-2 lg:rounded-full lg:px-4 lg:text-base lg:font-bold lg:whitespace-nowrap lg:hover:bg-hoja/40;
+    @apply flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-full px-0.5 py-1.5 text-center text-[0.7rem] leading-tight anillo-foco hover:bg-secundario/40 lg:size-12 lg:flex-none lg:justify-center lg:rounded-2xl lg:p-0 lg:hover:bg-hoja/40;
   }
 
   .item-nav.activo {
-    @apply bg-acento text-acento-tinta md:bg-hoja md:text-tinta;
+    @apply bg-acento text-acento-tinta lg:bg-hoja lg:text-tinta;
+  }
+
+  .item-nav .etiqueta-nav {
+    @apply not-sr-only lg:sr-only;
   }
 
   .icono {
