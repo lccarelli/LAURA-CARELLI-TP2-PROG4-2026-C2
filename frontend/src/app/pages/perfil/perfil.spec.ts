@@ -70,6 +70,8 @@ describe('Perfil', () => {
     fixture = TestBed.createComponent(Perfil);
   });
 
+  afterEach(() => vi.useRealTimers());
+
   it('[Z] sin usuario en la sesión no muestra datos y no falla', async () => {
     const pagina = await mostrar(null);
 
@@ -114,6 +116,26 @@ describe('Perfil', () => {
     const pagina = await mostrar(usuario);
 
     expect(pagina.textContent).toContain('05/20/1990');
+  });
+
+  it('[O] junto a la fecha de nacimiento muestra la edad', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 10, 15, 12));
+
+    const pagina = await mostrar(usuario);
+
+    expect(pagina.textContent).toContain('20/05/1990');
+    expect(pagina.textContent).toContain('(36 años)');
+  });
+
+  it('[S] en inglés la edad también se traduce', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 10, 15, 12));
+    TestBed.inject(Idioma).cambiar('en');
+
+    const pagina = await mostrar(usuario);
+
+    expect(pagina.textContent).toContain('(36 years)');
   });
 
   it('[I] la fecha de nacimiento no se corre un día por la zona horaria', async () => {

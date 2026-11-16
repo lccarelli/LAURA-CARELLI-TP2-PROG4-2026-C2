@@ -2,7 +2,7 @@
   @if (publicacion().imagen; as imagen) {
     <img class="pin-imagen" [src]="urlImagen(imagen)" alt="" />
   } @else {
-    <span class="pin-texto">{{ publicacion().mensaje }}</span>
+    <span class="pin-texto">{{ publicacion().mensaje | textoLargo: letrasDelMensaje }}</span>
   }
   <span class="pin-pie">
     <span class="pin-tipo">{{ 'tipos.' + publicacion().tipo | translate }}</span>

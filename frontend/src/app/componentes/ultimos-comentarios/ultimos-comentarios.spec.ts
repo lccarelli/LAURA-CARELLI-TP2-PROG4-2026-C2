@@ -53,6 +53,28 @@ describe('UltimosComentarios', () => {
 
   afterEach(() => vi.useRealTimers());
 
+  it('[O] un comentario largo se corta con puntos suspensivos y el texto completo queda en el tooltip', async () => {
+    const larga = `${'Me salió riquísimo y lo repetí varias veces '.repeat(5)}fin`;
+    await abrir(1);
+    pedido().flush({ ...pagina(0), datos: [comentarioDePrueba({ mensaje: larga })] });
+    await actualizar();
+
+    const parrafo = fixture.nativeElement.querySelector('.comentario-texto') as HTMLElement;
+
+    expect(parrafo.textContent?.trim().endsWith('…')).toBe(true);
+    expect(Array.from(parrafo.textContent!.trim()).length).toBeLessThanOrEqual(120);
+    expect(parrafo.getAttribute('title')).toBe(larga);
+  });
+
+  it('[B] un comentario corto se ve entero', async () => {
+    await abrir(1);
+    pedido().flush(pagina(1));
+    await actualizar();
+
+    expect(texto()).toContain('Comentario 1');
+    expect(texto()).not.toContain('…');
+  });
+
   it('[Z] una publicación sin comentarios lo dice y no pide nada', async () => {
     await abrir(0);
 
