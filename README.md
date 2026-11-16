@@ -178,6 +178,7 @@ La cobertura de cada ejecución queda en el resumen del job y como archivo desca
 ### Directivas propias
 
 - **`appResaltar`** (`src/app/directivas/resaltar/resaltar.ts`): al pasar el mouse por un elemento le dibuja un aro de color (clase `resaltado`) y lo saca al irse el mouse. El color es un input: `<div appResaltar="var(--tema-primario)">`. Sin color usa el acento del tema. El color se pasa como una variable del tema, nunca como un valor fijo, así que cambia solo entre claro y oscuro. Se aplica a las tarjetas de publicaciones como directiva de host: cada tarjeta se resalta con el color de su tipo (los mismos tres colores de la torta de estadísticas: receta, tip y experiencia).
+- **`appAutoFoco`** (`src/app/directivas/auto-foco/auto-foco.ts`): pone el foco en el elemento cuando aparece, así se puede escribir o confirmar sin tocar antes. Se usa en el primer campo del ingreso (correo o nombre de usuario), en el primer campo del registro y del alta de usuarios (nombre) y en el botón "Cancelar" de las ventanas de confirmación (la opción segura). `[appAutoFoco]="false"` lo apaga. En un teléfono **no** enfoca campos de texto, porque abriría el teclado sin que se pida y taparía el formulario; los botones sí.
 - **`appEnVista`** (`src/app/directivas/en-vista/en-vista.ts`): carga el siguiente tramo de un listado cuando el botón "Ver más" queda a la vista un momento.
 
 ### Pipes propios

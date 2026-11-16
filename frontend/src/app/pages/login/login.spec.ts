@@ -1,7 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
+import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
 import { environment } from '../../../environments/environment';
 import { Auth } from '../../servicios/auth/auth';
 import { Login } from './login';
@@ -38,6 +40,14 @@ describe('Login', () => {
     http = TestBed.inject(HttpTestingController);
     navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     await fixture.whenStable();
+  });
+
+  it('[I] el foco va al primer campo, el del correo o nombre de usuario, y a ningún otro', () => {
+    const conFoco = fixture.debugElement.queryAll(By.directive(AutoFoco));
+
+    expect(conFoco.map((nodo) => nodo.nativeElement.getAttribute('formcontrolname'))).toEqual([
+      'identificador',
+    ]);
   });
 
   it('[Z] con el formulario vacío no envía nada y marca los campos', async () => {

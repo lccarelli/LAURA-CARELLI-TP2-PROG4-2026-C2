@@ -2,7 +2,7 @@
   <div class="fila-campos">
     <label class="caja">
       <span class="etiqueta">{{ 'registro.nombre' | translate }}</span>
-      <input class="campo" formControlName="nombre" autocomplete="given-name" />
+      <input appAutoFoco class="campo" formControlName="nombre" autocomplete="given-name" />
       @if (mensajeDeError('nombre'); as mensaje) {
         <span class="mensaje-error">{{ mensaje }}</span>
       }

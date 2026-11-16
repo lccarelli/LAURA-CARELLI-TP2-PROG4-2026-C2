@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { ESCRITURA_LITERAL, atributosDeEscrituraLiteral } from '../../../testing/teclado';
 import { datosDelFormulario } from '../../../testing/usuario';
@@ -43,6 +45,14 @@ describe('FormularioUsuario', () => {
     guardar = vi.fn<(datos: FormData) => void>();
     componente.guardar.subscribe(guardar);
     await fixture.whenStable();
+  });
+
+  it('[I] el foco va al primer campo, el nombre, y a ningún otro', () => {
+    const conFoco = fixture.debugElement.queryAll(By.directive(AutoFoco));
+
+    expect(conFoco.map((nodo) => nodo.nativeElement.getAttribute('formcontrolname'))).toEqual([
+      'nombre',
+    ]);
   });
 
   it('[I] el correo y el nombre de usuario no se capitalizan ni se corrigen en el teléfono', () => {

@@ -1,6 +1,7 @@
 import { Component, computed, inject, input, output, PendingTasks, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
 import { PERFILES } from '../../interfaces/usuario';
 import { Imagenes } from '../../servicios/imagenes/imagenes';
 import { validarImagen } from '../../utilidades/imagen';
@@ -13,7 +14,7 @@ import {
 import { CampoClave } from '../campo-clave/campo-clave';
 
 @Component({
-  imports: [ReactiveFormsModule, TranslatePipe, CampoClave],
+  imports: [AutoFoco, ReactiveFormsModule, TranslatePipe, CampoClave],
   selector: 'app-formulario-usuario',
   templateUrl: './formulario-usuario.html',
 })

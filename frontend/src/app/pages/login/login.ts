@@ -6,11 +6,20 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CampoClave } from '../../componentes/campo-clave/campo-clave';
 import { Aviso } from '../../componentes/aviso/aviso';
 import { MosaicoComidas } from '../../componentes/mosaico-comidas/mosaico-comidas';
+import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
 import { Auth } from '../../servicios/auth/auth';
 import { mensajeDeApi } from '../../utilidades/errores';
 
 @Component({
-  imports: [ReactiveFormsModule, RouterLink, Aviso, MosaicoComidas, TranslatePipe, CampoClave],
+  imports: [
+    AutoFoco,
+    ReactiveFormsModule,
+    RouterLink,
+    Aviso,
+    MosaicoComidas,
+    TranslatePipe,
+    CampoClave,
+  ],
   selector: 'app-login',
   templateUrl: './login.html',
 })
