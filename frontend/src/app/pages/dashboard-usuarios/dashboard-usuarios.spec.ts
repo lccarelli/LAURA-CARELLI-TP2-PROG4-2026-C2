@@ -57,8 +57,16 @@ describe('DashboardUsuarios', () => {
     )!;
 
   const pedidoDeCambio = (id: string) =>
-    http.expectOne((solicitud) => solicitud.method === 'PATCH' && solicitud.url === `${URL}/${id}`);
-  const pedidosDeCambio = () => http.match((solicitud) => solicitud.method === 'PATCH');
+    http.expectOne(
+      (solicitud) =>
+        (solicitud.method === 'DELETE' && solicitud.url === `${URL}/${id}`) ||
+        (solicitud.method === 'POST' && solicitud.url === `${URL}/${id}/habilitar`),
+    );
+  const pedidosDeCambio = () =>
+    http.match(
+      (solicitud) =>
+        solicitud.url !== URL && (solicitud.method === 'DELETE' || solicitud.method === 'POST'),
+    );
   const terminarCambio = (numero: number, habilitado: boolean) =>
     pedidoDeCambio(`u${numero}`).flush(persona(numero, { habilitado }));
 
@@ -361,7 +369,7 @@ describe('DashboardUsuarios', () => {
       expect(pedidosDeCambio()).toHaveLength(0);
     });
 
-    it('[O] Confirmar manda un PATCH de ese usuario con habilitado en falso', async () => {
+    it('[O] Confirmar manda un DELETE de ese usuario', async () => {
       await abrirCon([persona(1), persona(2)]);
       botonDe(1).click();
       await actualizar();
@@ -369,8 +377,8 @@ describe('DashboardUsuarios', () => {
       botonDelModal('Deshabilitar').click();
 
       const solicitud = pedidoDeCambio('u2');
-      expect(solicitud.request.method).toBe('PATCH');
-      expect(solicitud.request.body).toEqual({ habilitado: false });
+      expect(solicitud.request.method).toBe('DELETE');
+      expect(solicitud.request.url).toBe(`${URL}/u2`);
       solicitud.flush(persona(2, { habilitado: false }));
     });
 
@@ -543,14 +551,14 @@ describe('DashboardUsuarios', () => {
       expect(pedidosDeCambio()).toHaveLength(0);
     });
 
-    it('[O] Confirmar manda un PATCH de ese usuario con habilitado en verdadero', async () => {
+    it('[O] Confirmar manda un POST a /habilitar de ese usuario', async () => {
       await abrirDeshabilitada();
 
       botonDelModal('Habilitar').click();
 
       const solicitud = pedidoDeCambio('u1');
-      expect(solicitud.request.method).toBe('PATCH');
-      expect(solicitud.request.body).toEqual({ habilitado: true });
+      expect(solicitud.request.method).toBe('POST');
+      expect(solicitud.request.url).toBe(`${URL}/u1/habilitar`);
       solicitud.flush(persona(1, { habilitado: true }));
     });
 
