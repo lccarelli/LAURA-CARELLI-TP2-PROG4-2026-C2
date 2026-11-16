@@ -407,6 +407,12 @@
     "vacio": "You don't have any notifications yet",
     "comentario": "{{actor}} commented on “{{titulo}}”",
     "me_gusta": "{{actor}} liked “{{titulo}}”",
-    "error_cargar": "Notifications could not be loaded"
+    "error_cargar": "Notifications could not be loaded",
+    "borrar_una": "Delete this notification",
+    "borrar_historial": "Clear history",
+    "borrar_historial_titulo": "Clear the whole history?",
+    "borrar_historial_texto": "All your notifications, read and unread, will be deleted. This cannot be undone.",
+    "borrar_historial_si": "Delete all",
+    "borrando": "Deleting…"
   }
 }

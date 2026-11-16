@@ -238,4 +238,95 @@ describe('notificaciones', () => {
       expect(await sinLeer()).toBe(1);
     });
   });
+
+  describe('borrado', () => {
+    it('[S] borrar una la saca de la lista y del contador', async () => {
+      await comentarDesde(app, otra.token, publicacionId, 'Uno');
+      await comentarDesde(app, otra.token, publicacionId, 'Dos');
+      const [reciente] = (await listarComoAutoria()).datos;
+
+      await deLaAutoria().delete(`/notificaciones/${reciente._id}`).expect(204);
+
+      const { datos } = await listarComoAutoria();
+      expect(datos).toHaveLength(1);
+      expect(datos[0]._id).not.toBe(reciente._id);
+      expect(await sinLeer()).toBe(1);
+    });
+
+    it('[S] borrar una ya leída no toca el contador', async () => {
+      await comentarDesde(app, otra.token, publicacionId, 'Uno');
+      const [aviso] = (await listarComoAutoria()).datos;
+      await deLaAutoria().post(`/notificaciones/${aviso._id}/leer`).expect(200);
+      await comentarDesde(app, otra.token, publicacionId, 'Dos');
+
+      await deLaAutoria().delete(`/notificaciones/${aviso._id}`).expect(204);
+
+      expect(await sinLeer()).toBe(1);
+    });
+
+    it('[E] no se puede borrar la notificación de otra persona', async () => {
+      await comentarDesde(app, otra.token, publicacionId);
+      const [aviso] = (await listarComoAutoria()).datos;
+
+      await con(app, otra.token)
+        .delete(`/notificaciones/${aviso._id}`)
+        .expect(404);
+
+      expect(await sinLeer()).toBe(1);
+    });
+
+    it('[E] borrar dos veces la misma responde 404 la segunda', async () => {
+      await comentarDesde(app, otra.token, publicacionId);
+      const [aviso] = (await listarComoAutoria()).datos;
+      await deLaAutoria().delete(`/notificaciones/${aviso._id}`).expect(204);
+
+      const { body } = await deLaAutoria()
+        .delete(`/notificaciones/${aviso._id}`)
+        .expect(404);
+
+      expect(body.codigo).toBe('NOTIFICACION_NO_ENCONTRADA');
+    });
+
+    it('[E] un id inválido responde 400', async () => {
+      await deLaAutoria().delete('/notificaciones/abc').expect(400);
+    });
+
+    it('[S] borrar el historial vacía la lista y cuenta cuántas borró', async () => {
+      await comentarDesde(app, otra.token, publicacionId, 'Uno');
+      await darMeGustaDesde(app, otra.token, publicacionId);
+      await deLaAutoria().post('/notificaciones/leer-todas').expect(200);
+      await comentarDesde(app, otra.token, publicacionId, 'Dos');
+
+      const { body } = await deLaAutoria()
+        .delete('/notificaciones')
+        .expect(200);
+
+      expect(body).toEqual({ eliminadas: 3 });
+      expect((await listarComoAutoria()).datos).toEqual([]);
+      expect(await sinLeer()).toBe(0);
+    });
+
+    it('[Z] borrar el historial sin avisos responde 0', async () => {
+      const { body } = await deLaAutoria()
+        .delete('/notificaciones')
+        .expect(200);
+
+      expect(body).toEqual({ eliminadas: 0 });
+    });
+
+    it('[E] borrar el historial de una persona no toca el de otra', async () => {
+      await comentarDesde(app, otra.token, publicacionId);
+
+      await con(app, otra.token).delete('/notificaciones').expect(200);
+
+      expect(await sinLeer()).toBe(1);
+    });
+
+    it('[E] sin sesión responde 401', async () => {
+      await request(app.getHttpServer()).delete('/notificaciones').expect(401);
+      await request(app.getHttpServer())
+        .delete('/notificaciones/64b7f0c2a1b2c3d4e5f60718')
+        .expect(401);
+    });
+  });
 });

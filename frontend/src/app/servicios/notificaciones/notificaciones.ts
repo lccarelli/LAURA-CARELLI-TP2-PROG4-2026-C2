@@ -23,4 +23,12 @@ export class NotificacionesApi {
   marcarTodasLeidas() {
     return this.http.post<{ actualizadas: number }>(`${this.base}/leer-todas`, {});
   }
+
+  eliminar(id: string) {
+    return this.http.delete<void>(`${this.base}/${encodeURIComponent(id)}`);
+  }
+
+  eliminarTodas() {
+    return this.http.delete<{ eliminadas: number }>(this.base);
+  }
 }

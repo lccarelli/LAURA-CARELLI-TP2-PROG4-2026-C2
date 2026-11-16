@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -45,5 +46,19 @@ export class NotificacionesController {
     @Req() solicitud: SolicitudAutenticada,
   ) {
     return this.notificaciones.marcarLeida(id, solicitud.usuario.id);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  eliminar(
+    @Param() { id }: IdParamDto,
+    @Req() solicitud: SolicitudAutenticada,
+  ) {
+    return this.notificaciones.eliminar(id, solicitud.usuario.id);
+  }
+
+  @Delete()
+  eliminarTodas(@Req() solicitud: SolicitudAutenticada) {
+    return this.notificaciones.eliminarTodas(solicitud.usuario.id);
   }
 }

@@ -113,10 +113,7 @@ export class NotificacionesService {
       )
       .lean<NotificacionGuardada>();
     if (!notificacion) {
-      throw new NotFoundException({
-        message: 'La notificación no existe',
-        codigo: 'NOTIFICACION_NO_ENCONTRADA',
-      });
+      throw this.noEncontrada();
     }
     return aRespuesta(notificacion);
   }
@@ -127,6 +124,30 @@ export class NotificacionesService {
       { leida: true },
     );
     return { actualizadas: modifiedCount };
+  }
+
+  async eliminar(id: string, usuarioId: string) {
+    const { deletedCount } = await this.notificacionModel.deleteOne({
+      _id: id,
+      destinatario: usuarioId,
+    });
+    if (!deletedCount) {
+      throw this.noEncontrada();
+    }
+  }
+
+  async eliminarTodas(usuarioId: string) {
+    const { deletedCount } = await this.notificacionModel.deleteMany({
+      destinatario: usuarioId,
+    });
+    return { eliminadas: deletedCount };
+  }
+
+  private noEncontrada() {
+    return new NotFoundException({
+      message: 'La notificación no existe',
+      codigo: 'NOTIFICACION_NO_ENCONTRADA',
+    });
   }
 
   private async guardar(datos: DatosNotificacion, fecha: Date) {

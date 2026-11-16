@@ -869,8 +869,25 @@ body {
     @apply font-serif text-2xl font-black;
   }
 
-  .notificaciones-marcar {
-    @apply self-start rounded-full px-3 py-1 text-sm font-medium text-suave underline anillo-foco hover:text-tinta;
+  .notificaciones-acciones {
+    @apply flex flex-wrap items-center justify-between gap-2;
+  }
+
+  .notificacion-fila {
+    @apply flex items-start gap-1;
+  }
+
+  .notificacion-fila .notificacion {
+    @apply min-w-0 flex-1;
+  }
+
+  .notificacion-borrar {
+    @apply mt-1.5 grid size-8 shrink-0 place-items-center rounded-full text-suave anillo-foco hover:bg-secundario hover:text-tinta;
+  }
+
+  .notificaciones-marcar,
+  .notificaciones-borrar-historial {
+    @apply rounded-full px-3 py-1 text-sm font-medium text-suave underline anillo-foco hover:text-tinta;
   }
 
   .notificaciones-lista {

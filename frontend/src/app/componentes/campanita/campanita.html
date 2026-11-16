@@ -36,10 +36,21 @@
         </button>
       </header>
 
-      @if (cantidad() > 0) {
-        <button type="button" class="notificaciones-marcar" (click)="marcarTodasLeidas()">
-          {{ 'notificaciones.marcar_todas' | translate }}
-        </button>
+      @if (listado.items().length > 0) {
+        <div class="notificaciones-acciones">
+          @if (cantidad() > 0) {
+            <button type="button" class="notificaciones-marcar" (click)="marcarTodasLeidas()">
+              {{ 'notificaciones.marcar_todas' | translate }}
+            </button>
+          }
+          <button
+            type="button"
+            class="notificaciones-borrar-historial"
+            (click)="confirmandoBorrado.set(true)"
+          >
+            {{ 'notificaciones.borrar_historial' | translate }}
+          </button>
+        </div>
       }
 
       @if (listado.mensajeError(); as mensaje) {
@@ -50,7 +61,7 @@
 
       <ul class="notificaciones-lista">
         @for (notificacion of listado.items(); track notificacion._id) {
-          <li>
+          <li class="notificacion-fila">
             <a
               class="notificacion"
               [class.sin-leer]="!notificacion.leida"
@@ -70,6 +81,14 @@
               </span>
               <span class="notificacion-fecha">{{ notificacion.fecha | fechaRelativa }}</span>
             </a>
+            <button
+              type="button"
+              class="notificacion-borrar"
+              [attr.aria-label]="'notificaciones.borrar_una' | translate"
+              (click)="eliminar(notificacion)"
+            >
+              <app-icono nombre="cerrar" [chico]="true" />
+            </button>
           </li>
         }
       </ul>
@@ -90,5 +109,17 @@
         />
       }
     </aside>
+
+    @if (confirmandoBorrado()) {
+      <app-modal-confirmacion
+        titulo="notificaciones.borrar_historial_titulo"
+        texto="notificaciones.borrar_historial_texto"
+        confirmar="notificaciones.borrar_historial_si"
+        confirmando="notificaciones.borrando"
+        [enviando]="borrando()"
+        (confirmado)="borrarHistorial()"
+        (cancelado)="confirmandoBorrado.set(false)"
+      />
+    }
   }
 }

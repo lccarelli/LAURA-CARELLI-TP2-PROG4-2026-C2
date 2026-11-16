@@ -12,6 +12,7 @@ import { ListadoPaginado } from '../../utilidades/listado-paginado';
 import { Aviso } from '../aviso/aviso';
 import { CubreplatoLoading } from '../cubreplato-loading/cubreplato-loading';
 import { Icono } from '../icono/icono';
+import { ModalConfirmacion } from '../modal-confirmacion/modal-confirmacion';
 import { VerMas } from '../ver-mas/ver-mas';
 
 const ESPERA_ENTRE_CONSULTAS_MS = 30 * 1000;
@@ -24,6 +25,7 @@ const MAXIMO_MOSTRADO = 99;
     CubreplatoLoading,
     FechaRelativa,
     Icono,
+    ModalConfirmacion,
     RouterLink,
     TranslatePipe,
     VerMas,
@@ -38,6 +40,8 @@ export class Campanita {
 
   readonly cantidad = signal(0);
   readonly abierto = signal(false);
+  readonly confirmandoBorrado = signal(false);
+  readonly borrando = signal(false);
   readonly listado = new ListadoPaginado<Notificacion>((offset) => this.api.listar(offset));
 
   constructor() {
@@ -70,7 +74,7 @@ export class Campanita {
   }
 
   cerrar() {
-    if (this.abierto()) {
+    if (this.abierto() && !this.confirmandoBorrado()) {
       this.listado.cancelar();
       this.abierto.set(false);
     }
@@ -89,6 +93,35 @@ export class Campanita {
     this.api.marcarTodasLeidas().subscribe(() => {
       this.cantidad.set(0);
       this.listado.items.update((items) => items.map((item) => ({ ...item, leida: true })));
+    });
+  }
+
+  eliminar(notificacion: Notificacion) {
+    this.listado.quitar(notificacion._id);
+    if (!notificacion.leida) {
+      this.cantidad.update((actual) => Math.max(0, actual - 1));
+    }
+    this.api.eliminar(notificacion._id).subscribe({
+      error: () => {
+        this.listado.reiniciar();
+        this.actualizarCantidad();
+      },
+    });
+  }
+
+  borrarHistorial() {
+    this.borrando.set(true);
+    this.api.eliminarTodas().subscribe({
+      next: () => {
+        this.listado.reiniciar();
+        this.cantidad.set(0);
+        this.borrando.set(false);
+        this.confirmandoBorrado.set(false);
+      },
+      error: () => {
+        this.borrando.set(false);
+        this.confirmandoBorrado.set(false);
+      },
     });
   }
 

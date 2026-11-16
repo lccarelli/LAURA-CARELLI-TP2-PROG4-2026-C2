@@ -264,4 +264,128 @@ describe('Campanita', () => {
       expect(el('.notificaciones-marcar')).toBeNull();
     });
   });
+
+  describe('borrado', () => {
+    const botonBorrar = (indice = 0) =>
+      fixture.nativeElement.querySelectorAll('.notificacion-borrar')[indice] as HTMLButtonElement;
+
+    it('[S] cada aviso tiene su botón de borrar con nombre accesible', async () => {
+      await iniciarSesion(2);
+
+      await abrirPanel([notificacion(1), notificacion(2)]);
+
+      expect(fixture.nativeElement.querySelectorAll('.notificacion-borrar')).toHaveLength(2);
+      expect(botonBorrar().getAttribute('aria-label')).toBe('Borrar esta notificación');
+    });
+
+    it('[S] borrar un aviso sin leer lo saca de la lista y baja el contador', async () => {
+      await iniciarSesion(2);
+      await abrirPanel([notificacion(1), notificacion(2)]);
+
+      botonBorrar(0).click();
+      await actualizar();
+
+      http
+        .expectOne({ method: 'DELETE', url: `${URL}/n1` })
+        .flush(null, { status: 204, statusText: 'No Content' });
+      await actualizar();
+      expect(fixture.nativeElement.querySelectorAll('.notificacion')).toHaveLength(1);
+      expect(el('.campanita-aviso').textContent!.trim()).toBe('1');
+    });
+
+    it('[B] borrar un aviso ya leído no cambia el contador', async () => {
+      await iniciarSesion(1);
+      await abrirPanel([notificacion(1, { leida: true }), notificacion(2)]);
+
+      botonBorrar(0).click();
+      http
+        .expectOne({ method: 'DELETE', url: `${URL}/n1` })
+        .flush(null, { status: 204, statusText: 'No Content' });
+      await actualizar();
+
+      expect(el('.campanita-aviso').textContent!.trim()).toBe('1');
+    });
+
+    it('[E] si no se pudo borrar, vuelve a cargar la lista y el contador reales', async () => {
+      await iniciarSesion(1);
+      await abrirPanel([notificacion(1)]);
+
+      botonBorrar().click();
+      http
+        .expectOne({ method: 'DELETE', url: `${URL}/n1` })
+        .flush({}, { status: 500, statusText: 'Error' });
+      await actualizar();
+
+      http
+        .expectOne((s) => s.url === URL && s.params.get('offset') === '0')
+        .flush(pagina([notificacion(1)]));
+      sinLeer(1);
+      await actualizar();
+      expect(fixture.nativeElement.querySelectorAll('.notificacion')).toHaveLength(1);
+    });
+
+    it('[O] borrar el historial pide confirmación antes de borrar nada', async () => {
+      await iniciarSesion(1);
+      await abrirPanel([notificacion(1)]);
+
+      (el('.notificaciones-borrar-historial') as HTMLButtonElement).click();
+      await actualizar();
+
+      expect(el('app-modal-confirmacion')).not.toBeNull();
+      expect(texto()).toContain('¿Borrar todo el historial?');
+      expect(http.match({ method: 'DELETE' })).toEqual([]);
+    });
+
+    it('[S] cancelar la confirmación no borra nada y deja el panel abierto', async () => {
+      await iniciarSesion(1);
+      await abrirPanel([notificacion(1)]);
+      (el('.notificaciones-borrar-historial') as HTMLButtonElement).click();
+      await actualizar();
+
+      (el('app-modal-confirmacion .boton-secundario') as HTMLButtonElement).click();
+      await actualizar();
+
+      expect(el('app-modal-confirmacion')).toBeNull();
+      expect(el('.notificaciones-panel')).not.toBeNull();
+      expect(http.match({ method: 'DELETE' })).toEqual([]);
+    });
+
+    it('[S] Escape con la confirmación abierta la cierra pero no cierra el panel', async () => {
+      await iniciarSesion(1);
+      await abrirPanel([notificacion(1)]);
+      (el('.notificaciones-borrar-historial') as HTMLButtonElement).click();
+      await actualizar();
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      await actualizar();
+
+      expect(el('.notificaciones-panel')).not.toBeNull();
+    });
+
+    it('[S] confirmar borra todo, vacía la lista y deja el contador en cero', async () => {
+      await iniciarSesion(2);
+      await abrirPanel([notificacion(1), notificacion(2)]);
+      (el('.notificaciones-borrar-historial') as HTMLButtonElement).click();
+      await actualizar();
+
+      (el('app-modal-confirmacion .boton-peligro') as HTMLButtonElement).click();
+      http.expectOne({ method: 'DELETE', url: URL }).flush({ eliminadas: 2 });
+      await actualizar();
+      http.expectOne((s) => s.url === URL && s.params.get('offset') === '0').flush(pagina([]));
+      await actualizar();
+
+      expect(el('app-modal-confirmacion')).toBeNull();
+      expect(el('.campanita-aviso')).toBeNull();
+      expect(texto()).toContain('Todavía no tenés notificaciones');
+      expect(el('.notificaciones-borrar-historial')).toBeNull();
+    });
+
+    it('[Z] sin avisos no ofrece borrar el historial', async () => {
+      await iniciarSesion(0);
+
+      await abrirPanel([]);
+
+      expect(el('.notificaciones-borrar-historial')).toBeNull();
+    });
+  });
 });
