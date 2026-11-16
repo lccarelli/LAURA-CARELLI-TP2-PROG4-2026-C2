@@ -171,6 +171,7 @@ La cobertura de cada ejecución queda en el resumen del job y como archivo desca
 ### Publicaciones y me gusta
 
 - **Listado** (`/publicaciones`): tarjetas con imagen, tipo, título y autoría. Se ordena por más recientes o por más me gusta, y se filtra por tipo (todas, recetas, tips o experiencias), 10 por página. El orden y el tipo se combinan, y al cambiar cualquiera de los dos la lista vuelve a empezar. En la API: `GET /publicaciones?tipo=receta|tip|experiencia&orden=fecha|megusta&usuario=<id>&offset&limit`; un `tipo` desconocido responde 400 `DATOS_INVALIDOS` y cada combinación tiene su propio listado en el caché.
+- **Búsqueda** (campo arriba del listado): busca mientras se escribe, con 400 ms de pausa, desde 2 letras, y vuelve a empezar desde la primera página conservando el orden y el tipo. Enter busca de inmediato y la cruz borra la búsqueda. En la API: `GET /publicaciones?q=<texto>`, combinable con `tipo`, `orden`, `usuario`, `offset` y `limit`, con el mismo formato de respuesta. El texto se limpia de espacios de más y debe tener entre 2 y 60 caracteres y hasta 5 palabras (si no, 400 `DATOS_INVALIDOS`). Busca en el título y en el mensaje de las publicaciones activas, sin distinguir mayúsculas ni tildes y con palabras incompletas; con varias palabras deben estar todas. Las búsquedas no usan el caché.
 - **Detalle** (`/publicaciones/:id`): la publicación completa con ficha, ingredientes, pasos con fotos y comentarios.
 - **Me gusta:** botón de corazón en la tarjeta y dentro del detalle. Se puede dar y quitar; el contador sube y baja al instante con lo que responde el servidor. Si el servidor dice que ya estaba dado (o ya estaba quitado), el botón se corrige solo, sin mostrar un error.
 - **Eliminar:** quien publicó, o una persona con perfil administrador (que puede dar de baja **cualquier** publicación), la elimina desde la tarjeta del listado o desde el botón "Eliminar publicación" del detalle, siempre con confirmación. La baja es lógica: la publicación y sus comentarios dejan de estar disponibles (el detalle y los comentarios responden 404) y al terminar se vuelve al listado. Una persona común no ve el botón en publicaciones ajenas y, si lo intentara contra la API, recibe 403.
@@ -212,6 +213,8 @@ Pantalla `/publicaciones/nueva` (requiere sesión). Se elige un tipo y el formul
 - **Costo:** de 1 a 4 signos `$`.
 - **Calorías:** de 1 a 10000 kcal.
 - Porciones, tiempo y calorías tienen botones para sumar y restar.
+
+**Pasos de la receta** (todo opcional): cada paso tiene un título (hasta 80 caracteres), una descripción (hasta 2000) y hasta 5 fotos. La descripción no es obligatoria, porque a veces alcanza con un título o con una foto, pero cada paso necesita al menos una de las tres cosas: un paso totalmente vacío se descarta en el formulario y la API responde 400. El detalle muestra sólo lo que el paso tiene.
 
 **Ingredientes** (hasta 40)
 

@@ -19,8 +19,12 @@ export class PublicacionesApi {
     orden: OrdenPublicaciones = 'fecha',
     usuario?: string,
     tipo?: Tipo,
+    q?: string,
   ) {
     const params: Record<string, string | number> = { offset, limit, orden };
+    if (q) {
+      params['q'] = q;
+    }
     if (usuario) {
       params['usuario'] = usuario;
     }

@@ -111,7 +111,7 @@
     "ficha_calorias": "Calorías",
     "minutos": "{{n}} min",
     "campo_pasos": "Pasos",
-    "paso_descripcion": "Descripción del paso",
+    "paso_descripcion": "Descripción del paso (opcional)",
     "paso_numero": "Paso {{n}}",
     "paso_mover": "Mover el paso {{n}} (arrastrá, o usá las flechas arriba y abajo)",
     "sesion_titulo": "No se pudo extender tu sesión",
@@ -147,7 +147,6 @@
     "paso_foto_alt": "Foto {{f}} del paso {{n}}",
     "paso_foto_vista": "Foto {{f}} elegida para el paso {{n}}",
     "paso_foto_maximo": "Podés agregar hasta {{n}} fotos de pasos en total",
-    "paso_falta_texto": "Escribí la descripción de este paso para poder usar su título o su foto",
     "portada_titulo": "Foto de portada (opcional)",
     "portada_agregar": "Elegir foto de portada",
     "portada_cambiar": "Cambiar foto",
@@ -182,7 +181,9 @@
     "eliminar_aviso": "No se puede deshacer",
     "paso_foto_primera": "Agregar foto",
     "paso_foto_primera_aria": "Agregar una foto al paso {{n}}",
-    "paso_foto_otra": "Agregar otra foto"
+    "paso_foto_otra": "Agregar otra foto",
+    "sin_resultados": "No encontramos publicaciones para «{{texto}}»",
+    "resultados_de": "Resultados de «{{texto}}»"
   },
   "comentarios": {
     "titulo": "Comentarios",
@@ -391,5 +392,10 @@
     "vacio_ranking": "No hay publicaciones con comentarios en el rango elegido.",
     "publicaciones_por_tipo": "Publicaciones por tipo",
     "descripcion_tipos": "Gráfico de torta con el reparto de las publicaciones activas del rango elegido entre receta, tip culinario y experiencia"
+  },
+  "buscador": {
+    "etiqueta": "Buscar publicaciones",
+    "placeholder": "Buscar publicaciones",
+    "limpiar": "Borrar la búsqueda"
   }
 }

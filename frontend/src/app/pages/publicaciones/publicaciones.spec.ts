@@ -215,7 +215,9 @@ describe('Publicaciones', () => {
       const tarjeta = fixture.nativeElement.querySelector('.pin') as HTMLAnchorElement;
 
       expect(tarjeta.getAttribute('href')).toBe('/publicaciones/id1');
-      expect(fixture.nativeElement.querySelector('[role="dialog"], form')).toBeNull();
+      expect(
+        fixture.nativeElement.querySelector('[role="dialog"], form:not([role="search"])'),
+      ).toBeNull();
     });
   });
 
@@ -277,6 +279,96 @@ describe('Publicaciones', () => {
 
       expect(tarjetas()).toHaveLength(2);
       expect(texto()).toContain('Título 1');
+    });
+  });
+
+  describe('búsqueda', () => {
+    const pedirBusqueda = (q: string, offset = 0) =>
+      http.expectOne(
+        (solicitud) =>
+          solicitud.url === URL &&
+          solicitud.params.get('q') === q &&
+          solicitud.params.get('offset') === String(offset),
+      );
+
+    beforeEach(async () => {
+      pedir(0).flush(pagina(1, 10, true));
+      await actualizar();
+    });
+
+    it('[O] al buscar pide desde el principio con q y muestra sólo los resultados', async () => {
+      fixture.componentInstance.buscar('tarta');
+      const solicitud = pedirBusqueda('tarta');
+      solicitud.flush(pagina(50, 2, false));
+      await actualizar();
+
+      expect(solicitud.request.params.get('limit')).toBe('10');
+      expect(titulos()).toEqual(['Título 50', 'Título 51']);
+    });
+
+    it('[S] conserva el orden y el tipo elegidos', async () => {
+      fixture.componentInstance.cambiarTipo('tip');
+      pedir(0, 'fecha', 'tip').flush(pagina(1, 1, false));
+      await actualizar();
+
+      fixture.componentInstance.buscar('tarta');
+      const solicitud = pedirBusqueda('tarta');
+
+      expect(solicitud.request.params.get('tipo')).toBe('tip');
+      expect(solicitud.request.params.get('orden')).toBe('fecha');
+      solicitud.flush(pagina(1, 0, false));
+    });
+
+    it('[S] ver más sigue pidiendo páginas con la misma búsqueda', async () => {
+      fixture.componentInstance.buscar('tarta');
+      pedirBusqueda('tarta').flush(pagina(50, 10, true));
+      await actualizar();
+
+      fixture.componentInstance.listado.cargarMas();
+
+      const siguiente = pedirBusqueda('tarta', 10);
+      siguiente.flush(pagina(60, 1, false));
+
+      expect(siguiente.request.params.get('q')).toBe('tarta');
+    });
+
+    it('[S] la búsqueda anterior que seguía en vuelo se cancela', async () => {
+      fixture.componentInstance.buscar('tarta');
+      const primera = pedirBusqueda('tarta');
+      fixture.componentInstance.buscar('torta');
+
+      expect(primera.cancelled).toBe(true);
+      pedirBusqueda('torta').flush(pagina(1, 0, false));
+    });
+
+    it('[O] sin resultados dice qué se buscó', async () => {
+      fixture.componentInstance.buscar('pizza');
+      pedirBusqueda('pizza').flush(pagina(1, 0, false));
+      await actualizar();
+
+      expect(texto()).toContain('No encontramos publicaciones para «pizza»');
+    });
+
+    it('[S] al borrar la búsqueda vuelve el listado completo', async () => {
+      fixture.componentInstance.buscar('tarta');
+      pedirBusqueda('tarta').flush(pagina(50, 1, false));
+      await actualizar();
+
+      fixture.componentInstance.buscar('');
+      pedir(0).flush(pagina(1, 10, true));
+      await actualizar();
+
+      expect(titulos()).toHaveLength(10);
+    });
+
+    it('[B] buscar lo mismo dos veces no vuelve a pedir', async () => {
+      fixture.componentInstance.buscar('tarta');
+      pedirBusqueda('tarta').flush(pagina(50, 1, false));
+      await actualizar();
+
+      fixture.componentInstance.buscar('tarta');
+
+      expect(http.match(URL)).toEqual([]);
     });
   });
 
@@ -364,7 +456,7 @@ describe('Publicaciones', () => {
       filtro('Todas').click();
       await actualizar();
 
-      http.expectNone(URL);
+      expect(http.match(URL)).toEqual([]);
       expect(titulos()).toHaveLength(3);
     });
 

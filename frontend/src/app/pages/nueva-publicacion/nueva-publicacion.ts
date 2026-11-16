@@ -382,15 +382,6 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
     this.erroresFotoPaso.set(new Map());
   }
 
-  private pasoIncompleto(paso: PasoForm) {
-    const { titulo, texto } = paso.controls;
-    return !texto.value.trim() && Boolean(titulo.value.trim() || this.fotosDe(paso).length);
-  }
-
-  private hayPasosIncompletos() {
-    return this.pasos.controls.some((paso) => this.pasoIncompleto(paso));
-  }
-
   elegirTipoRinde(tipo: TipoRinde) {
     this.tipoRinde.set(tipo);
   }
@@ -595,9 +586,6 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
   }
 
   mensajeDePaso(paso: PasoForm): string | null {
-    if (this.intentoDePublicar() && this.pasoIncompleto(paso)) {
-      return this.traductor.instant('publicaciones.paso_falta_texto');
-    }
     const { titulo, texto } = paso.controls;
     for (const control of [titulo, texto]) {
       if (control.touched && control.errors?.['maxlength']) {
@@ -763,7 +751,6 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
     if (
       this.formulario.invalid ||
       this.errorImagen() ||
-      this.hayPasosIncompletos() ||
       this.publicando() ||
       this.preparandoImagen()
     ) {
@@ -807,19 +794,21 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
   }
 
   private armarPasos(datos: FormData) {
-    const pasos: { titulo?: string; texto: string; fotos?: number[] }[] = [];
+    const pasos: { titulo?: string; texto?: string; fotos?: number[] }[] = [];
     let fotosEnviadas = 0;
     for (const control of this.pasos.controls) {
-      const { titulo, texto: textoDelPaso } = control.getRawValue();
-      const texto = textoDelPaso.trim();
-      if (!texto) {
+      const { titulo, texto } = control.getRawValue();
+      const fotos = this.llevaLista() ? this.fotosDe(control) : [];
+      if (!titulo.trim() && !texto.trim() && !fotos.length) {
         continue;
       }
-      const paso: { titulo?: string; texto: string; fotos?: number[] } = { texto };
+      const paso: { titulo?: string; texto?: string; fotos?: number[] } = {};
       if (titulo.trim()) {
         paso.titulo = titulo.trim();
       }
-      const fotos = this.llevaLista() ? this.fotosDe(control) : [];
+      if (texto.trim()) {
+        paso.texto = texto.trim();
+      }
       if (fotos.length) {
         paso.fotos = fotos.map(({ archivo }) => {
           datos.append('imagenesPasos', archivo);

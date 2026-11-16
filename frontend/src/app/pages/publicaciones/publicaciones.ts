@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { VerMas } from '../../componentes/ver-mas/ver-mas';
 import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
+import { Buscador } from '../../componentes/buscador/buscador';
 import { Aviso } from '../../componentes/aviso/aviso';
 import { TarjetaPublicacion } from '../../componentes/tarjeta-publicacion/tarjeta-publicacion';
 import {
@@ -16,7 +17,15 @@ import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { ListadoPaginado } from '../../utilidades/listado-paginado';
 
 @Component({
-  imports: [VerMas, CubreplatoLoading, RouterLink, Aviso, TarjetaPublicacion, TranslatePipe],
+  imports: [
+    Buscador,
+    VerMas,
+    CubreplatoLoading,
+    RouterLink,
+    Aviso,
+    TarjetaPublicacion,
+    TranslatePipe,
+  ],
   selector: 'app-publicaciones',
   templateUrl: './publicaciones.html',
 })
@@ -27,8 +36,16 @@ export class Publicaciones implements OnInit, OnDestroy {
   readonly orden = signal<OrdenPublicaciones>('fecha');
   readonly tipos = TIPOS;
   readonly tipo = signal<Tipo | null>(null);
+  readonly busqueda = signal('');
   readonly listado = new ListadoPaginado<Publicacion>((offset) =>
-    this.api.listar(offset, 10, this.orden(), undefined, this.tipo() ?? undefined),
+    this.api.listar(
+      offset,
+      10,
+      this.orden(),
+      undefined,
+      this.tipo() ?? undefined,
+      this.busqueda() || undefined,
+    ),
   );
 
   readonly columnas = signal(this.cantidadDeColumnas());
@@ -63,6 +80,14 @@ export class Publicaciones implements OnInit, OnDestroy {
       return;
     }
     this.orden.set(orden);
+    this.listado.reiniciar();
+  }
+
+  buscar(texto: string) {
+    if (texto === this.busqueda()) {
+      return;
+    }
+    this.busqueda.set(texto);
     this.listado.reiniciar();
   }
 

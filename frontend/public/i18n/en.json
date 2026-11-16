@@ -111,7 +111,7 @@
     "ficha_calorias": "Calories",
     "minutos": "{{n}} min",
     "campo_pasos": "Steps",
-    "paso_descripcion": "Step description",
+    "paso_descripcion": "Step description (optional)",
     "paso_numero": "Step {{n}}",
     "paso_mover": "Move step {{n}} (drag, or use the up and down arrows)",
     "sesion_titulo": "Your session could not be extended",
@@ -147,7 +147,6 @@
     "paso_foto_alt": "Photo {{f}} of step {{n}}",
     "paso_foto_vista": "Photo {{f}} chosen for step {{n}}",
     "paso_foto_maximo": "You can add up to {{n}} step photos in total",
-    "paso_falta_texto": "Write the description of this step to use its title or photo",
     "portada_titulo": "Cover photo (optional)",
     "portada_agregar": "Choose a cover photo",
     "portada_cambiar": "Change photo",
@@ -182,7 +181,9 @@
     "eliminar_aviso": "This cannot be undone",
     "paso_foto_primera": "Add photo",
     "paso_foto_primera_aria": "Add a photo to step {{n}}",
-    "paso_foto_otra": "Add another photo"
+    "paso_foto_otra": "Add another photo",
+    "sin_resultados": "No posts found for “{{texto}}”",
+    "resultados_de": "Results for “{{texto}}”"
   },
   "comentarios": {
     "titulo": "Comments",
@@ -391,5 +392,10 @@
     "vacio_ranking": "There are no commented posts in the selected range.",
     "publicaciones_por_tipo": "Posts by type",
     "descripcion_tipos": "Pie chart with how the active posts in the selected range are split between recipe, culinary tip and experience"
+  },
+  "buscador": {
+    "etiqueta": "Search posts",
+    "placeholder": "Search posts",
+    "limpiar": "Clear search"
   }
 }

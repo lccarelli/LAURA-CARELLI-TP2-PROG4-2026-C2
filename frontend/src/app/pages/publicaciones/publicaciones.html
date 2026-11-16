@@ -1,5 +1,7 @@
 <section class="pagina-ancha">
-  <h1 class="titulo">{{ 'publicaciones.titulo' | translate }}</h1>
+  <app-buscador (buscar)="buscar($event)" />
+
+  <h1 class="texto-oculto">{{ 'publicaciones.titulo' | translate }}</h1>
 
   <div class="controles-listado">
     <div class="orden" role="group" [attr.aria-label]="'publicaciones.ordenar_por' | translate">
@@ -67,7 +69,11 @@
 
   @if (listado.items().length === 0 && !listado.cargando() && !listado.fallaLaCarga()) {
     <p class="tarjeta estado-vacio">
-      {{ 'publicaciones.vacio' | translate }}
+      @if (busqueda()) {
+        {{ 'publicaciones.sin_resultados' | translate: { texto: busqueda() } }}
+      } @else {
+        {{ 'publicaciones.vacio' | translate }}
+      }
     </p>
   }
 

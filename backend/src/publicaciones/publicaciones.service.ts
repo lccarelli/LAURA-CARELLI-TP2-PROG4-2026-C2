@@ -21,6 +21,7 @@ import {
 import type { ArchivosPublicacion } from './archivos-publicacion.pipe.js';
 import { EventosMeGustaService } from './eventos-me-gusta.service.js';
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
+import { filtroDeBusqueda } from '../common/busqueda.js';
 import { ListarPublicacionesDto } from './dto/listar-publicaciones.dto.js';
 import { MeGusta } from './schemas/me-gusta.schema.js';
 import { Publicacion } from './schemas/publicacion.schema.js';
@@ -156,7 +157,7 @@ export class PublicacionesService {
           }),
         );
         return {
-          texto,
+          ...(texto && { texto }),
           ...(titulo && { titulo }),
           ...(imagenes.length && { imagenes }),
         };
@@ -177,9 +178,9 @@ export class PublicacionesService {
   }
 
   async listar(consulta: ListarPublicacionesDto, usuarioId: string) {
-    const { offset, limit, orden, usuario, tipo } = consulta;
+    const { offset, limit, orden, usuario, tipo, q } = consulta;
     const clave = `listado:${orden}:${usuario ?? 'todos'}:${tipo ?? 'todos'}:${offset}:${limit}`;
-    let listado = await this.cache.get<Listado>(clave);
+    let listado = q ? undefined : await this.cache.get<Listado>(clave);
 
     if (!listado) {
       const publicaciones = await this.publicacionModel
@@ -187,6 +188,7 @@ export class PublicacionesService {
           activa: true,
           ...(usuario && { usuario }),
           ...(tipo && { tipo }),
+          ...(q && filtroDeBusqueda(q)),
         })
         .sort(ORDENES[orden])
         .skip(offset)
@@ -200,7 +202,9 @@ export class PublicacionesService {
         limit,
         hayMas: publicaciones.length > limit,
       };
-      await this.cache.set(clave, listado);
+      if (!q) {
+        await this.cache.set(clave, listado);
+      }
     }
 
     return {
