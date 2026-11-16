@@ -284,6 +284,17 @@ Sólo para administradores. El enlace "Estadísticas" de la barra lleva a `/dash
 - **API del resumen:** `GET /estadisticas/resumen?desde=YYYY-MM-DD&hasta=YYYY-MM-DD` devuelve `{ actual, anterior }`, y cada uno trae `desde`, `hasta`, `publicaciones` (activas), `comentarios` (de publicaciones activas) y `personasActivas` (quienes publicaron o comentaron, contadas una sola vez). `anterior` es el lapso de igual largo que termina el día anterior a `desde`, para poder comparar. Mismo rango, mismos errores y mismos permisos que las anteriores.
 
 
+### Aplicación instalable (PWA)
+
+Banquete se puede instalar como una aplicación (en el teléfono, "Instalar" en Chrome o "Agregar a inicio" en el iPhone) y se abre en su propia ventana, sin la barra del navegador.
+
+- **Manifiesto** (`public/manifest.webmanifest`): nombre, colores del tema (barra `#404d63`, fondo `#eeece8`), `display: standalone`, tres íconos propios (192, 512 y uno enmascarable) hechos a partir del ícono de Banquete (la "B" con la cuchara y el plato) y un atajo "Nueva publicación". `index.html` lo enlaza, define el color de la barra del navegador para claro y oscuro y agrega el ícono del iPhone.
+- **Ícono según el tema:** la app instalada y el ícono del iPhone usan el ícono *pizarra* (el de la marca). La pestaña del navegador cambia con el modo de la aplicación: *pizarra* en claro y *terracota* en oscuro (`favicon.png` y `favicon-oscuro.png`), y también cuando se alterna el modo con el botón de la barra. Una aplicación instalada tiene un solo ícono y el navegador no permite cambiarlo según el tema, por eso sólo la pestaña lo hace. `banquete-icono-celeste.png` queda guardado sin usar.
+- **Service worker** (`@angular/service-worker`, configurado en `ngsw-config.json`): guarda la aplicación (código, traducciones, íconos y las imágenes que se van viendo) y la abre aunque no haya conexión. **La API queda fuera del caché**: no hay `dataGroups`, así que cada pedido a la API va siempre a la red y nunca se muestran datos viejos como si fueran nuevos. Sólo se registra en producción (`ng serve` no lo usa) y 30 segundos después de que la aplicación se estabiliza.
+- **Versión nueva:** cuando se despliega una versión nueva y el service worker la descarga, aparece un aviso "Hay una versión nueva" con el botón **Actualizar ahora**, que activa la versión y recarga la página. Se puede cerrar el aviso y seguir con la versión actual.
+- **En Vercel** (`vercel.json`): el service worker, `ngsw.json` y el manifiesto se sirven con `Cache-Control: no-cache`, para que una versión nueva se detecte enseguida.
+- **Probarlo en local:** `npx ng build`, servir `dist/frontend/browser` con cualquier servidor estático (con la dirección `/…` redirigida a `index.html`) y abrir en Chrome; en las herramientas de desarrollo, la pestaña *Application* muestra el manifiesto, el service worker y si se puede instalar.
+
 ### Pantalla de carga
 
 Al abrir la aplicación con una sesión guardada se muestra una pantalla de carga (el cubreplato animado) mientras se llama a `POST /auth/autorizar`. Si el token es válido se actualizan los datos de la persona y se sigue en la dirección que se abrió; si no, se va al login. Si pasan más de 4 segundos aparece "El servidor se está despertando" (el plan gratis de Render tarda hasta un minuto). Sin sesión, la app despierta al servidor en segundo plano con `GET /health`. El mismo cubreplato se usa en todas las esperas de la aplicación.
@@ -298,6 +309,9 @@ El token JWT dura **15 minutos**. Un aviso modal pregunta si se quiere extender 
 | --- | --- |
 | Aviso a los 10 minutos | El frontend lee el vencimiento (`exp`) del propio token y lo compara con la hora cada segundo. Cuando faltan 5 minutos aparece un modal con la cuenta regresiva. No depende de un temporizador de 10 minutos, así que no se atrasa en pestañas en segundo plano y sobrevive a recargar la página |
 | Extender sesión | `POST /auth/refrescar` devuelve un token nuevo de 15 minutos para la misma persona, con el perfil que tiene hoy en la base; si la cuenta se deshabilitó o ya no existe responde `401` con `USUARIO_NO_AUTORIZADO` y el modal cierra la sesión y lleva al login con ese motivo. El modal se cierra y vuelve a avisar 10 minutos después. Si falla la red, el modal sigue y se puede reintentar |
+| Renovación mientras se usa la app | Si hubo actividad (tocar, escribir) en los últimos 5 minutos y el token entra en el aviso, se renueva solo con `POST /auth/refrescar`, sin modal. Si falla, reintenta a los 30 segundos. Sin actividad, el modal sigue como antes |
+| Al volver a la app | Al volver a primer plano se revisa el vencimiento enseguida (el teléfono congela el reloj en segundo plano), sin esperar al siguiente segundo |
+| Volver a donde se estaba | Si la sesión se cierra por vencimiento, el login recuerda la pantalla (por ejemplo `/publicaciones/nueva`, con su borrador) y vuelve ahí al ingresar. Solo acepta rutas propias de la app |
 | Cerrar sesión | Desde el modal: borra el token y lleva al login |
 | Si no se responde | Al llegar a cero se cierra la sesión y el login explica el motivo |
 | Si una petición devuelve 401 | Un interceptor cierra la sesión y lleva al login con el motivo, sin ventanas flotantes. Se ignoran los 401 de ingresar, registrar y refrescar (ahí significan credenciales inválidas) |

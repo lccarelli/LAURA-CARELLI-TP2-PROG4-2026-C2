@@ -55,6 +55,12 @@ export class Login {
     return null;
   }
 
+  private destinoAlIngresar() {
+    const destino = this.auth.volverA();
+    this.auth.volverA.set(null);
+    return destino?.startsWith('/') && !destino.startsWith('//') ? destino : '/publicaciones';
+  }
+
   enviar() {
     this.formulario.markAllAsTouched();
     if (this.formulario.invalid || this.enviando()) {
@@ -64,7 +70,7 @@ export class Login {
     const { identificador, clave } = this.formulario.getRawValue();
     this.enviando.set(true);
     this.auth.ingresar(identificador.trim(), clave).subscribe({
-      next: () => this.router.navigate(['/publicaciones']),
+      next: () => this.router.navigateByUrl(this.destinoAlIngresar()),
       error: (error: HttpErrorResponse) => {
         this.enviando.set(false);
         this.mensajeError.set(mensajeDeApi(error));

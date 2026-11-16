@@ -870,12 +870,20 @@ body {
     @apply flex items-center justify-between gap-3 bg-barra px-4 py-3 text-barra-tinta lg:gap-4 lg:px-8 lg:py-4;
   }
 
+  .enlace-marca {
+    @apply flex min-w-0 items-center gap-2 md:gap-3;
+  }
+
+  .logo {
+    @apply size-9 shrink-0 rounded-lg md:size-12 md:rounded-xl;
+  }
+
   .marca {
-    @apply block font-serif text-3xl leading-none font-black tracking-tight max-[22rem]:text-2xl md:text-4xl;
+    @apply block font-serif text-2xl leading-none font-black tracking-tight max-[22rem]:sr-only sm:text-3xl md:text-4xl;
   }
 
   .lema {
-    @apply mt-1 block text-[0.65rem] tracking-[0.2em] uppercase;
+    @apply mt-1 hidden text-[0.65rem] tracking-[0.2em] uppercase sm:block;
   }
 
   .barra-nav {

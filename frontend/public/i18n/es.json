@@ -276,6 +276,11 @@
     "nombre_usuario": "Entre 3 y 20 caracteres: letras, números o guion bajo",
     "claves_distintas": "Las claves no coinciden"
   },
+  "actualizacion": {
+    "titulo": "Hay una versión nueva",
+    "texto": "Actualizá para usar la última versión de Banquete.",
+    "boton": "Actualizar ahora"
+  },
   "imagen": {
     "preparando": "Preparando la foto…",
     "tipo": "La imagen debe ser JPG, PNG, WEBP o GIF",

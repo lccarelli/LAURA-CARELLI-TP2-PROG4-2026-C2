@@ -14,6 +14,7 @@ export class Auth {
   readonly token = signal<string | null>(this.leer('token'));
   readonly usuario = signal<Usuario | null>(this.leerUsuario());
   readonly motivoDeSalida = signal<string | null>(null);
+  readonly volverA = signal<string | null>(null);
   readonly vencimiento = computed(() => this.leerVencimiento(this.token()));
 
   registro(datos: FormData) {
@@ -59,11 +60,19 @@ export class Auth {
   }
 
   salir(motivo: string | null = null) {
+    this.volverA.set(motivo ? this.rutaActual() : null);
     this.borrar('token');
     this.borrar('usuario');
     this.token.set(null);
     this.usuario.set(null);
     this.motivoDeSalida.set(motivo);
+  }
+
+  private rutaActual() {
+    const { pathname, search } = globalThis.location;
+    return pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/registro')
+      ? null
+      : pathname + search;
   }
 
   private guardarSesion(sesion: Sesion) {
