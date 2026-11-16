@@ -11,7 +11,7 @@ import {
 import { capturarLogs } from './ayudas/logs.js';
 import { tokenDeAdministrador } from './ayudas/sesiones.js';
 
-describe('PATCH /usuarios/:id', () => {
+describe('DELETE /usuarios/:id y POST /usuarios/:id/habilitar', () => {
   let app: INestApplication;
   let usuarios: Model<Usuario>;
   let administradorId: string;
@@ -19,16 +19,14 @@ describe('PATCH /usuarios/:id', () => {
   let tokenComun: string;
   let personaId: string;
 
-  const cambiar = (id: string, body: object, token = tokenAdministrador) =>
-    request(app.getHttpServer())
-      .patch(`/usuarios/${id}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send(body);
-
   const deshabilitar = (id: string, token = tokenAdministrador) =>
-    cambiar(id, { habilitado: false }, token);
+    request(app.getHttpServer())
+      .delete(`/usuarios/${id}`)
+      .set('Authorization', `Bearer ${token}`);
   const habilitar = (id: string, token = tokenAdministrador) =>
-    cambiar(id, { habilitado: true }, token);
+    request(app.getHttpServer())
+      .post(`/usuarios/${id}/habilitar`)
+      .set('Authorization', `Bearer ${token}`);
 
   const habilitadoDe = async (id: string) =>
     (await usuarios.findById(id).lean())!.habilitado;
@@ -198,55 +196,22 @@ describe('PATCH /usuarios/:id', () => {
     });
   });
 
-  describe('el body', () => {
-    it('[Z] sin body responde 400 DATOS_INVALIDOS y no cambia nada', async () => {
-      const { body } = await cambiar(personaId, {}).expect(400);
-
-      expect(body.codigo).toBe('DATOS_INVALIDOS');
-      expect(await habilitadoDe(personaId)).toBe(true);
-    });
-
-    it.each([['false'], ['true'], [0], [1], [null]])(
-      '[I] habilitado con el valor %j, que no es booleano, responde 400',
-      async (valor) => {
-        await cambiar(personaId, { habilitado: valor }).expect(400);
-
-        expect(await habilitadoDe(personaId)).toBe(true);
-      },
-    );
-
-    it('[I] un campo que no es habilitado responde 400 y no cambia nada', async () => {
-      await cambiar(personaId, {
-        habilitado: false,
-        perfil: 'administrador',
-      }).expect(400);
-
-      const guardada = await usuarios.findById(personaId).lean();
-      expect(guardada).toMatchObject({ habilitado: true, perfil: 'usuario' });
-    });
-
-    it('[I] no se puede cambiar otro dato por este endpoint', async () => {
-      await cambiar(personaId, { nombre: 'Otro' }).expect(400);
-
-      expect((await usuarios.findById(personaId).lean())!.nombre).toBe('Laura');
-    });
-  });
-
   describe('las rutas anteriores', () => {
-    it('[I] ya no existe DELETE /usuarios/:id: deshabilitar es un PATCH', async () => {
+    it('[I] ya no existe PATCH /usuarios/:id: deshabilitar es un DELETE', async () => {
       await request(app.getHttpServer())
-        .delete(`/usuarios/${personaId}`)
+        .patch(`/usuarios/${personaId}`)
         .set('Authorization', `Bearer ${tokenAdministrador}`)
+        .send({ habilitado: false })
         .expect(404);
 
       expect(await habilitadoDe(personaId)).toBe(true);
     });
 
-    it('[I] ya no existe POST /usuarios/:id/habilitar: habilitar es un PATCH', async () => {
+    it('[I] habilitar no acepta DELETE sobre /habilitar', async () => {
       await usuarios.updateOne({ _id: personaId }, { habilitado: false });
 
       await request(app.getHttpServer())
-        .post(`/usuarios/${personaId}/habilitar`)
+        .delete(`/usuarios/${personaId}/habilitar`)
         .set('Authorization', `Bearer ${tokenAdministrador}`)
         .expect(404);
 
@@ -274,8 +239,7 @@ describe('PATCH /usuarios/:id', () => {
 
     it('[E] sin token responde 401 TOKEN_AUSENTE', async () => {
       const { body } = await request(app.getHttpServer())
-        .patch(`/usuarios/${personaId}`)
-        .send({ habilitado: false })
+        .delete(`/usuarios/${personaId}`)
         .expect(401);
 
       expect(body.codigo).toBe('TOKEN_AUSENTE');

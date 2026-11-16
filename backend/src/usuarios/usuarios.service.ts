@@ -131,7 +131,7 @@ export class UsuariosService {
     };
   }
 
-  async actualizarHabilitado(
+  async cambiarHabilitado(
     id: string,
     habilitado: boolean,
     administradorId: string,
