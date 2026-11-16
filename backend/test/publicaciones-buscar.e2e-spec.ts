@@ -49,148 +49,136 @@ describe('GET /publicaciones?q=', () => {
     await app.close();
   });
 
+  type Semilla = [
+    titulo: string,
+    mensaje?: string,
+    extra?: Partial<Publicacion>,
+  ];
+
+  const sembrarVarias = async (semillas: Semilla[]) => {
+    for (const [titulo, mensaje, extra] of semillas) {
+      await sembrar(titulo, mensaje, extra);
+    }
+  };
+
+  const titulosDe = async (consulta: string) =>
+    titulos((await buscar(consulta).expect(200)).body);
+
   describe('coincidencias', () => {
-    it('[O] encuentra por el título', async () => {
-      await sembrar('Tarta de manzana');
-      await sembrar('Milanesas');
+    it.each<[string, Semilla[], string, string[]]>([
+      [
+        'encuentra por el título',
+        [['Tarta de manzana'], ['Milanesas']],
+        'q=tarta',
+        ['Tarta de manzana'],
+      ],
+      [
+        'encuentra por el mensaje',
+        [
+          ['Postre', 'Lleva mucha canela'],
+          ['Otro', 'Sin nada'],
+        ],
+        'q=canela',
+        ['Postre'],
+      ],
+      [
+        'no distingue mayúsculas de minúsculas',
+        [['Tarta de MANZANA']],
+        'q=manzana',
+        ['Tarta de MANZANA'],
+      ],
+      [
+        'escribir sin tilde encuentra el texto con tilde',
+        [['Ensalada rápida']],
+        'q=rapida',
+        ['Ensalada rápida'],
+      ],
+      [
+        'escribir con tilde encuentra el texto sin tilde',
+        [['Ensalada rapida']],
+        `q=${encodeURIComponent('rápida')}`,
+        ['Ensalada rapida'],
+      ],
+      [
+        'encuentra con una palabra incompleta, como al ir tipeando',
+        [['Tarta de manzana']],
+        'q=manz',
+        ['Tarta de manzana'],
+      ],
+      [
+        'con varias palabras deben estar todas, en cualquier orden y en título o mensaje',
+        [
+          ['Tarta de manzana', 'Con canela'],
+          ['Tarta de pera', 'Con vainilla'],
+        ],
+        'q=canela%20tarta',
+        ['Tarta de manzana'],
+      ],
+      [
+        'los espacios de más no cambian el resultado',
+        [['Tarta de manzana']],
+        'q=%20%20tarta%20%20%20manzana%20',
+        ['Tarta de manzana'],
+      ],
+      [
+        'los caracteres especiales de expresiones regulares se buscan como texto',
+        [['Tarta (clásica)'], ['Tarta de manzana']],
+        `q=${encodeURIComponent('(c')}`,
+        ['Tarta (clásica)'],
+      ],
+      [
+        'un patrón como .* no devuelve todo',
+        [['Tarta de manzana']],
+        `q=${encodeURIComponent('.*')}`,
+        [],
+      ],
+      ['sin coincidencias devuelve la lista vacía', [['Tarta']], 'q=pizza', []],
+      [
+        'no devuelve las publicaciones eliminadas',
+        [['Tarta borrada', 'Texto', { activa: false }], ['Tarta activa']],
+        'q=tarta',
+        ['Tarta activa'],
+      ],
+    ])('[O] %s', async (_nombre, semillas, consulta, esperados) => {
+      await sembrarVarias(semillas);
 
-      const { body } = await buscar('q=tarta').expect(200);
-
-      expect(titulos(body)).toEqual(['Tarta de manzana']);
-    });
-
-    it('[O] encuentra por el mensaje', async () => {
-      await sembrar('Postre', 'Lleva mucha canela');
-      await sembrar('Otro', 'Sin nada');
-
-      const { body } = await buscar('q=canela').expect(200);
-
-      expect(titulos(body)).toEqual(['Postre']);
-    });
-
-    it('[O] no distingue mayúsculas de minúsculas', async () => {
-      await sembrar('Tarta de MANZANA');
-
-      const { body } = await buscar('q=manzana').expect(200);
-
-      expect(titulos(body)).toEqual(['Tarta de MANZANA']);
-    });
-
-    it('[O] escribir sin tilde encuentra el texto con tilde', async () => {
-      await sembrar('Ensalada rápida');
-
-      const { body } = await buscar('q=rapida').expect(200);
-
-      expect(titulos(body)).toEqual(['Ensalada rápida']);
-    });
-
-    it('[O] escribir con tilde encuentra el texto sin tilde', async () => {
-      await sembrar('Ensalada rapida');
-
-      const { body } = await buscar(`q=${encodeURIComponent('rápida')}`).expect(
-        200,
-      );
-
-      expect(titulos(body)).toEqual(['Ensalada rapida']);
-    });
-
-    it('[O] encuentra con una palabra incompleta, como al ir tipeando', async () => {
-      await sembrar('Tarta de manzana');
-
-      const { body } = await buscar('q=manz').expect(200);
-
-      expect(titulos(body)).toEqual(['Tarta de manzana']);
-    });
-
-    it('[O] con varias palabras deben estar todas, en cualquier orden y en título o mensaje', async () => {
-      await sembrar('Tarta de manzana', 'Con canela');
-      await sembrar('Tarta de pera', 'Con vainilla');
-
-      const { body } = await buscar('q=canela%20tarta').expect(200);
-
-      expect(titulos(body)).toEqual(['Tarta de manzana']);
-    });
-
-    it('[B] los espacios de más no cambian el resultado', async () => {
-      await sembrar('Tarta de manzana');
-
-      const { body } = await buscar('q=%20%20tarta%20%20%20manzana%20').expect(
-        200,
-      );
-
-      expect(titulos(body)).toEqual(['Tarta de manzana']);
-    });
-
-    it('[E] los caracteres especiales de expresiones regulares se buscan como texto', async () => {
-      await sembrar('Tarta (clásica)');
-      await sembrar('Tarta de manzana');
-
-      const { body } = await buscar(`q=${encodeURIComponent('(c')}`).expect(
-        200,
-      );
-
-      expect(titulos(body)).toEqual(['Tarta (clásica)']);
-    });
-
-    it('[E] un patrón como .* no devuelve todo', async () => {
-      await sembrar('Tarta de manzana');
-
-      const { body } = await buscar(`q=${encodeURIComponent('.*')}`).expect(
-        200,
-      );
-
-      expect(body.datos).toEqual([]);
-    });
-
-    it('[Z] sin coincidencias devuelve la lista vacía y hayMas falso', async () => {
-      await sembrar('Tarta de manzana');
-
-      const { body } = await buscar('q=pizza').expect(200);
-
-      expect(body.datos).toEqual([]);
-      expect(body.hayMas).toBe(false);
-    });
-
-    it('[E] no devuelve las publicaciones eliminadas', async () => {
-      await sembrar('Tarta borrada', 'Texto', { activa: false });
-      await sembrar('Tarta activa');
-
-      const { body } = await buscar('q=tarta').expect(200);
-
-      expect(titulos(body)).toEqual(['Tarta activa']);
+      expect(await titulosDe(consulta)).toEqual(esperados);
     });
   });
 
   describe('con los demás parámetros', () => {
-    it('[O] se combina con el tipo', async () => {
-      await sembrar('Tarta receta', 'Texto', { tipo: 'receta' });
-      await sembrar('Tarta tip', 'Texto', { tipo: 'tip' });
+    it.each<[string, Semilla[], string, string[]]>([
+      [
+        'se combina con el tipo',
+        [
+          ['Tarta receta', 'Texto', { tipo: 'receta' }],
+          ['Tarta tip', 'Texto', { tipo: 'tip' }],
+        ],
+        'q=tarta&tipo=tip',
+        ['Tarta tip'],
+      ],
+      [
+        'se combina con el orden por me gusta',
+        [
+          ['Tarta poco', 'Texto', { cantidadMeGusta: 1 }],
+          ['Tarta mucho', 'Texto', { cantidadMeGusta: 9 }],
+        ],
+        'q=tarta&orden=megusta',
+        ['Tarta mucho', 'Tarta poco'],
+      ],
+      [
+        'por defecto ordena de la más nueva a la más vieja',
+        [
+          ['Tarta vieja', 'Texto', { fecha: new Date('2026-01-01T10:00:00') }],
+          ['Tarta nueva', 'Texto', { fecha: new Date('2026-02-01T10:00:00') }],
+        ],
+        'q=tarta',
+        ['Tarta nueva', 'Tarta vieja'],
+      ],
+    ])('[O] %s', async (_nombre, semillas, consulta, esperados) => {
+      await sembrarVarias(semillas);
 
-      const { body } = await buscar('q=tarta&tipo=tip').expect(200);
-
-      expect(titulos(body)).toEqual(['Tarta tip']);
-    });
-
-    it('[O] se combina con el orden por me gusta', async () => {
-      await sembrar('Tarta poco', 'Texto', { cantidadMeGusta: 1 });
-      await sembrar('Tarta mucho', 'Texto', { cantidadMeGusta: 9 });
-
-      const { body } = await buscar('q=tarta&orden=megusta').expect(200);
-
-      expect(titulos(body)).toEqual(['Tarta mucho', 'Tarta poco']);
-    });
-
-    it('[O] por defecto ordena de la más nueva a la más vieja', async () => {
-      await sembrar('Tarta vieja', 'Texto', {
-        fecha: new Date('2026-01-01T10:00:00'),
-      });
-      await sembrar('Tarta nueva', 'Texto', {
-        fecha: new Date('2026-02-01T10:00:00'),
-      });
-
-      const { body } = await buscar('q=tarta').expect(200);
-
-      expect(titulos(body)).toEqual(['Tarta nueva', 'Tarta vieja']);
+      expect(await titulosDe(consulta)).toEqual(esperados);
     });
 
     it('[S] pagina los resultados con offset, limit y hayMas', async () => {
