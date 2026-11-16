@@ -17,9 +17,14 @@ export class UsuariosApi {
     return this.http.post<Usuario>(`${environment.API_URL}/usuarios`, datos);
   }
 
-  actualizarHabilitado(id: string, habilitado: boolean) {
-    return this.http.patch<Usuario>(`${environment.API_URL}/usuarios/${encodeURIComponent(id)}`, {
-      habilitado,
-    });
+  deshabilitar(id: string) {
+    return this.http.delete<Usuario>(`${environment.API_URL}/usuarios/${encodeURIComponent(id)}`);
+  }
+
+  habilitar(id: string) {
+    return this.http.post<Usuario>(
+      `${environment.API_URL}/usuarios/${encodeURIComponent(id)}/habilitar`,
+      {},
+    );
   }
 }

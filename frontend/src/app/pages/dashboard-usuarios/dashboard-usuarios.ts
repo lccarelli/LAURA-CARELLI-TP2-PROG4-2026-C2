@@ -65,7 +65,9 @@ export class DashboardUsuarios implements OnInit, OnDestroy {
 
     const { accion, usuario } = pendiente;
     this.enviando.set(true);
-    this.api.actualizarHabilitado(usuario._id, accion === 'habilitar').subscribe({
+    const pedido =
+      accion === 'habilitar' ? this.api.habilitar(usuario._id) : this.api.deshabilitar(usuario._id);
+    pedido.subscribe({
       next: (actualizado) => {
         this.listado.actualizar(usuario._id, { habilitado: actualizado.habilitado });
         this.hecho.set({ accion, nombreUsuario: usuario.nombreUsuario });
