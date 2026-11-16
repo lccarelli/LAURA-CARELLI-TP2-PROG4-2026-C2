@@ -76,6 +76,32 @@ describe('TarjetaPublicacion', () => {
     expect(tarjeta.querySelector('.pin-fecha')?.textContent).toBe('hace 3 días');
   });
 
+  it.each([
+    ['receta', 'var(--tema-torta-1)'],
+    ['tip', 'var(--tema-torta-2)'],
+    ['experiencia', 'var(--tema-torta-3)'],
+  ] as const)('[O] al pasar el mouse resalta con el color de %s', async (tipo, color) => {
+    await crear({ ...base, tipo });
+    const tarjeta = fixture.nativeElement as HTMLElement;
+
+    tarjeta.dispatchEvent(new Event('mouseenter'));
+    await fixture.whenStable();
+
+    expect(tarjeta.classList).toContain('resaltado');
+    expect(tarjeta.style.getPropertyValue('--color-resaltado')).toBe(color);
+  });
+
+  it('[S] al sacar el mouse deja de estar resaltada', async () => {
+    await crear(base);
+    const tarjeta = fixture.nativeElement as HTMLElement;
+
+    tarjeta.dispatchEvent(new Event('mouseenter'));
+    tarjeta.dispatchEvent(new Event('mouseleave'));
+    await fixture.whenStable();
+
+    expect(tarjeta.classList).not.toContain('resaltado');
+  });
+
   it('[O] muestra el título y el autor', async () => {
     const texto = (await crear(base)).textContent;
 
