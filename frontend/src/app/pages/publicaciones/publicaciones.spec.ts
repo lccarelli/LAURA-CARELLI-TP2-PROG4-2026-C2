@@ -24,16 +24,21 @@ describe('Publicaciones', () => {
   let fixture: ComponentFixture<Publicaciones>;
   let http: HttpTestingController;
 
-  const pedir = (offset: number, orden = 'fecha') =>
+  const pedir = (offset: number, orden = 'fecha', tipo: string | null = null) =>
     http.expectOne(
       (solicitud) =>
         solicitud.url === URL &&
         solicitud.params.get('offset') === String(offset) &&
         solicitud.params.get('limit') === '10' &&
-        solicitud.params.get('orden') === orden,
+        solicitud.params.get('orden') === orden &&
+        solicitud.params.get('tipo') === tipo,
     );
 
   const texto = () => fixture.nativeElement.textContent as string;
+  const titulos = () =>
+    Array.from(
+      fixture.nativeElement.querySelectorAll('.pin-titulo') as NodeListOf<HTMLElement>,
+    ).map((titulo) => titulo.textContent!.trim());
   const botonVerMas = () =>
     Array.from(
       fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
@@ -160,6 +165,23 @@ describe('Publicaciones', () => {
     solicitud.flush(pagina(11, 0, false));
   });
 
+  it('[I] reparte las tarjetas por filas: la segunda va a la derecha de la primera, no debajo', async () => {
+    pedir(0).flush(pagina(1, 6, false));
+    fixture.componentInstance.columnas.set(2);
+    await actualizar();
+    const columnas = Array.from(
+      fixture.nativeElement.querySelectorAll('.muro-columna') as NodeListOf<HTMLElement>,
+    );
+    const titulosPorColumna = columnas.map((columna) =>
+      Array.from(columna.querySelectorAll('.pin-titulo')).map((t) => t.textContent?.trim()),
+    );
+
+    expect(titulosPorColumna).toEqual([
+      ['Título 1', 'Título 3', 'Título 5'],
+      ['Título 2', 'Título 4', 'Título 6'],
+    ]);
+  });
+
   describe('crear una publicación', () => {
     beforeEach(async () => {
       pedir(0).flush(pagina(1, 1, false));
@@ -180,11 +202,13 @@ describe('Publicaciones', () => {
       );
     });
 
-    it('[I] arriba del listado van los controles de orden', () => {
+    it('[I] arriba del listado van el orden y el filtro, en un mismo bloque', () => {
       const titulo = fixture.nativeElement.querySelector('h1') as HTMLElement;
-      const orden = fixture.nativeElement.querySelector('.orden') as HTMLElement;
+      const controles = titulo.nextElementSibling as HTMLElement;
 
-      expect(titulo.nextElementSibling).toBe(orden);
+      expect(controles.classList).toContain('controles-listado');
+      expect(controles.querySelector('.orden')).not.toBeNull();
+      expect(controles.querySelector('.filtro-tipo')).not.toBeNull();
     });
 
     it('[I] la lista no abre ventanas: cada tarjeta es un enlace a su página', () => {
@@ -256,15 +280,108 @@ describe('Publicaciones', () => {
     });
   });
 
+  describe('filtro por tipo', () => {
+    const filtro = (nombre: string) =>
+      Array.from(
+        fixture.nativeElement.querySelectorAll(
+          '.filtro-tipo button',
+        ) as NodeListOf<HTMLButtonElement>,
+      ).find((boton) => boton.textContent!.trim() === nombre)!;
+
+    it('[O] ofrece Todas, Recetas, Tips y Experiencias, y por defecto no filtra', async () => {
+      pedir(0).flush(pagina(1, 1, false));
+      await actualizar();
+
+      expect(
+        Array.from(
+          fixture.nativeElement.querySelectorAll('.filtro-tipo button') as NodeListOf<HTMLElement>,
+        ).map((boton) => boton.textContent!.trim()),
+      ).toEqual(['Todas', 'Recetas', 'Tips', 'Experiencias']);
+      expect(filtro('Todas').getAttribute('aria-pressed')).toBe('true');
+      expect(filtro('Recetas').getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it.each([
+      ['Recetas', 'receta'],
+      ['Tips', 'tip'],
+      ['Experiencias', 'experiencia'],
+    ])('[O] elegir %s reinicia la lista y pide sólo ese tipo', async (nombre, tipo) => {
+      pedir(0).flush(pagina(1, 3, true));
+      await actualizar();
+
+      filtro(nombre).click();
+      await actualizar();
+      expect(titulos()).toEqual([]);
+      pedir(0, 'fecha', tipo).flush(pagina(1, 1, false));
+      await actualizar();
+
+      expect(titulos()).toEqual(['Título 1']);
+      expect(filtro(nombre).getAttribute('aria-pressed')).toBe('true');
+      expect(filtro('Todas').getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it('[S] volver a Todas quita el filtro', async () => {
+      pedir(0).flush(pagina(1, 3, true));
+      await actualizar();
+      filtro('Recetas').click();
+      await actualizar();
+      pedir(0, 'fecha', 'receta').flush(pagina(1, 1, false));
+      await actualizar();
+
+      filtro('Todas').click();
+      await actualizar();
+      pedir(0).flush(pagina(1, 3, false));
+      await actualizar();
+
+      expect(titulos()).toHaveLength(3);
+    });
+
+    it('[M] se combina con el orden y Ver más conserva los dos', async () => {
+      pedir(0).flush(pagina(1, 10, true));
+      await actualizar();
+      filtro('Tips').click();
+      await actualizar();
+      pedir(0, 'fecha', 'tip').flush(pagina(1, 10, true));
+      await actualizar();
+
+      fixture.nativeElement.querySelectorAll('.orden button')[1].dispatchEvent(new Event('click'));
+      await actualizar();
+      pedir(0, 'megusta', 'tip').flush(pagina(1, 10, true));
+      await actualizar();
+      botonVerMas()!.click();
+      await actualizar();
+
+      pedir(10, 'megusta', 'tip').flush(pagina(11, 12, false));
+      await actualizar();
+
+      expect(titulos()).toHaveLength(22);
+    });
+
+    it('[B] volver a tocar el tipo que ya está elegido no pide nada', async () => {
+      pedir(0).flush(pagina(1, 3, false));
+      await actualizar();
+
+      filtro('Todas').click();
+      await actualizar();
+
+      http.expectNone(URL);
+      expect(titulos()).toHaveLength(3);
+    });
+
+    it('[I] los controles de tipo van después de los de orden y antes del listado', () => {
+      pedir(0).flush(pagina(1, 1, false));
+
+      const orden = fixture.nativeElement.querySelector('.orden') as HTMLElement;
+
+      expect(orden.nextElementSibling).toBe(fixture.nativeElement.querySelector('.filtro-tipo'));
+    });
+  });
+
   describe('orden', () => {
     const opcion = (nombre: string) =>
       Array.from(
         fixture.nativeElement.querySelectorAll('.orden button') as NodeListOf<HTMLButtonElement>,
       ).find((boton) => boton.textContent!.includes(nombre))!;
-    const titulos = () =>
-      Array.from(
-        fixture.nativeElement.querySelectorAll('.pin-titulo') as NodeListOf<HTMLElement>,
-      ).map((titulo) => titulo.textContent!.trim());
 
     it('[O] ofrece ordenar por más recientes o más me gusta, y por defecto va por fecha', async () => {
       pedir(0).flush(pagina(1, 1, false));

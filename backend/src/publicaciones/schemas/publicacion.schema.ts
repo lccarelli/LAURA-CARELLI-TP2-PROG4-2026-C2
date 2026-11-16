@@ -96,3 +96,11 @@ export const PublicacionSchema = SchemaFactory.createForClass(Publicacion);
 PublicacionSchema.index({ activa: 1, fecha: -1, _id: -1 });
 PublicacionSchema.index({ activa: 1, cantidadMeGusta: -1, fecha: -1, _id: -1 });
 PublicacionSchema.index({ usuario: 1, activa: 1, fecha: -1, _id: -1 });
+PublicacionSchema.index({ activa: 1, tipo: 1, fecha: -1, _id: -1 });
+PublicacionSchema.index({
+  activa: 1,
+  tipo: 1,
+  cantidadMeGusta: -1,
+  fecha: -1,
+  _id: -1,
+});

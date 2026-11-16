@@ -78,10 +78,10 @@ export class PublicacionesService {
   async crear(
     usuarioId: string,
     dto: CrearPublicacionDto,
-    archivos: ArchivosPublicacion = {},
+    archivos?: ArchivosPublicacion,
   ) {
-    const imagen = archivos.imagen?.[0];
-    const fotosPasos = archivos.imagenesPasos ?? [];
+    const imagen = archivos?.imagen?.[0];
+    const fotosPasos = archivos?.imagenesPasos ?? [];
     this.validarFotosDePasos(dto, fotosPasos.length);
 
     const urlImagen = imagen
@@ -177,13 +177,17 @@ export class PublicacionesService {
   }
 
   async listar(consulta: ListarPublicacionesDto, usuarioId: string) {
-    const { offset, limit, orden, usuario } = consulta;
-    const clave = `listado:${orden}:${usuario ?? 'todos'}:${offset}:${limit}`;
+    const { offset, limit, orden, usuario, tipo } = consulta;
+    const clave = `listado:${orden}:${usuario ?? 'todos'}:${tipo ?? 'todos'}:${offset}:${limit}`;
     let listado = await this.cache.get<Listado>(clave);
 
     if (!listado) {
       const publicaciones = await this.publicacionModel
-        .find({ activa: true, ...(usuario && { usuario }) })
+        .find({
+          activa: true,
+          ...(usuario && { usuario }),
+          ...(tipo && { tipo }),
+        })
         .sort(ORDENES[orden])
         .skip(offset)
         .limit(limit + 1)

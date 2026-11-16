@@ -2,16 +2,30 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Comentario, PaginaComentarios } from '../../interfaces/comentario';
-import { OrdenPublicaciones, PaginaPublicaciones, Publicacion } from '../../interfaces/publicacion';
+import {
+  OrdenPublicaciones,
+  PaginaPublicaciones,
+  Publicacion,
+  Tipo,
+} from '../../interfaces/publicacion';
 
 @Service()
 export class PublicacionesApi {
   private http = inject(HttpClient);
 
-  listar(offset: number, limit = 10, orden: OrdenPublicaciones = 'fecha', usuario?: string) {
+  listar(
+    offset: number,
+    limit = 10,
+    orden: OrdenPublicaciones = 'fecha',
+    usuario?: string,
+    tipo?: Tipo,
+  ) {
     const params: Record<string, string | number> = { offset, limit, orden };
     if (usuario) {
       params['usuario'] = usuario;
+    }
+    if (tipo) {
+      params['tipo'] = tipo;
     }
     return this.http.get<PaginaPublicaciones>(`${environment.API_URL}/publicaciones`, { params });
   }

@@ -520,7 +520,11 @@ body {
   }
 
   .muro {
-    @apply columns-2 gap-4 md:columns-3 lg:columns-4;
+    @apply flex items-start gap-4;
+  }
+
+  .muro-columna {
+    @apply flex min-w-0 flex-1 flex-col;
   }
 
   .resaltado {
@@ -644,16 +648,23 @@ body {
     @apply mb-2 w-full;
   }
 
-  .orden {
-    @apply flex flex-wrap items-center gap-2;
+  .controles-listado {
+    @apply mt-3 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-x-6 md:gap-y-2;
   }
 
-  .orden .etiqueta {
-    @apply w-full md:w-auto;
+  .orden,
+  .filtro-tipo {
+    @apply flex flex-wrap items-center gap-1.5;
   }
 
-  .orden .tipo-opcion {
-    @apply flex-1 justify-center md:flex-none;
+  .orden .etiqueta,
+  .filtro-tipo .etiqueta {
+    @apply w-full text-xs md:w-auto;
+  }
+
+  .orden .tipo-opcion,
+  .filtro-tipo .tipo-opcion {
+    @apply min-h-7 flex-1 justify-center px-2.5 text-xs md:flex-none md:px-3;
   }
 
   .tipos {
