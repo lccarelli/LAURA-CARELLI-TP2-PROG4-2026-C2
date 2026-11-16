@@ -14,7 +14,7 @@
     <p id="modal-confirmacion-texto">{{ texto() | translate: parametros() }}</p>
     <div class="modal-acciones">
       <button
-        #cancelarBoton
+        appAutoFoco
         type="button"
         class="boton-secundario"
         [disabled]="enviando()"

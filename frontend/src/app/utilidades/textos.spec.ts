@@ -21,4 +21,27 @@ describe('acortar', () => {
   it('[I] no parte un carácter que ocupa dos unidades, como un emoji', () => {
     expect(acortar('🍰🍰🍰🍰', 3)).toBe('🍰🍰…');
   });
+
+  describe('por palabra', () => {
+    it('[O] corta en el último espacio para no dejar una palabra a medias', () => {
+      expect(acortar('Mezclar la harina con los huevos', 20, true)).toBe('Mezclar la harina…');
+    });
+
+    it('[B] si el corte cae justo al final de una palabra, la conserva', () => {
+      expect(acortar('abc def ghi', 8, true)).toBe('abc def…');
+    });
+
+    it('[B] si la palabra ocupa casi todo el texto, corta dentro de ella en vez de dejar casi nada', () => {
+      expect(acortar('Superlongitudinalmente largo', 10, true)).toBe('Superlong…');
+    });
+
+    it('[S] no deja una coma ni dos puntos antes de los puntos suspensivos', () => {
+      expect(acortar('Harina, huevos y leche para mezclar', 15, true)).toBe('Harina, huevos…');
+      expect(acortar('Ingredientes: harina y huevos', 14, true)).toBe('Ingredientes…');
+    });
+
+    it('[Z] un texto que entra no se toca', () => {
+      expect(acortar('Pan', 10, true)).toBe('Pan');
+    });
+  });
 });
