@@ -31,7 +31,7 @@ export interface Ingrediente {
 
 export interface Paso {
   titulo?: string;
-  texto: string;
+  texto?: string;
   imagenes?: string[];
 }
 

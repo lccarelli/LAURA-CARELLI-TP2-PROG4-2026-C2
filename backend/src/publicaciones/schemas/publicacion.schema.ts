@@ -15,7 +15,7 @@ type Ingrediente = {
 
 type Paso = {
   titulo?: string;
-  texto: string;
+  texto?: string;
   imagenes?: string[];
 };
 
@@ -54,7 +54,7 @@ export class Publicacion {
       {
         _id: false,
         titulo: String,
-        texto: { type: String, required: true },
+        texto: String,
         imagenes: { type: [String], default: undefined },
       },
     ],

@@ -138,7 +138,9 @@
                   @if (paso.titulo) {
                     <span class="paso-titulo-detalle">{{ paso.titulo }}</span>
                   }
-                  <span class="texto-publicacion whitespace-pre-line">{{ paso.texto }}</span>
+                  @if (paso.texto) {
+                    <span class="texto-publicacion whitespace-pre-line">{{ paso.texto }}</span>
+                  }
                   @if (paso.imagenes.length) {
                     <span class="paso-imagenes">
                       @for (imagen of paso.imagenes; track $index; let f = $index) {

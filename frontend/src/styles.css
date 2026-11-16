@@ -652,6 +652,18 @@ body {
     @apply mt-3 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-x-6 md:gap-y-2;
   }
 
+  .buscador {
+    @apply flex min-h-12 items-center gap-2 rounded-full bg-secundario px-4 text-suave focus-within:ring-2 focus-within:ring-barra;
+  }
+
+  .buscador-campo {
+    @apply min-w-0 flex-1 bg-transparent py-2 text-base text-tinta placeholder:text-suave focus:outline-none;
+  }
+
+  .buscador-limpiar {
+    @apply grid size-8 shrink-0 place-items-center rounded-full anillo-foco hover:bg-hoja/60;
+  }
+
   .orden,
   .filtro-tipo {
     @apply flex flex-wrap items-center gap-1.5;
@@ -829,9 +841,13 @@ body {
     @apply grid size-9 shrink-0 place-items-center rounded-full anillo-foco hover:bg-hoja/40 lg:size-11;
   }
 
-  .texto-de-escritorio,
+  .texto-oculto,
   .etiqueta-nav {
     @apply sr-only;
+  }
+
+  .texto-de-escritorio {
+    @apply sr-only lg:not-sr-only;
   }
 
   .barra-utiles {

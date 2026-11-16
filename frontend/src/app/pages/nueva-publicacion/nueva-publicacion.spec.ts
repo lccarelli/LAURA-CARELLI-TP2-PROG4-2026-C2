@@ -1054,15 +1054,15 @@ describe('NuevaPublicacion', () => {
         ]);
       });
 
-      it('[E] un paso con foto pero sin texto avisa y no envía', async () => {
+      it('[O] un paso con foto y sin descripción se envía sólo con su foto', async () => {
         fixture.componentInstance.formulario.patchValue(formularioValido);
         await cargarCon(['']);
         await elegir(0, foto());
 
         await enviar();
 
-        expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
-        expect(fixture.nativeElement.textContent).toContain('Escribí la descripción de este paso');
+        const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+        expect(JSON.parse(body.get('pasos') as string)).toEqual([{ fotos: [0] }]);
       });
 
       it('[I] quitar un paso también quita sus fotos', async () => {
@@ -1111,14 +1111,24 @@ describe('NuevaPublicacion', () => {
         ]);
       });
 
-      it('[E] un título sin descripción avisa y no envía', async () => {
+      it('[O] la descripción es opcional: un paso con sólo título se envía', async () => {
         fixture.componentInstance.formulario.patchValue(formularioValido);
         await completar('La masa', '');
 
         await enviar();
 
-        expect(http.match({ method: 'POST', url: URL })).toHaveLength(0);
-        expect(fixture.nativeElement.textContent).toContain('Escribí la descripción de este paso');
+        const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+        expect(JSON.parse(body.get('pasos') as string)).toEqual([{ titulo: 'La masa' }]);
+      });
+
+      it('[B] un paso sin título, descripción ni foto no se envía', async () => {
+        fixture.componentInstance.formulario.patchValue(formularioValido);
+        await completar('', '');
+
+        await enviar();
+
+        const body = http.expectOne({ method: 'POST', url: URL }).request.body as FormData;
+        expect(body.get('pasos')).toBeNull();
       });
 
       it('[B] el título admite 80 caracteres y la descripción 2000; uno más marca el error', async () => {

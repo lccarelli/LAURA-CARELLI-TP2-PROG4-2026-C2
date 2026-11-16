@@ -325,6 +325,22 @@ describe('POST /publicaciones', () => {
         expect(cloudinaryFalso.subir).toHaveBeenCalledTimes(3);
       });
 
+      it('[O] la descripción del paso es opcional: alcanza con un título o una foto', async () => {
+        const { body } = await recetaConFotos(
+          [{ titulo: 'Hornear' }, { texto: '   ', fotos: [0] }],
+          1,
+        ).expect(201);
+
+        expect(body.pasos).toEqual([
+          { titulo: 'Hornear' },
+          { imagenes: [URL_IMAGEN_SUBIDA] },
+        ]);
+      });
+
+      it('[E] un paso sin título, descripción ni foto responde 400', async () => {
+        await recetaConFotos([{ titulo: '   ', texto: '' }], 0).expect(400);
+      });
+
       it('[O] el título del paso es opcional: vacío o con espacios no se guarda', async () => {
         const { body } = await recetaConFotos(
           [

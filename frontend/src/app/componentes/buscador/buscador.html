@@ -1,0 +1,25 @@
+<form class="buscador" role="search" (submit)="$event.preventDefault(); buscarYa()">
+  <app-icono nombre="lupa" />
+  <input
+    class="buscador-campo"
+    type="text"
+    name="q"
+    autocomplete="off"
+    enterkeyhint="search"
+    [maxLength]="largoMaximo"
+    [value]="texto()"
+    [attr.aria-label]="'buscador.etiqueta' | translate"
+    [placeholder]="'buscador.placeholder' | translate"
+    (input)="alEscribir($any($event.target).value)"
+  />
+  @if (texto()) {
+    <button
+      type="button"
+      class="buscador-limpiar"
+      [attr.aria-label]="'buscador.limpiar' | translate"
+      (click)="limpiar()"
+    >
+      <app-icono nombre="cerrar" [chico]="true" />
+    </button>
+  }
+</form>

@@ -288,6 +288,21 @@ describe('DetallePublicacion', () => {
     );
   });
 
+  it('[O] un paso sin descripción se ve con su título y su foto, sin texto vacío', async () => {
+    await abrir({
+      ...publicacionDePrueba(1),
+      tipo: 'receta',
+      pasos: [{ titulo: 'Servir' }, { imagenes: ['https://img.test/a.jpg'] }],
+    });
+
+    expect(fixture.nativeElement.querySelectorAll('.numero-paso')).toHaveLength(2);
+    expect(fixture.nativeElement.querySelector('.paso-titulo-detalle').textContent).toContain(
+      'Servir',
+    );
+    expect(fixture.nativeElement.querySelectorAll('.paso-imagen')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelector('.paso-contenido .texto-publicacion')).toBeNull();
+  });
+
   it('[E] ignora fotos de pasos que no son texto y títulos que no son texto', async () => {
     const rara = {
       ...publicacionDePrueba(1),

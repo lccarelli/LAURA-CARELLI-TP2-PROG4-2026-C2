@@ -84,14 +84,14 @@ export class DetallePublicacion implements OnInit {
       .map((paso: unknown) =>
         typeof paso === 'string' ? { texto: paso } : (paso as Partial<Paso> | null),
       )
-      .filter((paso) => typeof paso?.texto === 'string' && paso.texto.trim() !== '')
       .map((paso) => ({
-        titulo: typeof paso!.titulo === 'string' ? paso!.titulo.trim() : '',
-        texto: paso!.texto!,
-        imagenes: Array.isArray(paso!.imagenes)
-          ? paso!.imagenes.filter((imagen) => typeof imagen === 'string' && imagen !== '')
+        titulo: typeof paso?.titulo === 'string' ? paso.titulo.trim() : '',
+        texto: typeof paso?.texto === 'string' ? paso.texto.trim() : '',
+        imagenes: Array.isArray(paso?.imagenes)
+          ? paso.imagenes.filter((imagen) => typeof imagen === 'string' && imagen !== '')
           : [],
-      }));
+      }))
+      .filter((paso) => paso.titulo || paso.texto || paso.imagenes.length);
   });
 
   protected readonly rinde = computed(() =>

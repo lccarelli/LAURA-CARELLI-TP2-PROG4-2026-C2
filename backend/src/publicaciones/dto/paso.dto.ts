@@ -4,14 +4,16 @@ import {
   ArrayUnique,
   IsArray,
   IsInt,
-  IsNotEmpty,
   IsOptional,
   IsString,
   Max,
   MaxLength,
   Min,
+  Validate,
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
 } from 'class-validator';
-import { SacarEspacios } from '../../common/sacar-espacios.decorator.js';
 import {
   MAXIMO_FOTOS_PASOS,
   MAXIMO_FOTOS_POR_PASO,
@@ -20,21 +22,32 @@ import {
 export const MAXIMO_TEXTO_PASO = 2000;
 export const MAXIMO_TITULO_PASO = 80;
 
+const sinVacios = ({ value }: { value: unknown }) => {
+  const texto = typeof value === 'string' ? value.trim() : value;
+  return texto === '' ? undefined : texto;
+};
+
+@ValidatorConstraint({ name: 'pasoConContenido' })
+class PasoConContenido implements ValidatorConstraintInterface {
+  validate(texto: unknown, { object }: ValidationArguments) {
+    const { titulo, fotos } = object as PasoDto;
+    if (texto === undefined) {
+      return Boolean(titulo) || Boolean(fotos?.length);
+    }
+    return typeof texto === 'string' && texto.length <= MAXIMO_TEXTO_PASO;
+  }
+}
+
 export class PasoDto {
   @IsOptional()
-  @Transform(({ value }) => {
-    const titulo = typeof value === 'string' ? value.trim() : value;
-    return titulo === '' ? undefined : titulo;
-  })
+  @Transform(sinVacios)
   @IsString()
   @MaxLength(MAXIMO_TITULO_PASO)
   titulo?: string;
 
-  @SacarEspacios()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(MAXIMO_TEXTO_PASO)
-  texto: string;
+  @Transform(sinVacios)
+  @Validate(PasoConContenido)
+  texto?: string;
 
   @IsOptional()
   @IsArray()

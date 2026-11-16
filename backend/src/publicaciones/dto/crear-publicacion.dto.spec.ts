@@ -120,10 +120,23 @@ describe('CrearPublicacionDto', () => {
       ).toEqual([]);
     });
 
+    it('[O] la descripción del paso es opcional si tiene título o foto', async () => {
+      for (const paso of [
+        { titulo: 'Hornear' },
+        { fotos: [0] },
+        { titulo: 'Hornear', texto: '   ' },
+      ]) {
+        expect(await camposInvalidos({ pasos: [paso] })).toEqual([]);
+      }
+    });
+
     it('[E] un paso sin texto, con título muy largo o con fotos inválidas falla', async () => {
       for (const paso of [
-        { fotos: [0] },
+        {},
         { texto: '' },
+        { titulo: 'Hornear', texto: 5 },
+        { titulo: 'Hornear', texto: 'a'.repeat(2001) },
+        { titulo: '  ' },
         { texto: 'a', titulo: 'a'.repeat(81) },
         { texto: 'a', titulo: 5 },
         { texto: 'a', fotos: [-1] },
