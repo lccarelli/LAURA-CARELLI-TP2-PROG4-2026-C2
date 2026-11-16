@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Publicacion } from '../../interfaces/publicacion';
 import { FechaRelativa } from '../../pipes/fecha-relativa';
+import { TextoLargo } from '../../pipes/texto-largo';
 import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
@@ -12,8 +13,10 @@ import { puedeEliminarPublicacion } from '../../utilidades/permisos';
 import { BotonMeGusta } from '../boton-me-gusta/boton-me-gusta';
 import { Icono } from '../icono/icono';
 
+const LETRAS_DEL_MENSAJE = 140;
+
 @Component({
-  imports: [BotonMeGusta, FechaRelativa, RouterLink, TranslatePipe, Icono],
+  imports: [BotonMeGusta, FechaRelativa, RouterLink, TextoLargo, TranslatePipe, Icono],
   selector: 'app-tarjeta-publicacion',
   templateUrl: './tarjeta-publicacion.html',
   host: { class: 'pin-contenedor' },
@@ -21,6 +24,8 @@ import { Icono } from '../icono/icono';
 export class TarjetaPublicacion {
   private api = inject(PublicacionesApi);
   private auth = inject(Auth);
+
+  protected readonly letrasDelMensaje = LETRAS_DEL_MENSAJE;
 
   readonly publicacion = input.required<Publicacion>();
   readonly eliminada = output<string>();

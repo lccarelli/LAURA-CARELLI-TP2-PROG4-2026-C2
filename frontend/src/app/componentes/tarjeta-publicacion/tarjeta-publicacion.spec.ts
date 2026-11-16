@@ -100,6 +100,23 @@ describe('TarjetaPublicacion', () => {
     expect(elemento.querySelectorAll('img')).toHaveLength(1);
   });
 
+  it('[O] un mensaje largo sin imagen se corta con puntos suspensivos', async () => {
+    const mensaje = `${'Crocantes por fuera y blandas por dentro. '.repeat(6)}fin`;
+
+    const texto = (await crear({ ...base, mensaje })).querySelector('.pin-texto')!.textContent!;
+
+    expect(texto.endsWith('…')).toBe(true);
+    expect(Array.from(texto).length).toBeLessThanOrEqual(140);
+  });
+
+  it('[B] un mensaje de hasta 140 letras se ve entero', async () => {
+    const mensaje = 'a'.repeat(140);
+
+    const texto = (await crear({ ...base, mensaje })).querySelector('.pin-texto')!.textContent;
+
+    expect(texto).toBe(mensaje);
+  });
+
   it('[Z] un autor sin foto muestra la imagen por defecto', async () => {
     const elemento = await crear(base);
 
