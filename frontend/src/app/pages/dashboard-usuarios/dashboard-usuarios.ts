@@ -3,7 +3,6 @@ import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Aviso } from '../../componentes/aviso/aviso';
-import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
 import { ModalConfirmacion } from '../../componentes/modal-confirmacion/modal-confirmacion';
 import { VerMas } from '../../componentes/ver-mas/ver-mas';
 import { Usuario } from '../../interfaces/usuario';
@@ -16,7 +15,7 @@ import { ListadoPaginado } from '../../utilidades/listado-paginado';
 type Accion = 'deshabilitar' | 'habilitar';
 
 @Component({
-  imports: [Aviso, CubreplatoLoading, ModalConfirmacion, RouterLink, VerMas, TranslatePipe],
+  imports: [Aviso, ModalConfirmacion, RouterLink, VerMas, TranslatePipe],
   selector: 'app-dashboard-usuarios',
   templateUrl: './dashboard-usuarios.html',
 })

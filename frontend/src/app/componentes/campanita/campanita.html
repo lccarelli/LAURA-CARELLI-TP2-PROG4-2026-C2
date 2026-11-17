@@ -97,10 +97,6 @@
         <p class="notificaciones-vacio">{{ 'notificaciones.vacio' | translate }}</p>
       }
 
-      @if (listado.cargando()) {
-        <app-cubreplato-loading />
-      }
-
       @if (listado.hayMas() && !listado.cargando()) {
         <app-ver-mas
           texto="publicaciones.ver_mas"

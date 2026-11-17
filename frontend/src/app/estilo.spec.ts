@@ -144,3 +144,81 @@ describe('panel de notificaciones sobre las barras', () => {
     expect(regla('.barra-superior:has(.notificaciones-panel)')).not.toMatch(/translate|transform/);
   });
 });
+
+describe('selector de archivo invisible', () => {
+  const reglaDe = (clase: string) => {
+    const inicio = hojaDeEstilos.indexOf(`\n  .${clase} {`);
+    return inicio === -1 ? '' : hojaDeEstilos.slice(inicio, hojaDeEstilos.indexOf('}', inicio));
+  };
+
+  const etiquetasConSelector = plantillas.flatMap(({ ruta, contenido }) =>
+    [
+      ...contenido.matchAll(
+        /<label\b[^>]*class="([^"]*)"[^>]*>(?:(?!<\/label>)[\s\S])*?archivo-oculto/g,
+      ),
+    ].map(([, clases]) => ({ ruta, clases: clases.split(/\s+/) })),
+  );
+
+  it('[I] el selector es absoluto y ocupa todo el contenedor posicionado más cercano', () => {
+    expect(reglaDe('archivo-oculto')).toContain('absolute');
+    expect(reglaDe('archivo-oculto')).toContain('inset-0');
+  });
+
+  it('[O] hay etiquetas con selector invisible en la aplicación', () => {
+    expect(etiquetasConSelector.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it.each(
+    etiquetasConSelector.map(({ ruta, clases }) => [ruta, clases.join(' '), clases] as const),
+  )(
+    '[S] en %s la etiqueta «%s» es el contenedor posicionado: si no, el selector tapa toda la pantalla y reabre el explorador de archivos al tocar Guardar o Cancelar',
+    (_ruta, _nombre, clases) => {
+      const posicionada = clases.some(
+        (clase: string) => clase === 'relative' || /\brelative\b/.test(reglaDe(clase)),
+      );
+
+      expect(posicionada).toBe(true);
+    },
+  );
+});
+
+describe('indicador de espera', () => {
+  const regla = (selector: string) => {
+    const inicio = hojaDeEstilos.indexOf(`\n  ${selector} {`);
+    return hojaDeEstilos.slice(inicio, hojaDeEstilos.indexOf('}', inicio));
+  };
+
+  it('[I] ocupa toda la pantalla y se centra, esté donde esté la persona en la página', () => {
+    const capa = regla('.cargando-global');
+
+    expect(capa).toContain('fixed');
+    expect(capa).toContain('inset-0');
+    expect(capa).toContain('items-center');
+    expect(capa).toContain('justify-center');
+  });
+
+  it('[I] queda por encima de todo: barras, menú, panel de notificaciones y ventanas', () => {
+    const zDe = (selector: string) => Number(regla(selector).match(/\bz-\[?(\d+)\]?/)?.[1]);
+
+    for (const otro of ['.barra', '.barra-nav', '.notificaciones-panel', '.fondo-modal']) {
+      expect(zDe('.cargando-global'), otro).toBeGreaterThan(zDe(otro));
+    }
+    expect(zDe('.pantalla-carga')).toBeGreaterThan(zDe('.fondo-modal'));
+  });
+
+  it('[S] el logo se queda quieto si la persona pidió menos movimiento', () => {
+    const inicio = hojaDeEstilos.indexOf('@media (prefers-reduced-motion: reduce)');
+    const bloque = hojaDeEstilos.slice(inicio, hojaDeEstilos.indexOf('}\n  }', inicio));
+
+    expect(bloque).toContain('.bq-spoon');
+    expect(bloque).toContain('.bq-dot');
+    expect(bloque).toContain('.bq-ring');
+    expect(bloque).toContain('animation: none');
+  });
+
+  it('[I] los colores del logo salen de la paleta, no de valores sueltos', () => {
+    for (const clase of ['.logo-cargando-fondo', '.logo-cargando-letra', '.logo-cargando-aro']) {
+      expect(hojaDeEstilos.slice(hojaDeEstilos.indexOf(clase))).toMatch(/var\(--color-/);
+    }
+  });
+});

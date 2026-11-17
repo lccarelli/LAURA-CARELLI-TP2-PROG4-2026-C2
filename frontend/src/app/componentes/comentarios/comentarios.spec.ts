@@ -1,4 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
@@ -74,7 +75,12 @@ describe('Comentarios', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Comentarios],
-      providers: [proveerIdiomaDePrueba(), provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        proveerIdiomaDePrueba(),
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
 
     http = TestBed.inject(HttpTestingController);
@@ -85,10 +91,10 @@ describe('Comentarios', () => {
 
   afterEach(() => vi.useRealTimers());
 
-  it('[I] pide la primera página de los comentarios de la publicación y muestra Cargando', () => {
-    pedir(0);
+  it('[I] pide la primera página de los comentarios de la publicación', () => {
+    const solicitud = pedir(0);
 
-    expect(texto()).toContain('Cargando');
+    expect(solicitud.request.method).toBe('GET');
   });
 
   it('[Z] sin comentarios muestra el aviso de lista vacía y ningún botón', async () => {

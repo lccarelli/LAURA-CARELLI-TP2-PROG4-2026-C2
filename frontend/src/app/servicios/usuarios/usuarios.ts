@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { PaginaUsuarios, Usuario } from '../../interfaces/usuario';
+import { PaginaUsuarios, PerfilPublico, Usuario } from '../../interfaces/usuario';
 
 @Service()
 export class UsuariosApi {
@@ -11,6 +11,12 @@ export class UsuariosApi {
     return this.http.get<PaginaUsuarios>(`${environment.API_URL}/usuarios`, {
       params: { offset, limit },
     });
+  }
+
+  obtenerPerfil(id: string) {
+    return this.http.get<PerfilPublico>(
+      `${environment.API_URL}/usuarios/${encodeURIComponent(id)}`,
+    );
   }
 
   crear(datos: FormData) {

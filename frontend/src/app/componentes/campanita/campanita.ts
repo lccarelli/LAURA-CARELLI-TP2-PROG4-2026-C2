@@ -12,7 +12,6 @@ import { ListadoPaginado } from '../../utilidades/listado-paginado';
 import { AvisosDelDispositivo } from '../avisos-del-dispositivo/avisos-del-dispositivo';
 import { Aviso } from '../aviso/aviso';
 import { AvisosPush } from '../../servicios/avisos-push/avisos-push';
-import { CubreplatoLoading } from '../cubreplato-loading/cubreplato-loading';
 import { Icono } from '../icono/icono';
 import { ModalConfirmacion } from '../modal-confirmacion/modal-confirmacion';
 import { VerMas } from '../ver-mas/ver-mas';
@@ -25,7 +24,6 @@ const MAXIMO_MOSTRADO = 99;
     Aviso,
     AvisosDelDispositivo,
     AutoFoco,
-    CubreplatoLoading,
     FechaRelativa,
     Icono,
     ModalConfirmacion,

@@ -1,4 +1,9 @@
-<a class="pin" [routerLink]="[soloLectura() ? '/publico' : '/publicaciones', publicacion()._id]">
+<div class="pin-cuerpo">
+  <a
+    class="pin"
+    [routerLink]="[soloLectura() ? '/publico' : '/publicaciones', publicacion()._id]"
+    [attr.aria-label]="publicacion().titulo"
+  ></a>
   @if (publicacion().imagen; as imagen) {
     <img class="pin-imagen" [src]="urlImagen(imagen)" alt="" />
   } @else {
@@ -7,17 +12,27 @@
   <span class="pin-pie">
     <span class="pin-tipo">{{ 'tipos.' + publicacion().tipo | translate }}</span>
     <span class="pin-titulo">{{ publicacion().titulo }}</span>
-    <span class="pin-autor">
-      <img
-        class="avatar-chico"
-        [src]="urlImagen(publicacion().usuario.imagenPerfil)"
-        [alt]="'comun.foto_de' | translate: { nombre: publicacion().usuario.nombreUsuario }"
-      />
-      &#64;{{ publicacion().usuario.nombreUsuario }}
-    </span>
+    @if (soloLectura()) {
+      <span class="pin-autor">
+        <ng-container *ngTemplateOutlet="autoria" />
+      </span>
+    } @else {
+      <a class="pin-autor pin-autor-enlace" [routerLink]="['/perfil', publicacion().usuario._id]">
+        <ng-container *ngTemplateOutlet="autoria" />
+      </a>
+    }
     <span class="pin-fecha">{{ publicacion().fecha | fechaRelativa }}</span>
   </span>
-</a>
+</div>
+
+<ng-template #autoria>
+  <img
+    class="avatar-chico"
+    [src]="urlImagen(publicacion().usuario.imagenPerfil)"
+    [alt]="'comun.foto_de' | translate: { nombre: publicacion().usuario.nombreUsuario }"
+  />
+  &#64;{{ publicacion().usuario.nombreUsuario }}
+</ng-template>
 
 @if (soloLectura()) {
   <div class="pin-acciones">

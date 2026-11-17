@@ -1,11 +1,11 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
-import { CubreplatoLoading } from '../cubreplato-loading/cubreplato-loading';
+import { LogoCargando } from '../logo-cargando/logo-cargando';
 
 export const SEGUNDOS_HASTA_AVISO = 4;
 
 @Component({
-  imports: [CubreplatoLoading, TranslatePipe],
+  imports: [LogoCargando, TranslatePipe],
   selector: 'app-pantalla-carga',
   templateUrl: './pantalla-carga.html',
 })

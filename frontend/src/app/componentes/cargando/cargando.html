@@ -1,0 +1,9 @@
+@if (carga.visible()) {
+  <div class="cargando-global" role="status" aria-live="polite" aria-busy="true">
+    <app-logo-cargando />
+    <p class="cargando-mensaje">{{ carga.mensaje() | translate }}</p>
+    @if (carga.nota(); as nota) {
+      <p class="cargando-nota">{{ nota | translate }}</p>
+    }
+  </div>
+}

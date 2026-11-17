@@ -10,9 +10,7 @@
 }
 
 @switch (carga().estado()) {
-  @case ('cargando') {
-    <app-cubreplato-loading />
-  }
+  @case ('cargando') {}
   @case ('vacio') {
     <p class="tarjeta estado-vacio">{{ textoVacio() | translate }}</p>
   }

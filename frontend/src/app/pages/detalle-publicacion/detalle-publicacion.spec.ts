@@ -45,10 +45,10 @@ describe('DetallePublicacion', () => {
     await fixture.whenStable();
   });
 
-  it('[I] pide la publicación por el id de la dirección y muestra Cargando', () => {
-    http.expectOne({ method: 'GET', url: `${URL}/id1` });
+  it('[I] pide la publicación por el id de la dirección', () => {
+    const solicitud = http.expectOne({ method: 'GET', url: `${URL}/id1` });
 
-    expect(fixture.nativeElement.textContent).toContain('Cargando');
+    expect(solicitud.request.method).toBe('GET');
   });
 
   it('[I] debajo de la publicación pide y muestra sus comentarios', async () => {
@@ -213,6 +213,17 @@ describe('DetallePublicacion', () => {
     const boton = fixture.nativeElement.querySelector('app-boton-guardar button') as HTMLElement;
 
     expect(boton.getAttribute('aria-pressed')).toBe(marcada);
+  });
+
+  it('[O] el nombre de quien publicó lleva a su perfil', async () => {
+    await abrir(
+      publicacionDePrueba(1, { usuario: { ...publicacionDePrueba(1).usuario, _id: 'u9' } }),
+    );
+
+    const enlace = fixture.nativeElement.querySelector('a.enlace-autor') as HTMLAnchorElement;
+
+    expect(enlace.getAttribute('href')).toBe('/perfil/u9');
+    expect(enlace.textContent).toContain('Laura Carelli');
   });
 
   it('[E] con ingredientes y pasos en el formato viejo (texto) no muestra esas secciones', async () => {

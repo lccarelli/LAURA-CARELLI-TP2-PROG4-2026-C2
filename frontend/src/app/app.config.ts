@@ -11,6 +11,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { routes } from './app.routes';
+import { cargaInterceptor } from './interceptores/carga-interceptor';
 import { reintentoInterceptor } from './interceptores/reintento-interceptor';
 import { sesionVencidaInterceptor } from './interceptores/sesion-vencida-interceptor';
 import { tokenInterceptor } from './interceptores/token-interceptor';
@@ -24,7 +25,12 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(
       withFetch(),
-      withInterceptors([tokenInterceptor, sesionVencidaInterceptor, reintentoInterceptor]),
+      withInterceptors([
+        cargaInterceptor,
+        tokenInterceptor,
+        sesionVencidaInterceptor,
+        reintentoInterceptor,
+      ]),
     ),
     provideTranslateService({ fallbackLang: 'es' }),
     provideTranslateHttpLoader({ prefix: '/i18n/', suffix: '.json' }),

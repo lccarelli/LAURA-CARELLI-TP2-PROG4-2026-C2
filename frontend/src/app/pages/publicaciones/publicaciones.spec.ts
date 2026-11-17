@@ -94,10 +94,9 @@ describe('Publicaciones', () => {
     expect(texto()).not.toContain('Todavía no hay publicaciones');
   });
 
-  it('[Z] mientras carga muestra Cargando y no el aviso de vacío', async () => {
+  it('[Z] mientras carga no muestra el aviso de vacío', async () => {
     await actualizar();
 
-    expect(texto()).toContain('Cargando');
     expect(texto()).not.toContain('Todavía no hay publicaciones');
     pedir(0).flush(pagina(1, 0, false));
   });

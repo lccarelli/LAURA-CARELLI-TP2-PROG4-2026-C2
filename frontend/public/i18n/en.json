@@ -12,7 +12,25 @@
     "reintentar": "Try again"
   },
   "carga": {
-    "despertando": "The server is waking up. This can take up to a minute."
+    "cargando": "Loading…",
+    "abriendo": "Opening Banquete…",
+    "ingresando": "Logging in…",
+    "creando_cuenta": "Creating your account…",
+    "publicando": "Saving your post…",
+    "guardando_cambios": "Saving your changes…",
+    "eliminando": "Deleting…",
+    "comentando": "Posting your comment…",
+    "guardando_comentario": "Saving your comment…",
+    "guardando_perfil": "Saving your profile…",
+    "creando_usuario": "Creating the user…",
+    "deshabilitando": "Disabling the account…",
+    "habilitando": "Enabling the account…",
+    "subiendo_imagen": "Uploading the image…",
+    "calculando": "Preparing the statistics…",
+    "trayendo_mas": "Loading more posts…",
+    "buscando": "Searching…",
+    "tarda": "This is taking a bit longer than usual. Please keep this screen open.",
+    "despertando": "The server is waking up. It can take up to a minute."
   },
   "formatos": {
     "fecha": "MM/dd/yyyy",
@@ -242,7 +260,10 @@
     "ultimos_comentarios": "Latest comments",
     "sin_comentarios": "No comments yet.",
     "error_comentarios": "Could not load the comments",
-    "ver_comentarios": "See all comments ({{n}})"
+    "ver_comentarios": "See all comments ({{n}})",
+    "error_ajeno": "We couldn't load this profile",
+    "ultimas_de_otra": "Latest posts",
+    "sin_publicaciones_de_otra": "Hasn't posted anything yet."
   },
   "usuarios": {
     "titulo": "Users",

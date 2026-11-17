@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -26,6 +27,7 @@ const LETRAS_DEL_MENSAJE = 140;
   imports: [
     BotonGuardar,
     BotonMeGusta,
+    NgTemplateOutlet,
     FechaRelativa,
     RouterLink,
     TextoLargo,

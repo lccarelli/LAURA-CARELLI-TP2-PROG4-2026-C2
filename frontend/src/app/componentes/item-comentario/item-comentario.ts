@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Comentario, MAXIMO_COMENTARIO } from '../../interfaces/comentario';
 import { Auth } from '../../servicios/auth/auth';
@@ -16,6 +17,7 @@ import { Aviso } from '../aviso/aviso';
 
 @Component({
   imports: [
+    RouterLink,
     DatePipe,
     Icono,
     FechaRelativa,
@@ -28,7 +30,7 @@ import { Aviso } from '../aviso/aviso';
   templateUrl: './item-comentario.html',
 })
 export class ItemComentario {
-  private auth = inject(Auth);
+  protected auth = inject(Auth);
   private api = inject(PublicacionesApi);
   private formBuilder = inject(FormBuilder);
   private traductor = inject(TranslateService);

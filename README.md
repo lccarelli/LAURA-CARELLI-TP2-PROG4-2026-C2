@@ -176,6 +176,13 @@ La portada (`/`) muestra **publicaciones reales**, no ejemplos: las 8 más recie
 
 - **API sin token:** `GET /publico/publicaciones?limit` (1 a 12, 8 por defecto, más recientes primero) y `GET /publico/publicaciones/:id` (la publicación y sus 3 últimos comentarios). No traen marcas de me gusta ni de guardada, y el autor sólo con nombre, apellido, usuario y foto (nunca correo ni fecha de nacimiento). Escribir sigue pidiendo sesión (401). Tienen el límite de solicitudes de toda la API.
 
+### Perfil de otra persona (Sprint 5)
+
+El **nombre** y la **foto** de quien publicó o comentó son enlaces que llevan a su perfil (`/perfil/:id`): sus datos públicos (foto, nombre, usuario y descripción; **nunca el correo ni la fecha de nacimiento**) y sus **últimas 3 publicaciones**, con la misma tarjeta, así que quien tiene perfil administrador conserva el botón de baja. Si el id es el de la propia persona, lleva a Mi perfil. En la vista pública (sin sesión) la autoría es texto, no enlace.
+
+- **API:** `GET /usuarios/:id` con el token de cualquier persona (no sólo administradores): `200` con `_id`, `nombre`, `apellido`, `nombreUsuario`, `descripcion` e `imagenPerfil`; `404 USUARIO_NO_ENCONTRADO` si no existe o está deshabilitada; `400` con un id inválido. Las publicaciones salen del listado general con `?usuario=<id>&limit=3`.
+- **Detalle técnico:** las tarjetas eran un único enlace que envolvía todo, y un enlace no puede contener otro; se rehízo como un enlace superpuesto a la tarjeta (con el título como nombre accesible) y el de la autoría por encima.
+
 ### Acceso docente (cuenta de demostración)
 
 Para que quien evalúa entre con la vista de administrador sin escribir nada, hay un **botón muy discreto** (un birrete casi transparente, que se aclara al pasar el mouse) en la barra lateral, o arriba en el celular, **sólo cuando no hay sesión**. Al tocarlo se entra directamente con la **cuenta docente**, que es una cuenta de administrador, y se abre el panel de usuarios.
@@ -359,6 +366,17 @@ Banquete se puede instalar como una aplicación (en el teléfono, "Instalar" en 
 - **Versión nueva:** cuando se despliega una versión nueva y el service worker la descarga, aparece un aviso "Hay una versión nueva" con el botón **Actualizar ahora**, que activa la versión y recarga la página. Se puede cerrar el aviso y seguir con la versión actual.
 - **En Vercel** (`vercel.json`): el service worker, `ngsw.json` y el manifiesto se sirven con `Cache-Control: no-cache`, para que una versión nueva se detecte enseguida.
 - **Probarlo en local:** `npx ng build`, servir `dist/frontend/browser` con cualquier servidor estático (con la dirección `/…` redirigida a `index.html`) y abrir en Chrome; en las herramientas de desarrollo, la pestaña *Application* muestra el manifiesto, el service worker y si se puede instalar.
+
+### Indicador de espera (logo animado, siempre en el centro)
+
+Cada vez que la aplicación dispara una acción y espera la respuesta del servidor, aparece el **logo de Banquete animado** (la cuchara que revuelve, el punto que late y el aro que gira), **siempre en el centro de la pantalla** y sobre todo lo demás, con un mensaje de lo que se está haciendo. Reglas:
+
+- **Aparece a los 0,2 segundos** de esperar: si la respuesta llega antes, no se ve nada (sin destellos). Una vez visible, se queda **al menos 0,4 segundos** para no parpadear.
+- **Un mensaje por acción:** «Ingresando…», «Creando tu cuenta…», «Guardando tu publicación…», «Guardando los cambios…», «Eliminando…», «Publicando tu comentario…», «Guardando tu perfil…», «Subiendo la imagen…», «Preparando las estadísticas…», «Buscando…», «Trayendo más publicaciones…» (al cargar más con el desplazamiento), y «Cargando…» para el resto.
+- **Una nota si tarda:** al ingresar o crear la cuenta, a los 4 segundos agrega «El servidor se está despertando. Puede tardar hasta un minuto» (el plan gratuito de Render duerme el servidor); al guardar una publicación, el perfil o una imagen, y al traer más publicaciones, a los 6 segundos dice «Esto está tardando un poco más de lo normal. No cierres la pantalla».
+- **Lo que no muestra:** lo que pasa en segundo plano (el aviso de notificaciones cada 30 segundos, renovar el token, el estado del servidor y las suscripciones push).
+- **Cómo funciona:** un interceptor (`cargaInterceptor`, el primero de la cadena, así cuenta también los reintentos) avisa al servicio `Carga` cuando empieza y termina cada solicitud; el servicio lleva la cuenta de las esperas, aplica los 0,2 y 0,4 segundos, elige el mensaje (el más específico y reciente) y programa la nota. El mensaje sale de `mensajeParaSolicitud` (una tabla por método y ruta); una solicitud puede poner el suyo o no mostrar nada con `HttpContext` (`MENSAJE_DE_CARGA` y `SIN_INDICADOR_DE_CARGA`). El componente `app-cargando`, en `app.html`, dibuja la capa.
+- **Accesible:** `role="status"` y `aria-live="polite"`; el logo es decorativo y el texto lo lee el lector de pantalla; con «reducir movimiento» el logo se queda quieto. Los colores salen de la paleta, no de valores sueltos.
 
 ### Pantalla de carga
 

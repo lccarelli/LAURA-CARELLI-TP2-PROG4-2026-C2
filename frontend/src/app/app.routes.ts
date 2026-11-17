@@ -78,6 +78,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/editar-perfil/editar-perfil').then((m) => m.EditarPerfil),
   },
   {
+    path: 'perfil/:id',
+    canActivate: [sesionGuard],
+    loadComponent: () => import('./pages/perfil-ajeno/perfil-ajeno').then((m) => m.PerfilAjeno),
+  },
+  {
     path: 'dashboard/usuarios',
     canActivate: [sesionGuard, adminGuard],
     loadComponent: () =>
