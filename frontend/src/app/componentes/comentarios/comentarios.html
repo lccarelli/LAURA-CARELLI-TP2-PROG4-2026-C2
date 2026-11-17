@@ -63,10 +63,6 @@
     <p class="estado-vacio">{{ 'comentarios.vacio' | translate }}</p>
   }
 
-  @if (cargando()) {
-    <app-cubreplato-loading />
-  }
-
   @if (hayMas() && !cargando()) {
     <app-ver-mas
       texto="comentarios.ver_mas"

@@ -24,7 +24,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { debounceTime, interval, merge, skip } from 'rxjs';
 import { Aviso } from '../../componentes/aviso/aviso';
-import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
 import {
   Ingrediente,
   Publicacion,
@@ -136,7 +135,6 @@ function ingredienteCompleto(control: AbstractControl): ValidationErrors | null 
     CdkDrag,
     CdkDragHandle,
     Aviso,
-    CubreplatoLoading,
     TranslatePipe,
   ],
   selector: 'app-nueva-publicacion',

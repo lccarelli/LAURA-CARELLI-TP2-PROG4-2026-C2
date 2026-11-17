@@ -21,12 +21,13 @@ describe('PantallaCarga', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  it('[O] muestra la cubreplato con el texto Cargando', async () => {
+  it('[O] muestra el logo animado de Banquete y el mensaje de que se está abriendo', async () => {
     const fixture = await crear();
     const pantalla: HTMLElement = fixture.nativeElement;
 
-    expect(pantalla.querySelector('.cubreplato')).not.toBeNull();
-    expect(pantalla.textContent).toContain('Cargando…');
+    expect(pantalla.querySelector('app-logo-cargando svg')).not.toBeNull();
+    expect(pantalla.textContent).toContain('Abriendo Banquete…');
+    expect(pantalla.querySelector('[role="status"]')).not.toBeNull();
   });
 
   it('[Z] al principio no avisa que el servidor se está despertando', async () => {

@@ -22,12 +22,11 @@ import {
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { ListadoPaginado } from '../../utilidades/listado-paginado';
 import { Aviso } from '../aviso/aviso';
-import { CubreplatoLoading } from '../cubreplato-loading/cubreplato-loading';
 import { TarjetaPublicacion } from '../tarjeta-publicacion/tarjeta-publicacion';
 import { VerMas } from '../ver-mas/ver-mas';
 
 @Component({
-  imports: [Aviso, CubreplatoLoading, TarjetaPublicacion, TranslatePipe, VerMas],
+  imports: [Aviso, TarjetaPublicacion, TranslatePipe, VerMas],
   selector: 'app-muro-publicaciones',
   templateUrl: './muro-publicaciones.html',
   host: { class: 'flex flex-col gap-4' },

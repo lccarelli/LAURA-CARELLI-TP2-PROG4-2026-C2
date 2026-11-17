@@ -130,4 +130,26 @@ describe('UsuariosApi', () => {
 
     expect(fallo.mock.calls[0][0].status).toBe(404);
   });
+
+  it('[O] obtenerPerfil pide el perfil público por GET a la ruta del usuario', () => {
+    TestBed.inject(UsuariosApi).obtenerPerfil('u7').subscribe();
+
+    const solicitud = TestBed.inject(HttpTestingController).expectOne(
+      `${environment.API_URL}/usuarios/u7`,
+    );
+
+    expect(solicitud.request.method).toBe('GET');
+    solicitud.flush({});
+  });
+
+  it('[S] un id con caracteres raros se codifica y no cambia la ruta', () => {
+    TestBed.inject(UsuariosApi).obtenerPerfil('a/b').subscribe();
+
+    const solicitud = TestBed.inject(HttpTestingController).expectOne(
+      `${environment.API_URL}/usuarios/a%2Fb`,
+    );
+
+    expect(solicitud.request.url).toContain('/usuarios/a%2Fb');
+    solicitud.flush({});
+  });
 });

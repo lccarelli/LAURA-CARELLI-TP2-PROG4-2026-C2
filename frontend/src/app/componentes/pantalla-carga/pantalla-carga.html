@@ -1,8 +1,7 @@
-<section class="pantalla-carga">
-  <div>
-    <app-cubreplato-loading />
-    @if (lento()) {
-      <p class="meta mt-2">{{ 'carga.despertando' | translate }}</p>
-    }
-  </div>
+<section class="pantalla-carga" role="status" aria-live="polite">
+  <app-logo-cargando />
+  <p class="cargando-mensaje">{{ 'carga.abriendo' | translate }}</p>
+  @if (lento()) {
+    <p class="cargando-nota">{{ 'carga.despertando' | translate }}</p>
+  }
 </section>

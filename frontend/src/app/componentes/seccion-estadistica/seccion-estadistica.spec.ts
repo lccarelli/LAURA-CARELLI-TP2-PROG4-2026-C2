@@ -56,17 +56,15 @@ describe('SeccionEstadistica', () => {
     expect(texto()).toContain('Comentarios por día');
   });
 
-  it('[Z] sin ninguna carga no muestra el contenido, el vacío ni el cubreplato', () => {
+  it('[Z] sin ninguna carga no muestra el contenido ni el vacío', () => {
     expect(contenido()).toBeNull();
     expect(texto()).not.toContain('No hay comentarios');
-    expect(fixture.nativeElement.querySelector('app-cubreplato-loading')).toBeNull();
   });
 
-  it('[S] mientras carga muestra el cubreplato y no el contenido', async () => {
+  it('[S] mientras carga no muestra el contenido (el indicador de espera es el global)', async () => {
     anfitrion.carga.cargar(origen);
     await actualizar();
 
-    expect(fixture.nativeElement.querySelector('app-cubreplato-loading')).not.toBeNull();
     expect(contenido()).toBeNull();
   });
 

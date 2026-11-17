@@ -135,11 +135,10 @@ describe('DashboardEstadisticas', () => {
     expect(campo(1).value).toBe('2026-03-31');
   });
 
-  it('[S] mientras carga muestra el cubreplato y no el gráfico', async () => {
+  it('[S] mientras carga no muestra el gráfico (el indicador de espera es el global)', async () => {
     await abrir('2026-03-31T15:00:00Z');
     await actualizar();
 
-    expect(fixture.nativeElement.querySelector('app-cubreplato-loading')).not.toBeNull();
     expect(grafico()).toBeNull();
     pedir('2026-03-02', '2026-03-31').flush([]);
   });
@@ -156,7 +155,6 @@ describe('DashboardEstadisticas', () => {
 
     expect(graficos[0].config.data.labels).toEqual(['@laura_c', '@juan_p']);
     expect(graficos[0].config.data.datasets[0].data).toEqual([3, 1]);
-    expect(fixture.nativeElement.querySelector('app-cubreplato-loading')).toBeNull();
   });
 
   it('[Z] sin publicaciones en el rango muestra el mensaje y no el gráfico', async () => {
@@ -324,11 +322,10 @@ describe('DashboardEstadisticas', () => {
       expect(graficos[0].config.data.datasets[0].data).toEqual([2, 0, 5]);
     });
 
-    it('[S] mientras cargan muestra el cubreplato y no la línea', async () => {
+    it('[S] mientras cargan no muestra la línea (el indicador de espera es el global)', async () => {
       await abrirConPublicaciones();
       await actualizar();
 
-      expect(fixture.nativeElement.querySelector('app-cubreplato-loading')).not.toBeNull();
       expect(lineas()).toBeNull();
       pedirComentarios('2026-03-02', '2026-03-31').flush([]);
     });

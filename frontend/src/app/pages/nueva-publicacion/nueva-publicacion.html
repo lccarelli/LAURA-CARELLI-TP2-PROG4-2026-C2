@@ -46,10 +46,6 @@
     }}</app-aviso>
   }
 
-  @if (!formularioListo() && !mensajeError()) {
-    <app-cubreplato-loading />
-  }
-
   @if (formularioListo()) {
     <form class="formulario" [formGroup]="formulario" (ngSubmit)="publicar()" novalidate>
       <div>

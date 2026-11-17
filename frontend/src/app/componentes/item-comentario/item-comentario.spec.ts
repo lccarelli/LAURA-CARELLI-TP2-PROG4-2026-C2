@@ -1,4 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
@@ -56,7 +57,12 @@ describe('ItemComentario', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ItemComentario],
-      providers: [proveerIdiomaDePrueba(), provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        proveerIdiomaDePrueba(),
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
 
     http = TestBed.inject(HttpTestingController);
@@ -314,6 +320,25 @@ describe('ItemComentario', () => {
       await apretar('Editar');
 
       expect(texto()).not.toContain('Sólo podés editar tus propios comentarios.');
+    });
+  });
+
+  describe('autoría', () => {
+    it('[O] con sesión, el usuario de quien comentó lleva a su perfil', async () => {
+      iniciarSesion(usuarioDePrueba);
+      await abrir(comentario({ usuario: { ...comentario().usuario, _id: 'u9' } }));
+
+      const enlace = fixture.nativeElement.querySelector('a.comentario-autor') as HTMLAnchorElement;
+
+      expect(enlace.getAttribute('href')).toBe('/perfil/u9');
+    });
+
+    it('[Z] sin sesión (vista pública) es texto, sin enlace', async () => {
+      iniciarSesion(null);
+      await abrir();
+
+      expect(fixture.nativeElement.querySelector('a.comentario-autor')).toBeNull();
+      expect(fixture.nativeElement.querySelector('span.comentario-autor')).not.toBeNull();
     });
   });
 });

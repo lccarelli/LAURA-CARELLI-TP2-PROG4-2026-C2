@@ -11,7 +11,6 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
 import { Aviso } from '../../componentes/aviso/aviso';
 import { BotonGuardar } from '../../componentes/boton-guardar/boton-guardar';
 import { BotonMeGusta } from '../../componentes/boton-me-gusta/boton-me-gusta';
@@ -57,7 +56,6 @@ const esIngrediente = (valor: unknown): valor is Ingrediente => {
   imports: [
     BotonGuardar,
     BotonMeGusta,
-    CubreplatoLoading,
     EliminarPublicacion,
     DatePipe,
     FechaRelativa,

@@ -110,10 +110,6 @@
     <p class="tarjeta estado-vacio">{{ 'usuarios.vacio' | translate }}</p>
   }
 
-  @if (listado.cargando()) {
-    <app-cubreplato-loading />
-  }
-
   @if (listado.hayMas() && !listado.cargando()) {
     <app-ver-mas
       texto="usuarios.ver_mas"

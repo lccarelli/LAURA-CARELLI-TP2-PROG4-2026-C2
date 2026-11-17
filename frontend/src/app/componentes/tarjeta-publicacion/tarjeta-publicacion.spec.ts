@@ -331,6 +331,42 @@ describe('TarjetaPublicacion', () => {
     });
   });
 
+  describe('autoría', () => {
+    it('[O] con sesión, el nombre de quien publicó lleva a su perfil', async () => {
+      const elemento = await crear({ ...base, usuario: { ...base.usuario, _id: 'u9' } });
+
+      const enlace = elemento.querySelector('a.pin-autor') as HTMLAnchorElement;
+
+      expect(enlace.getAttribute('href')).toBe('/perfil/u9');
+      expect(enlace.textContent).toContain('@laura_c');
+    });
+
+    it('[I] no hay enlaces anidados: el de la autoría no está dentro del de la publicación', async () => {
+      const elemento = await crear(base);
+
+      expect(elemento.querySelectorAll('a a')).toHaveLength(0);
+      expect(elemento.querySelector('a.pin')!.textContent!.trim()).toBe('');
+      expect(elemento.querySelector('a.pin')!.getAttribute('aria-label')).toBe('Mi título');
+    });
+
+    it('[I] la tarjeta entera sigue llevando a la publicación', async () => {
+      const elemento = await crear(base);
+
+      expect(elemento.querySelector('a.pin')!.getAttribute('href')).toBe(
+        `/publicaciones/${base._id}`,
+      );
+    });
+
+    it('[Z] en la vista pública la autoría es texto, sin enlace', async () => {
+      const elemento = await crear(base);
+      fixture.componentRef.setInput('soloLectura', true);
+      await fixture.whenStable();
+
+      expect(elemento.querySelector('a.pin-autor')).toBeNull();
+      expect(elemento.querySelector('span.pin-autor')!.textContent).toContain('@laura_c');
+    });
+  });
+
   describe('sólo lectura', () => {
     it('[O] abre la vista pública y no la del detalle con sesión', async () => {
       await crear(base);

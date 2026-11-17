@@ -2,10 +2,9 @@ import { Component, input, output } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { EstadoVisible } from '../../utilidades/carga';
 import { Aviso } from '../aviso/aviso';
-import { CubreplatoLoading } from '../cubreplato-loading/cubreplato-loading';
 
 @Component({
-  imports: [Aviso, CubreplatoLoading, TranslatePipe],
+  imports: [Aviso, TranslatePipe],
   selector: 'app-seccion-estadistica',
   templateUrl: './seccion-estadistica.html',
 })

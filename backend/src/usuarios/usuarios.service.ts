@@ -86,6 +86,20 @@ export class UsuariosService {
     });
   }
 
+  async perfilPublico(id: string) {
+    const usuario = await this.usuarioModel
+      .findOne({ _id: id, habilitado: true })
+      .select('nombre apellido nombreUsuario imagenPerfil descripcion')
+      .lean();
+    if (!usuario) {
+      throw new NotFoundException({
+        message: 'El usuario no existe',
+        codigo: 'USUARIO_NO_ENCONTRADO',
+      });
+    }
+    return usuario;
+  }
+
   async asegurarCuentaDeAdministrador(dto: RegistroDto) {
     const existente = await this.usuarioModel
       .findOne({ correo: dto.correo })

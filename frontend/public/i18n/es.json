@@ -12,6 +12,24 @@
     "reintentar": "Reintentar"
   },
   "carga": {
+    "cargando": "Cargando…",
+    "abriendo": "Abriendo Banquete…",
+    "ingresando": "Ingresando…",
+    "creando_cuenta": "Creando tu cuenta…",
+    "publicando": "Guardando tu publicación…",
+    "guardando_cambios": "Guardando los cambios…",
+    "eliminando": "Eliminando…",
+    "comentando": "Publicando tu comentario…",
+    "guardando_comentario": "Guardando tu comentario…",
+    "guardando_perfil": "Guardando tu perfil…",
+    "creando_usuario": "Creando el usuario…",
+    "deshabilitando": "Deshabilitando la cuenta…",
+    "habilitando": "Habilitando la cuenta…",
+    "subiendo_imagen": "Subiendo la imagen…",
+    "calculando": "Preparando las estadísticas…",
+    "trayendo_mas": "Trayendo más publicaciones…",
+    "buscando": "Buscando…",
+    "tarda": "Esto está tardando un poco más de lo normal. No cierres la pantalla.",
     "despertando": "El servidor se está despertando. Puede tardar hasta un minuto."
   },
   "formatos": {
@@ -242,7 +260,10 @@
     "ultimos_comentarios": "Últimos comentarios",
     "sin_comentarios": "Todavía no tiene comentarios.",
     "error_comentarios": "No se pudieron cargar los comentarios",
-    "ver_comentarios": "Ver todos los comentarios ({{n}})"
+    "ver_comentarios": "Ver todos los comentarios ({{n}})",
+    "error_ajeno": "No pudimos cargar este perfil",
+    "ultimas_de_otra": "Últimas publicaciones",
+    "sin_publicaciones_de_otra": "Todavía no publicó nada."
   },
   "usuarios": {
     "titulo": "Usuarios",

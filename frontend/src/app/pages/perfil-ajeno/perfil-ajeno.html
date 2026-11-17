@@ -1,0 +1,39 @@
+<section class="pagina-ancha">
+  <a class="enlace" routerLink="/publicaciones">{{ 'comun.volver' | translate }}</a>
+
+  @if (mensajeError(); as mensaje) {
+    <app-aviso titulo="perfil.error_ajeno" (cerrar)="mensajeError.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+
+  @if (perfil(); as persona) {
+    <header class="perfil-cabecera">
+      <div class="perfil-resumen">
+        <img
+          class="avatar-grande"
+          [src]="urlImagen(persona.imagenPerfil)"
+          [alt]="'comun.foto_de' | translate: { nombre: persona.nombreUsuario }"
+        />
+        <div class="min-w-0">
+          <h1 class="titulo">{{ persona.nombre }} {{ persona.apellido }}</h1>
+          <p class="texto-suave">&#64;{{ persona.nombreUsuario }}</p>
+        </div>
+      </div>
+    </header>
+
+    <p class="nota whitespace-pre-line">{{ persona.descripcion }}</p>
+
+    <h2 class="pestana">{{ 'perfil.ultimas_de_otra' | translate }}</h2>
+
+    @if (ultimas().length) {
+      <div class="fila-tarjetas">
+        @for (publicacion of ultimas(); track publicacion._id) {
+          <app-tarjeta-publicacion [publicacion]="publicacion" (eliminada)="quitar($event)" />
+        }
+      </div>
+    } @else if (cargaronPublicaciones()) {
+      <p class="tarjeta estado-vacio">{{ 'perfil.sin_publicaciones_de_otra' | translate }}</p>
+    }
+  }
+</section>

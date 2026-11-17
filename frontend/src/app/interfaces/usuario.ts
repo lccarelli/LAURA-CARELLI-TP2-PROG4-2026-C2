@@ -15,6 +15,11 @@ export interface Usuario {
   habilitado: boolean;
 }
 
+export type PerfilPublico = Pick<
+  Usuario,
+  '_id' | 'nombre' | 'apellido' | 'nombreUsuario' | 'descripcion' | 'imagenPerfil'
+>;
+
 export interface PaginaUsuarios {
   datos: Usuario[];
   offset: number;

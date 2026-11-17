@@ -5,7 +5,13 @@
     [src]="urlImagen(comentario.usuario.imagenPerfil)"
     [alt]="'comun.foto_de' | translate: { nombre: comentario.usuario.nombreUsuario }"
   />
-  <span class="comentario-autor">&#64;{{ comentario.usuario.nombreUsuario }}</span>
+  @if (auth.usuario()) {
+    <a class="comentario-autor enlace-autor" [routerLink]="['/perfil', comentario.usuario._id]">
+      &#64;{{ comentario.usuario.nombreUsuario }}
+    </a>
+  } @else {
+    <span class="comentario-autor">&#64;{{ comentario.usuario.nombreUsuario }}</span>
+  }
   <span
     class="detalle-publicacion"
     [attr.title]="comentario.fecha | date: ('formatos.fecha_hora' | translate)"
