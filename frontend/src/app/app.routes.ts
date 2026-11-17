@@ -21,6 +21,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/login/login').then((m) => m.Login),
   },
   {
+    path: 'home',
+    canActivate: [sesionGuard],
+    loadComponent: () => import('./pages/home/home').then((m) => m.Home),
+  },
+  {
     path: 'publicaciones',
     canActivate: [sesionGuard],
     loadComponent: () => import('./pages/publicaciones/publicaciones').then((m) => m.Publicaciones),
@@ -53,6 +58,11 @@ export const routes: Routes = [
     canActivate: [sesionGuard],
     loadComponent: () =>
       import('./pages/mis-publicaciones/mis-publicaciones').then((m) => m.MisPublicaciones),
+  },
+  {
+    path: 'perfil/guardadas',
+    canActivate: [sesionGuard],
+    loadComponent: () => import('./pages/guardadas/guardadas').then((m) => m.Guardadas),
   },
   {
     path: 'perfil/editar',

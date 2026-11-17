@@ -37,8 +37,10 @@ describe('BarraSuperior', () => {
         proveerIdiomaDePrueba(),
         provideRouter([
           { path: 'publicaciones', children: [] },
+          { path: 'home', children: [] },
           { path: 'perfil', children: [] },
           { path: 'perfil/publicaciones', children: [] },
+          { path: 'perfil/guardadas', children: [] },
         ]),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -63,24 +65,22 @@ describe('BarraSuperior', () => {
     expect(hijos).toEqual(['app-buscador', 'app-campanita']);
   });
 
-  it('[S] buscar lleva al listado con la búsqueda en la dirección', async () => {
+  it.each([
+    ['[S] buscar desde el perfil lleva al listado general', '/perfil', '/publicaciones?q=tarta'],
+    [
+      '[S] en Mis publicaciones la búsqueda se queda ahí',
+      '/perfil/publicaciones',
+      '/perfil/publicaciones?q=tarta',
+    ],
+    ['[S] en Guardadas la búsqueda se queda ahí', '/perfil/guardadas', '/perfil/guardadas?q=tarta'],
+  ])('%s', async (_nombre, desde, esperada) => {
     await iniciarSesion();
-    await router.navigateByUrl('/perfil');
+    await router.navigateByUrl(desde);
 
     buscarEscribiendo('tarta');
     await actualizar();
 
-    expect(router.url).toBe('/publicaciones?q=tarta');
-  });
-
-  it('[S] en Mis publicaciones la búsqueda se queda ahí y no vuelve al listado general', async () => {
-    await iniciarSesion();
-    await router.navigateByUrl('/perfil/publicaciones');
-
-    buscarEscribiendo('tarta');
-    await actualizar();
-
-    expect(router.url).toBe('/perfil/publicaciones?q=tarta');
+    expect(router.url).toBe(esperada);
   });
 
   it('[S] en Mis publicaciones el campo trae la búsqueda de la dirección y se puede borrar', async () => {
@@ -99,6 +99,7 @@ describe('BarraSuperior', () => {
     ['/publicaciones', 'Buscar publicaciones'],
     ['/perfil', 'Buscar publicaciones'],
     ['/perfil/publicaciones', 'Buscar en mis publicaciones'],
+    ['/perfil/guardadas', 'Buscar en mis publicaciones guardadas'],
   ])('[I] en %s el campo dice «%s»', async (ruta, texto) => {
     await iniciarSesion();
 
@@ -107,6 +108,19 @@ describe('BarraSuperior', () => {
 
     expect(campo().getAttribute('placeholder')).toBe(texto);
     expect(campo().getAttribute('aria-label')).toBe(texto);
+  });
+
+  it('[I] en el inicio no hay buscador y la campanita queda a la derecha', async () => {
+    await iniciarSesion();
+    await router.navigateByUrl('/home');
+    await actualizar();
+
+    const hijos = Array.from(el('.barra-superior').children).map((hijo) =>
+      hijo.tagName.toLowerCase(),
+    );
+
+    expect(hijos).toEqual(['app-campanita']);
+    expect(el('app-campanita').classList).toContain('ml-auto');
   });
 
   it('[S] en inglés el campo de Mis publicaciones se traduce', async () => {

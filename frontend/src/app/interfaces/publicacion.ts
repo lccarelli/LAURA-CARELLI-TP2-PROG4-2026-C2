@@ -51,6 +51,7 @@ export interface Publicacion {
   imagen?: string;
   cantidadMeGusta: number;
   meGusta?: boolean;
+  guardada?: boolean;
   cantidadComentarios: number;
   fecha: string;
   fechaEdicion?: string;
@@ -59,6 +60,15 @@ export interface Publicacion {
 export const ORDENES = ['fecha', 'megusta'] as const;
 
 export type OrdenPublicaciones = (typeof ORDENES)[number];
+
+export const LETRAS_DEL_INDICE = [...'ABCDEFGHIJKLMN', 'Ñ', ...'OPQRSTUVWXYZ', '#'] as const;
+
+export type LetraDelIndice = (typeof LETRAS_DEL_INDICE)[number];
+
+export interface LetrasGuardadas {
+  letras: Record<string, number>;
+  total: number;
+}
 
 export interface PaginaPublicaciones {
   datos: Publicacion[];

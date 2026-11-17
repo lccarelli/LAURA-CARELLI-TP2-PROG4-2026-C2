@@ -71,6 +71,13 @@
       <span aria-hidden="true">{{ publicacion().cantidadComentarios }}</span>
     </span>
 
+    <app-boton-guardar
+      [publicacionId]="publicacion()._id"
+      [guardada]="publicacion().guardada ?? false"
+      (fallo)="mensajeError.set($event)"
+      (cambio)="!$event && desguardada.emit(publicacion()._id)"
+    />
+
     @if (puedeEliminar() && !confirmando()) {
       <button
         type="button"

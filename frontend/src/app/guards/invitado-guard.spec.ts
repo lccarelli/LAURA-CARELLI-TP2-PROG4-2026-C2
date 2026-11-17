@@ -19,11 +19,11 @@ describe('invitadoGuard', () => {
     expect(ejecutar()).toBe(true);
   });
 
-  it('[O] con sesión lleva a /publicaciones', () => {
+  it('[O] con sesión lleva a /home', () => {
     localStorage.setItem('token', 'un-token');
 
     const resultado = ejecutar();
 
-    expect(TestBed.inject(Router).serializeUrl(resultado as never)).toBe('/publicaciones');
+    expect(TestBed.inject(Router).serializeUrl(resultado as never)).toBe('/home');
   });
 });

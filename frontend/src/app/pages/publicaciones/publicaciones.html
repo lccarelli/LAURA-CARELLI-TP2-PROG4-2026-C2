@@ -1,7 +1,7 @@
 <section class="pagina-ancha">
   <h1 class="texto-oculto">{{ 'publicaciones.titulo' | translate }}</h1>
 
-  <app-muro-publicaciones [consulta]="busqueda()" />
+  <app-muro-publicaciones [consulta]="busqueda()" [tipoElegido]="tipo()" [ordenElegido]="orden()" />
 </section>
 
 <a class="boton-flotante" routerLink="/publicaciones/nueva">

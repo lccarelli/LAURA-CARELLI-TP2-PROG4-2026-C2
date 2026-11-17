@@ -1,0 +1,37 @@
+<section class="pagina-ancha">
+  <a class="enlace" routerLink="/perfil">{{ 'comun.volver' | translate }}</a>
+  <h1 class="titulo">{{ 'guardadas.titulo' | translate }}</h1>
+
+  <nav class="indice" [attr.aria-label]="'guardadas.indice' | translate">
+    <button
+      type="button"
+      class="solapa-letra"
+      [class.activa]="letra() === null"
+      [attr.aria-pressed]="letra() === null"
+      (click)="elegir(null)"
+    >
+      {{ 'guardadas.todas' | translate }}
+      <span class="solapa-letra-cantidad">{{ total() }}</span>
+    </button>
+    @for (opcion of letras; track opcion) {
+      <button
+        type="button"
+        class="solapa-letra"
+        [class.activa]="letra() === opcion"
+        [attr.aria-pressed]="letra() === opcion"
+        [disabled]="!hay(opcion) && letra() !== opcion"
+        (click)="elegir(opcion)"
+      >
+        {{ opcion }}
+      </button>
+    }
+  </nav>
+
+  <app-muro-publicaciones
+    [guardadas]="true"
+    [letra]="letra()"
+    [consulta]="busqueda()"
+    mensajeVacio="guardadas.vacio"
+    (quitada)="alQuitar()"
+  />
+</section>

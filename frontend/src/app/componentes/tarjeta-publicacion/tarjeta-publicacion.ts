@@ -11,6 +11,7 @@ import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
 import { puedeEliminarPublicacion } from '../../utilidades/permisos';
+import { BotonGuardar } from '../boton-guardar/boton-guardar';
 import { BotonMeGusta } from '../boton-me-gusta/boton-me-gusta';
 import { Icono } from '../icono/icono';
 
@@ -22,7 +23,15 @@ const COLOR_DE_TIPO: Record<Tipo, string> = {
 const LETRAS_DEL_MENSAJE = 140;
 
 @Component({
-  imports: [BotonMeGusta, FechaRelativa, RouterLink, TextoLargo, TranslatePipe, Icono],
+  imports: [
+    BotonGuardar,
+    BotonMeGusta,
+    FechaRelativa,
+    RouterLink,
+    TextoLargo,
+    TranslatePipe,
+    Icono,
+  ],
   selector: 'app-tarjeta-publicacion',
   templateUrl: './tarjeta-publicacion.html',
   host: { class: 'pin-contenedor' },
@@ -37,6 +46,7 @@ export class TarjetaPublicacion {
 
   readonly publicacion = input.required<Publicacion>();
   readonly eliminada = output<string>();
+  readonly desguardada = output<string>();
 
   constructor() {
     effect(() => this.resaltar.color.set(COLOR_DE_TIPO[this.publicacion().tipo]));

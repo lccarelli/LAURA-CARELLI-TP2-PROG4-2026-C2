@@ -7,6 +7,8 @@ import { NotificacionesModule } from '../notificaciones/notificaciones.module.js
 import { Usuario, UsuarioSchema } from '../usuarios/schemas/usuario.schema.js';
 import { ComentariosService } from './comentarios.service.js';
 import { EventosMeGustaService } from './eventos-me-gusta.service.js';
+import { GuardadasController } from './guardadas.controller.js';
+import { GuardadasService } from './guardadas.service.js';
 import { PublicacionesController } from './publicaciones.controller.js';
 import { PublicacionesService } from './publicaciones.service.js';
 import { Comentario, ComentarioSchema } from './schemas/comentario.schema.js';
@@ -14,6 +16,7 @@ import {
   EventoMeGusta,
   EventoMeGustaSchema,
 } from './schemas/evento-me-gusta.schema.js';
+import { Guardada, GuardadaSchema } from './schemas/guardada.schema.js';
 import { MeGusta, MeGustaSchema } from './schemas/me-gusta.schema.js';
 import {
   Publicacion,
@@ -27,6 +30,7 @@ export const TTL_LISTADO_MS = 1000;
     MongooseModule.forFeature([
       { name: Publicacion.name, schema: PublicacionSchema },
       { name: MeGusta.name, schema: MeGustaSchema },
+      { name: Guardada.name, schema: GuardadaSchema },
       { name: Comentario.name, schema: ComentarioSchema },
       { name: EventoMeGusta.name, schema: EventoMeGustaSchema },
       { name: Usuario.name, schema: UsuarioSchema },
@@ -36,7 +40,12 @@ export const TTL_LISTADO_MS = 1000;
     ImagenesModule,
     NotificacionesModule,
   ],
-  controllers: [PublicacionesController],
-  providers: [PublicacionesService, ComentariosService, EventosMeGustaService],
+  controllers: [PublicacionesController, GuardadasController],
+  providers: [
+    PublicacionesService,
+    GuardadasService,
+    ComentariosService,
+    EventosMeGustaService,
+  ],
 })
 export class PublicacionesModule {}

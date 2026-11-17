@@ -27,6 +27,7 @@ import type { PasoDto, PasoEdicionDto } from './dto/paso.dto.js';
 import { filtroDeBusqueda } from '../common/busqueda.js';
 import { NotificacionesService } from '../notificaciones/notificaciones.service.js';
 import { ListarPublicacionesDto } from './dto/listar-publicaciones.dto.js';
+import { Guardada } from './schemas/guardada.schema.js';
 import { MeGusta } from './schemas/me-gusta.schema.js';
 import { Publicacion } from './schemas/publicacion.schema.js';
 
@@ -65,7 +66,7 @@ const esClaveDuplicada = (error: unknown) =>
   error !== null &&
   (error as { code?: number }).code === CODIGO_CLAVE_DUPLICADA;
 
-const CAMPOS_AUTOR = 'nombre apellido nombreUsuario imagenPerfil';
+export const CAMPOS_AUTOR = 'nombre apellido nombreUsuario imagenPerfil';
 
 @Injectable()
 export class PublicacionesService {
@@ -76,6 +77,8 @@ export class PublicacionesService {
     private readonly publicacionModel: Model<Publicacion>,
     @InjectModel(MeGusta.name)
     private readonly meGustaModel: Model<MeGusta>,
+    @InjectModel(Guardada.name)
+    private readonly guardadaModel: Model<Guardada>,
     @InjectModel(Usuario.name)
     private readonly usuarioModel: Model<Usuario>,
     private readonly eventos: EventosMeGustaService,
@@ -300,7 +303,7 @@ export class PublicacionesService {
     if (!publicacion) {
       throw this.noEncontrada();
     }
-    const [conMarca] = await this.marcarMeGusta([publicacion], usuarioId);
+    const [conMarca] = await this.marcarDelUsuario([publicacion], usuarioId);
     return conMarca;
   }
 
@@ -336,7 +339,7 @@ export class PublicacionesService {
 
     return {
       ...listado,
-      datos: await this.marcarMeGusta(listado.datos, usuarioId),
+      datos: await this.marcarDelUsuario(listado.datos, usuarioId),
     };
   }
 
@@ -482,24 +485,29 @@ export class PublicacionesService {
     return publicacion?.cantidadMeGusta ?? 0;
   }
 
-  private async marcarMeGusta<T extends PublicacionConId>(
+  async marcarDelUsuario<T extends PublicacionConId>(
     publicaciones: T[],
     usuarioId: string,
   ) {
     if (!publicaciones.length) {
       return [];
     }
-    const dados = await this.meGustaModel
-      .find({
-        usuario: usuarioId,
-        publicacion: { $in: publicaciones.map(({ _id }) => _id) },
-      })
-      .select('publicacion')
-      .lean();
-    const ids = new Set(dados.map(({ publicacion }) => String(publicacion)));
+    const filtro = {
+      usuario: usuarioId,
+      publicacion: { $in: publicaciones.map(({ _id }) => _id) },
+    };
+    const [dados, guardadas] = await Promise.all([
+      this.meGustaModel.find(filtro).select('publicacion').lean(),
+      this.guardadaModel.find(filtro).select('publicacion').lean(),
+    ]);
+    const idsDe = (filas: { publicacion: Types.ObjectId }[]) =>
+      new Set(filas.map(({ publicacion }) => String(publicacion)));
+    const conMeGusta = idsDe(dados);
+    const conGuardada = idsDe(guardadas);
     return publicaciones.map((publicacion) => ({
       ...publicacion,
-      meGusta: ids.has(String(publicacion._id)),
+      meGusta: conMeGusta.has(String(publicacion._id)),
+      guardada: conGuardada.has(String(publicacion._id)),
     }));
   }
 

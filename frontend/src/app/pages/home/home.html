@@ -1,0 +1,39 @@
+<section class="pagina-ancha home">
+  @if (auth.usuario(); as usuario) {
+    <header class="perfil-cabecera">
+      <h1 class="titulo-perfil">{{ 'home.saludo' | translate: { nombre: usuario.nombre } }}</h1>
+
+      <div class="perfil-resumen">
+        <img
+          class="avatar-perfil"
+          [src]="urlImagen(usuario.imagenPerfil)"
+          [alt]="'comun.foto_de' | translate: { nombre: usuario.nombreUsuario }"
+        />
+        <div class="min-w-0">
+          <p class="perfil-nombre">{{ usuario.nombre }} {{ usuario.apellido }}</p>
+          <p class="texto-suave">&#64;{{ usuario.nombreUsuario }}</p>
+        </div>
+        <a class="boton-secundario" routerLink="/perfil">{{ 'home.ver_perfil' | translate }}</a>
+      </div>
+    </header>
+  }
+
+  <p class="home-lema">{{ 'home.lema' | translate }}</p>
+
+  <div class="home-barra">
+    <h2 class="pestana">{{ 'home.tableros' | translate }}</h2>
+    <a class="boton-principal" routerLink="/publicaciones/nueva">{{ 'home.crear' | translate }}</a>
+  </div>
+
+  <div class="tableros">
+    @for (tablero of tableros; track tablero.clave) {
+      <app-tablero
+        [enlace]="tablero.enlace"
+        [parametros]="tablero.parametros ?? null"
+        [titulo]="'home.tablero_' + tablero.clave"
+        [detalle]="'home.tablero_' + tablero.clave + '_detalle'"
+        [portadas]="portadasDe(tablero.clave)"
+      />
+    }
+  </div>
+</section>

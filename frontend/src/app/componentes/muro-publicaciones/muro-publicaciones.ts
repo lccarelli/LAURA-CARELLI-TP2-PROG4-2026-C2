@@ -6,11 +6,13 @@ import {
   input,
   OnDestroy,
   OnInit,
+  output,
   signal,
   untracked,
 } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import {
+  LetraDelIndice,
   OrdenPublicaciones,
   ORDENES,
   Publicacion,
@@ -37,6 +39,11 @@ export class MuroPublicaciones implements OnInit, OnDestroy {
   readonly usuario = input<string>();
   readonly consulta = input('');
   readonly mensajeVacio = input('publicaciones.vacio');
+  readonly tipoElegido = input<Tipo | null>(null);
+  readonly ordenElegido = input<OrdenPublicaciones>('fecha');
+  readonly guardadas = input(false);
+  readonly letra = input<LetraDelIndice | null>(null);
+  readonly quitada = output<string>();
 
   readonly ordenes = ORDENES;
   readonly orden = signal<OrdenPublicaciones>('fecha');
@@ -44,15 +51,24 @@ export class MuroPublicaciones implements OnInit, OnDestroy {
   readonly tipo = signal<Tipo | null>(null);
   readonly busqueda = signal('');
   readonly listado = new ListadoPaginado<Publicacion>((offset) =>
-    this.api.listar(
-      offset,
-      10,
-      this.orden(),
-      this.usuario(),
-      this.tipo() ?? undefined,
-      this.busqueda() || undefined,
-    ),
+    this.guardadas()
+      ? this.api.listarGuardadas(
+          offset,
+          10,
+          this.letra(),
+          this.tipo() ?? undefined,
+          this.busqueda() || undefined,
+        )
+      : this.api.listar(
+          offset,
+          10,
+          this.orden(),
+          this.usuario(),
+          this.tipo() ?? undefined,
+          this.busqueda() || undefined,
+        ),
   );
+  private letraIniciada = false;
 
   readonly columnas = signal(this.cantidadDeColumnas());
   readonly muro = computed(() => {
@@ -65,6 +81,20 @@ export class MuroPublicaciones implements OnInit, OnDestroy {
   private alCambiarElAncho = () => this.columnas.set(this.cantidadDeColumnas());
 
   constructor() {
+    effect(() => {
+      const tipo = this.tipoElegido();
+      const orden = this.ordenElegido();
+      untracked(() => this.aplicarFiltros(tipo, orden));
+    });
+    effect(() => {
+      this.letra();
+      untracked(() => {
+        if (this.letraIniciada) {
+          this.listado.reiniciar();
+        }
+        this.letraIniciada = true;
+      });
+    });
     effect(() => {
       const texto = this.consulta();
       untracked(() => this.alCambiarLaBusqueda(texto));
@@ -85,6 +115,22 @@ export class MuroPublicaciones implements OnInit, OnDestroy {
       return 4;
     }
     return window.innerWidth >= 768 ? 3 : 2;
+  }
+
+  private aplicarFiltros(tipo: Tipo | null, orden: OrdenPublicaciones) {
+    const cambio = tipo !== this.tipo() || orden !== this.orden();
+    this.tipo.set(tipo);
+    this.orden.set(orden);
+    if (cambio && this.iniciado) {
+      this.listado.reiniciar();
+    }
+  }
+
+  alDesguardar(id: string) {
+    if (this.guardadas()) {
+      this.listado.quitar(id);
+      this.quitada.emit(id);
+    }
   }
 
   cambiarOrden(orden: OrdenPublicaciones) {
