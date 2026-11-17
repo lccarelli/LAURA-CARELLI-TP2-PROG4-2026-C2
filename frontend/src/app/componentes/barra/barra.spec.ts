@@ -94,6 +94,53 @@ describe('Barra', () => {
     expect(texto()).not.toContain('Administración');
   });
 
+  describe('foto de perfil en el menú', () => {
+    const fotoDelMenu = () =>
+      fixture.nativeElement.querySelector('a[href="/perfil"] img.avatar-nav') as HTMLImageElement;
+
+    it('[O] Mi perfil muestra la foto de la persona en vez del ícono genérico', async () => {
+      await iniciarSesion();
+      TestBed.inject(Auth).usuario.update((u) => ({
+        ...u!,
+        imagenPerfil: 'https://res.cloudinary.com/nube/image/upload/banquete/yo.png',
+      }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fotoDelMenu().getAttribute('src')).toBe(
+        'https://res.cloudinary.com/nube/image/upload/banquete/yo.png',
+      );
+      expect(fixture.nativeElement.querySelector('a[href="/perfil"] svg')).toBeNull();
+    });
+
+    it('[B] sin foto muestra la imagen por defecto', async () => {
+      await iniciarSesion();
+
+      expect(fotoDelMenu().getAttribute('src')).toBe('/sin-foto.svg');
+    });
+
+    it('[S] la foto tiene texto alternativo con el nombre y el enlace sigue llamándose Mi perfil', async () => {
+      await iniciarSesion();
+
+      const enlace = fixture.nativeElement.querySelector('a[href="/perfil"]') as HTMLAnchorElement;
+
+      expect(fotoDelMenu().getAttribute('alt')).toContain('laura_c');
+      expect(enlace.getAttribute('title')).toBe('Mi perfil');
+    });
+
+    it('[S] si la persona cambia su foto, el menú se actualiza sin recargar', async () => {
+      await iniciarSesion();
+      TestBed.inject(Auth).usuario.update((u) => ({
+        ...u!,
+        imagenPerfil: 'https://cdn.test/nueva.png',
+      }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fotoDelMenu().getAttribute('src')).toBe('https://cdn.test/nueva.png');
+    });
+  });
+
   it('[Z] sin sesión tampoco aparece Administración', () => {
     expect(texto()).not.toContain('Administración');
   });

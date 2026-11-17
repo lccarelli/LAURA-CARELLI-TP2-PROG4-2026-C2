@@ -142,18 +142,15 @@ describe('PerfilAjeno', () => {
     expect(texto()).toContain('Título 1');
   });
 
-  it('[S] mantiene la baja del administrador: la tarjeta ofrece eliminar y al hacerlo la saca de la lista', async () => {
+  it('[I] las tarjetas no ofrecen eliminar ni siquiera a un administrador: la baja se hace desde el detalle', async () => {
     TestBed.inject(Auth).usuario.set({ ...usuarioDePrueba, _id: 'admin', perfil: 'administrador' });
     await abrir();
     pedirPerfil().flush(perfil);
     pedirPublicaciones().flush(pagina([publicacionDePrueba(1), publicacionDePrueba(2)]));
     await actualizar();
-    expect(fixture.nativeElement.querySelectorAll('.boton-eliminar')).toHaveLength(2);
 
-    fixture.componentInstance.quitar('id1');
-    await actualizar();
-
-    expect(fixture.nativeElement.querySelectorAll('app-tarjeta-publicacion')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelectorAll('app-tarjeta-publicacion')).toHaveLength(2);
+    expect(fixture.nativeElement.querySelector('.boton-eliminar')).toBeNull();
   });
 
   it('[Z] sin publicaciones lo dice', async () => {

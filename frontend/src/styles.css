@@ -553,11 +553,11 @@ body {
   }
 
   .pin-acciones {
-    @apply flex items-center gap-2 px-3 pb-3 text-xs text-suave;
+    @apply flex items-center gap-0.5 px-2 pb-3 text-xs text-suave;
   }
 
   .boton-metrica {
-    @apply inline-flex min-h-8 items-center gap-1 rounded-full px-2 text-xs text-suave anillo-foco hover:bg-secundario/60 hover:text-tinta disabled:opacity-60;
+    @apply inline-flex min-h-8 items-center gap-1 rounded-full px-1.5 text-xs text-suave anillo-foco hover:bg-secundario/60 hover:text-tinta disabled:opacity-60;
   }
 
   .boton-metrica.activa {
@@ -566,10 +566,6 @@ body {
 
   .boton-metrica.guardada {
     @apply text-primario;
-  }
-
-  .boton-eliminar {
-    @apply ml-auto;
   }
 
   .eliminar-publicacion {
@@ -582,14 +578,6 @@ body {
 
   .eliminar-publicacion-aviso {
     @apply block text-sm font-normal text-suave;
-  }
-
-  .pin-confirmar {
-    @apply flex items-center gap-2 border-t border-error/25 bg-error/5 px-3 py-2;
-  }
-
-  .pin-confirmar-texto {
-    @apply mr-auto text-xs font-medium text-error;
   }
 
   .boton-mini {
@@ -636,6 +624,15 @@ body {
     @apply inline-flex items-center gap-1;
   }
 
+  .pin-acciones .pin-derecha,
+  .metricas-detalle .pin-derecha {
+    @apply ml-auto;
+  }
+
+  .pin-acciones .metrica-comentarios {
+    @apply pr-1;
+  }
+
   .icono-chico {
     @apply size-4 shrink-0;
   }
@@ -658,6 +655,14 @@ body {
 
   .solapa.activa {
     @apply border-barra bg-barra font-semibold text-barra-tinta hover:bg-barra;
+  }
+
+  .solapa-cantidad {
+    @apply ml-1 font-bold;
+  }
+
+  .etiqueta-nueva {
+    @apply rounded-full bg-primario px-2 py-0.5 text-xs font-semibold text-sobre-primario;
   }
 
   .plantilla {
@@ -1061,6 +1066,14 @@ body {
     @apply size-5 shrink-0;
   }
 
+  .avatar-nav {
+    @apply size-7 shrink-0 rounded-full border-2 border-transparent bg-hoja object-cover lg:size-9;
+  }
+
+  .item-nav.activo .avatar-nav {
+    @apply border-hoja;
+  }
+
   @media (width < 64rem) {
     .barra-nav {
       @apply motion-safe:transition-transform motion-safe:duration-200;
@@ -1127,7 +1140,8 @@ body {
     @apply text-error;
   }
 
-  app-item-comentario {
+  app-item-comentario,
+  app-ultima-publicacion {
     @apply contents;
   }
 
@@ -1317,6 +1331,70 @@ body {
 
   .modal-tiempo {
     @apply text-center font-serif text-4xl font-semibold text-primario;
+  }
+
+  .buscador-personas {
+    @apply flex flex-col gap-1.5;
+  }
+
+  .buscador-personas-caja {
+    @apply flex items-center gap-2 rounded-2xl border-2 border-linea-fuerte bg-papel px-4 py-2.5 text-suave focus-within:border-barra focus-within:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-barra)_18%,transparent)];
+  }
+
+  .buscador-personas-campo {
+    @apply min-h-7 w-full bg-transparent text-base font-medium text-tinta placeholder:font-normal placeholder:text-suave/70 focus:outline-none md:text-sm;
+  }
+
+  .personas {
+    @apply flex max-h-60 flex-col divide-y divide-linea overflow-y-auto rounded-2xl border-2 border-linea-fuerte bg-papel;
+  }
+
+  .persona {
+    @apply flex w-full items-center gap-3 px-3 py-2.5 text-left text-tinta hover:bg-marco focus-visible:bg-marco disabled:opacity-50;
+  }
+
+  .persona-datos {
+    @apply flex min-w-0 flex-1 flex-col;
+  }
+
+  .persona-nombre {
+    @apply truncate font-semibold;
+  }
+
+  .persona-agregar {
+    @apply flex shrink-0 items-center gap-1 rounded-full bg-secundario px-3 py-1 text-sm font-semibold text-secundario-tinta;
+  }
+
+  .elegidas {
+    @apply flex flex-col gap-2;
+  }
+
+  .destinatarios {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .destinatario {
+    @apply flex items-center gap-2 rounded-full border-2 border-barra bg-secundario py-1 pl-1.5 pr-1 text-sm font-semibold text-secundario-tinta;
+  }
+
+  .destinatario-quitar {
+    @apply grid size-6 place-items-center rounded-full hover:bg-linea;
+  }
+
+  .compartidas {
+    @apply flex flex-col gap-4;
+  }
+
+  .compartida {
+    @apply flex scroll-mt-32 flex-col gap-2;
+  }
+
+  .compartida-destacada {
+    @apply rounded-3xl bg-secundario/40 p-2 ring-2 ring-primario;
+  }
+
+  .compartida-por {
+    @apply flex flex-wrap items-baseline gap-x-2 text-sm text-suave;
   }
 
   .modal-acciones {

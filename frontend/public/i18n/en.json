@@ -30,7 +30,8 @@
     "trayendo_mas": "Loading more posts…",
     "buscando": "Searching…",
     "tarda": "This is taking a bit longer than usual. Please keep this screen open.",
-    "despertando": "The server is waking up. It can take up to a minute."
+    "despertando": "The server is waking up. It can take up to a minute.",
+    "compartiendo": "Sharing…"
   },
   "formatos": {
     "fecha": "MM/dd/yyyy",
@@ -263,7 +264,9 @@
     "ver_comentarios": "See all comments ({{n}})",
     "error_ajeno": "We couldn't load this profile",
     "ultimas_de_otra": "Latest posts",
-    "sin_publicaciones_de_otra": "Hasn't posted anything yet."
+    "sin_publicaciones_de_otra": "Hasn't posted anything yet.",
+    "solapas": "Profile sections",
+    "compartidos_contigo": "Shared with you"
   },
   "usuarios": {
     "titulo": "Users",
@@ -359,7 +362,9 @@
     "USUARIO_NO_ENCONTRADO": "The user does not exist.",
     "RANGO_INVALIDO": "The from date cannot be later than the to date.",
     "RANGO_DEMASIADO_LARGO": "The range cannot exceed 366 days.",
-    "ACCESO_DOCENTE_NO_DISPONIBLE": "Teacher access is not available."
+    "ACCESO_DOCENTE_NO_DISPONIBLE": "Teacher access is not available.",
+    "COMPARTIR_CON_UNO_MISMO": "You can't share a post with yourself.",
+    "VISITA_PROPIA": "Visits to your own profile are not recorded."
   },
   "tipos": {
     "receta": "Recipe",
@@ -455,7 +460,8 @@
     "borrar_historial_titulo": "Clear the whole history?",
     "borrar_historial_texto": "All your notifications, read and unread, will be deleted. This cannot be undone.",
     "borrar_historial_si": "Delete all",
-    "borrando": "Deleting…"
+    "borrando": "Deleting…",
+    "compartida": "{{actor}} shared “{{titulo}}” with you"
   },
   "avisos": {
     "titulo": "Alerts on this device",
@@ -510,5 +516,26 @@
     "paso_agregar": "Choose “Add to Home Screen”.",
     "paso_abrir": "Open it from the new icon.",
     "no_preguntar": "Don't ask again"
+  },
+  "compartir": {
+    "boton": "Share",
+    "titulo": "Share with…",
+    "buscar": "Search people",
+    "buscar_ayuda": "Name, last name or username",
+    "elegidas": "Chosen",
+    "quitar": "Remove @{{usuario}}",
+    "maximo": "You can choose up to {{n}} people at a time.",
+    "sin_resultados": "We couldn't find anyone with that name.",
+    "enviar": "Share ({{n}})",
+    "compartida": "Shared with {{n}} person(s).",
+    "error_titulo": "Could not share",
+    "resultados": "Results",
+    "agregar": "Add"
+  },
+  "compartidas": {
+    "titulo": "Shared with me",
+    "te_compartio": "shared this with you",
+    "vacio": "Nobody has shared a post with you yet.",
+    "nueva": "New"
   }
 }

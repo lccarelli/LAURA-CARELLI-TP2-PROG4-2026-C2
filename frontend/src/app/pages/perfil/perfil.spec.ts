@@ -1,14 +1,17 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { PaginaPublicaciones, Publicacion } from '../../interfaces/publicacion';
 import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
+import { SIN_INDICADOR_DE_CARGA } from '../../servicios/carga/carga';
 import { Idioma } from '../../servicios/idioma/idioma';
 import { comentarioDePrueba } from '../../../testing/comentario';
 import { PaginaComentarios } from '../../interfaces/comentario';
+import { By } from '@angular/platform-browser';
+import { ListaCompartidas } from '../../componentes/lista-compartidas/lista-compartidas';
 import { Perfil } from './perfil';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 
@@ -388,6 +391,134 @@ describe('Perfil', () => {
 
       expect(portadas()).toEqual([]);
       expect(raiz.querySelector('a.tablero[href="/perfil/guardadas"]')).not.toBeNull();
+    });
+  });
+
+  describe('solapas y compartidos contigo', () => {
+    const sinVerUrl = `${environment.API_URL}/publicaciones/compartidas/sin-ver`;
+    const solapas = () =>
+      Array.from(fixture.nativeElement.querySelectorAll('.solapa') as NodeListOf<HTMLElement>);
+    const actualizar = async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+    const abrirCompartidos = async () => {
+      await TestBed.inject(Router).navigate(['/'], { queryParams: { solapa: 'compartidos' } });
+      await actualizar();
+    };
+
+    it('[O] hay dos solapas: Mi actividad (activa al entrar) y Compartidos contigo', async () => {
+      await mostrar(usuario);
+
+      expect(solapas().map((solapa) => solapa.textContent!.trim())).toEqual([
+        'Mi actividad',
+        'Compartidos contigo',
+      ]);
+      expect(solapas()[0].classList).toContain('activa');
+      expect(solapas()[1].classList).not.toContain('activa');
+      expect(fixture.nativeElement.querySelector('a.tablero')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('app-lista-compartidas')).toBeNull();
+    });
+
+    it('[O] si hay compartidos sin ver, los cuenta al lado del nombre de la solapa', async () => {
+      await mostrar(usuario);
+      http.expectOne(sinVerUrl).flush({ cantidad: 3 });
+      await actualizar();
+
+      expect(solapas()[1].textContent!.replace(/\s+/g, ' ').trim()).toBe('Compartidos contigo (3)');
+    });
+
+    it('[Z] sin compartidos sin ver no muestra ningún número', async () => {
+      await mostrar(usuario);
+      http.expectOne(sinVerUrl).flush({ cantidad: 0 });
+      await actualizar();
+
+      expect(solapas()[1].textContent!.trim()).toBe('Compartidos contigo');
+    });
+
+    it('[E] si falla el contador la solapa se ve igual, sin número', async () => {
+      await mostrar(usuario);
+      http.expectOne(sinVerUrl).flush({}, { status: 500, statusText: 'Error' });
+      await actualizar();
+
+      expect(solapas()[1].textContent!.trim()).toBe('Compartidos contigo');
+    });
+
+    it('[S] el contador se pide en segundo plano, sin el indicador de espera', async () => {
+      await mostrar(usuario);
+
+      const solicitud = http.expectOne(sinVerUrl);
+
+      expect(solicitud.request.context.get(SIN_INDICADOR_DE_CARGA)).toBe(true);
+    });
+
+    it('[O] la solapa Compartidos contigo muestra la lista en el lugar de los tableros', async () => {
+      await mostrar(usuario);
+      await abrirCompartidos();
+
+      expect(solapas()[1].classList).toContain('activa');
+      expect(solapas()[1].getAttribute('aria-current')).toBe('page');
+      expect(fixture.nativeElement.querySelector('app-lista-compartidas')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('a.tablero')).toBeNull();
+    });
+
+    it('[S] al abrir la lista se marcan como vistas y el número desaparece', async () => {
+      await mostrar(usuario);
+      http.expectOne(sinVerUrl).flush({ cantidad: 2 });
+      await abrirCompartidos();
+      http
+        .expectOne((s) => s.url === `${environment.API_URL}/publicaciones/compartidas`)
+        .flush({
+          datos: [
+            {
+              ...publicacion(1),
+              compartidaPor: usuario,
+              fechaCompartida: '2026-10-22T15:30:00',
+              vista: false,
+            },
+          ],
+          offset: 0,
+          limit: 10,
+          hayMas: false,
+        });
+      await actualizar();
+
+      http
+        .expectOne({
+          method: 'POST',
+          url: `${environment.API_URL}/publicaciones/compartidas/marcar-vistas`,
+        })
+        .flush({ actualizadas: 2 });
+      await actualizar();
+
+      expect(solapas()[1].textContent!.trim()).toBe('Compartidos contigo');
+    });
+
+    it('[O] si la dirección trae la publicación (?publicacion=), la lista la recibe para ubicarse en ella', async () => {
+      await mostrar(usuario);
+      await TestBed.inject(Router).navigate(['/'], {
+        queryParams: { solapa: 'compartidos', publicacion: 'id7' },
+      });
+      await actualizar();
+
+      const lista = fixture.debugElement.query(By.directive(ListaCompartidas));
+
+      expect(lista.componentInstance.destacada()).toBe('id7');
+    });
+
+    it('[Z] sin ?publicacion= la lista no tiene publicación destacada', async () => {
+      await mostrar(usuario);
+      await abrirCompartidos();
+
+      const lista = fixture.debugElement.query(By.directive(ListaCompartidas));
+
+      expect(lista.componentInstance.destacada()).toBeNull();
+    });
+
+    it('[I] la solapa se elige con la dirección (?solapa=compartidos), así la abren la campanita y el aviso del celular', async () => {
+      await mostrar(usuario);
+
+      expect(solapas()[1].getAttribute('href')).toBe('/perfil?solapa=compartidos');
     });
   });
 

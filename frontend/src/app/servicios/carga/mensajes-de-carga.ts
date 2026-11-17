@@ -30,6 +30,7 @@ const REGLAS: [metodo: string, ruta: RegExp, mensaje: MensajeDeCarga][] = [
   ['DELETE', /\/publicaciones\/[^/]+$/, { clave: 'carga.eliminando' }],
   ['POST', /\/publicaciones\/[^/]+\/comentarios$/, { clave: 'carga.comentando' }],
   ['PUT', /\/comentarios\/[^/]+$/, { clave: 'carga.guardando_comentario' }],
+  ['POST', /\/publicaciones\/[^/]+\/compartir$/, { clave: 'carga.compartiendo' }],
   ['PUT', /\/usuarios\/yo$/, { clave: 'carga.guardando_perfil', ...TARDA }],
   ['POST', /\/usuarios$/, { clave: 'carga.creando_usuario', ...TARDA }],
   ['DELETE', /\/usuarios\/[^/]+$/, { clave: 'carga.deshabilitando' }],

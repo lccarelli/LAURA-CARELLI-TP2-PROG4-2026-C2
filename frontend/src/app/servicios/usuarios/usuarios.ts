@@ -2,7 +2,12 @@ import { HttpClient, HttpContext } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { SIN_INDICADOR_DE_CARGA } from '../carga/carga';
-import { PaginaUsuarios, PerfilPublico, Usuario } from '../../interfaces/usuario';
+import {
+  PaginaUsuarios,
+  PerfilPublico,
+  PersonaDelDirectorio,
+  Usuario,
+} from '../../interfaces/usuario';
 
 @Service()
 export class UsuariosApi {
@@ -17,6 +22,16 @@ export class UsuariosApi {
   obtenerPerfil(id: string) {
     return this.http.get<PerfilPublico>(
       `${environment.API_URL}/usuarios/${encodeURIComponent(id)}`,
+    );
+  }
+
+  directorio(texto: string) {
+    return this.http.get<{ datos: PersonaDelDirectorio[] }>(
+      `${environment.API_URL}/usuarios/directorio`,
+      {
+        params: { texto },
+        context: new HttpContext().set(SIN_INDICADOR_DE_CARGA, true),
+      },
     );
   }
 

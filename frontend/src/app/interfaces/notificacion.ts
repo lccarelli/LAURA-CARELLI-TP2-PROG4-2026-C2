@@ -1,4 +1,4 @@
-export const TIPOS_NOTIFICACION = ['comentario', 'me_gusta'] as const;
+export const TIPOS_NOTIFICACION = ['comentario', 'me_gusta', 'compartida'] as const;
 
 export type TipoNotificacion = (typeof TIPOS_NOTIFICACION)[number];
 

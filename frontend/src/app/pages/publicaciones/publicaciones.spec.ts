@@ -4,14 +4,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
 import { PaginaPublicaciones } from '../../interfaces/publicacion';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
-import { Auth } from '../../servicios/auth/auth';
 import { By } from '@angular/platform-browser';
 import { MuroPublicaciones } from '../../componentes/muro-publicaciones/muro-publicaciones';
 import { Publicaciones } from './publicaciones';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { pruebasDeCargaAutomatica } from '../../../testing/carga-automatica';
 import { publicacionDePrueba } from '../../../testing/publicacion';
-import { usuarioDePrueba } from '../../../testing/usuario';
 
 const URL = `${environment.API_URL}/publicaciones`;
 
@@ -227,63 +225,13 @@ describe('Publicaciones', () => {
   });
 
   describe('eliminar desde la lista', () => {
-    const autor = usuarioDePrueba;
-    const tarjetas = () => fixture.nativeElement.querySelectorAll('app-tarjeta-publicacion');
-    const eliminarLaPrimera = async () => {
-      (tarjetas()[0].querySelector('.boton-eliminar') as HTMLButtonElement).click();
+    it('[I] las tarjetas de la lista no tienen botón de eliminar: la baja se hace desde el detalle', async () => {
       await actualizar();
-      (
-        tarjetas()[0].querySelector('.pin-confirmar .boton-mini-peligro') as HTMLButtonElement
-      ).click();
-    };
-
-    it('[O] al eliminar una publicación desaparece de la lista sin recargar', async () => {
-      TestBed.inject(Auth).usuario.set(autor);
-      pedir(0).flush(pagina(1, 3, false));
-      await actualizar();
-
-      await eliminarLaPrimera();
-      http
-        .expectOne({ method: 'DELETE', url: `${URL}/id1` })
-        .flush(null, { status: 204, statusText: 'No Content' });
-      await actualizar();
-
-      expect(tarjetas()).toHaveLength(2);
-      expect(texto()).not.toContain('Título 1');
-      expect(texto()).toContain('Título 2');
-    });
-
-    it('[S] la siguiente página sigue pidiéndose con el offset correcto después de eliminar', async () => {
-      TestBed.inject(Auth).usuario.set(autor);
-      pedir(0).flush(pagina(1, 10, true));
-      await actualizar();
-      await eliminarLaPrimera();
-      http
-        .expectOne({ method: 'DELETE', url: `${URL}/id1` })
-        .flush(null, { status: 204, statusText: 'No Content' });
-      await actualizar();
-
-      botonVerMas()!.click();
-
-      const siguiente = pedir(9);
-
-      expect(siguiente.request.params.get('offset')).toBe('9');
-      siguiente.flush(pagina(11, 1, false));
-    });
-
-    it('[E] si el servidor no deja eliminarla, la publicación sigue en la lista', async () => {
-      TestBed.inject(Auth).usuario.set(autor);
       pedir(0).flush(pagina(1, 2, false));
       await actualizar();
 
-      await eliminarLaPrimera();
-      http
-        .expectOne({ method: 'DELETE', url: `${URL}/id1` })
-        .flush({ codigo: 'PUBLICACION_AJENA' }, { status: 403, statusText: 'Forbidden' });
-      await actualizar();
-
-      expect(tarjetas()).toHaveLength(2);
-      expect(texto()).toContain('Título 1');
+      expect(fixture.nativeElement.querySelectorAll('app-tarjeta-publicacion')).toHaveLength(2);
+      expect(fixture.nativeElement.querySelector('.boton-eliminar')).toBeNull();
     });
   });
 

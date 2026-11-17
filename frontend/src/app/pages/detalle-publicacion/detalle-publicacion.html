@@ -1,7 +1,8 @@
 <div class="pagina-detalle">
   <a
     class="boton-icono cerrar-detalle"
-    [routerLink]="salida"
+    [attr.href]="salida"
+    (click)="cerrar($event)"
     [attr.aria-label]="'comun.cerrar' | translate"
   >
     <app-icono nombre="cerrar" />
@@ -13,7 +14,9 @@
         <app-aviso titulo="publicaciones.error_detalle" (cerrar)="mensajeError.set(null)">{{
           mensaje | translate
         }}</app-aviso>
-        <a class="enlace" [routerLink]="salida">{{ 'comun.volver' | translate }}</a>
+        <a class="enlace" [attr.href]="salida" (click)="cerrar($event)">{{
+          'comun.volver' | translate
+        }}</a>
       }
     </div>
   }
@@ -81,7 +84,7 @@
         <span class="metricas metricas-detalle">
           @if (soloLectura) {
             <span
-              class="metrica"
+              class="metrica pin-derecha"
               [attr.aria-label]="
                 'publicaciones.me_gusta_total' | translate: { n: publicacion.cantidadMeGusta }
               "
@@ -90,15 +93,23 @@
               <span aria-hidden="true">{{ publicacion.cantidadMeGusta }}</span>
             </span>
           } @else {
-            <app-boton-me-gusta
-              [publicacionId]="publicacion._id"
-              [meGustaDado]="publicacion.meGusta ?? false"
-              [cantidadMeGusta]="publicacion.cantidadMeGusta"
-              (fallo)="errorDeAccion.set($event)"
-            />
             <app-boton-guardar
               [publicacionId]="publicacion._id"
               [guardada]="publicacion.guardada ?? false"
+              (fallo)="errorDeAccion.set($event)"
+            />
+            <app-boton-compartir
+              [publicacionId]="publicacion._id"
+              (abierto)="compartidaCon.set(null)"
+              (compartida)="compartidaCon.set($event)"
+            />
+          }
+          @if (!soloLectura) {
+            <app-boton-me-gusta
+              class="pin-derecha"
+              [publicacionId]="publicacion._id"
+              [meGustaDado]="publicacion.meGusta ?? false"
+              [cantidadMeGusta]="publicacion.cantidadMeGusta"
               (fallo)="errorDeAccion.set($event)"
             />
           }
@@ -114,6 +125,11 @@
         </span>
         @if (errorDeAccion(); as mensaje) {
           <p class="mensaje-error" role="alert">{{ mensaje | translate }}</p>
+        }
+        @if (compartidaCon(); as cantidad) {
+          <p class="meta" role="status">
+            {{ 'compartir.compartida' | translate: { n: cantidad } }}
+          </p>
         }
         @let ficha = this.ficha();
         @if (ficha.porciones || ficha.tiempoMinutos || ficha.costo || ficha.calorias) {

@@ -42,10 +42,6 @@ export class PerfilAjeno implements OnInit {
     });
   }
 
-  quitar(id: string) {
-    this.ultimas.update((lista) => lista.filter((publicacion) => publicacion._id !== id));
-  }
-
   private cargar(id: string) {
     if (id === this.auth.usuario()?._id) {
       this.router.navigate(['/perfil'], { replaceUrl: true });

@@ -15,6 +15,11 @@ export interface Usuario {
   habilitado: boolean;
 }
 
+export type PersonaDelDirectorio = Pick<
+  Usuario,
+  '_id' | 'nombre' | 'apellido' | 'nombreUsuario' | 'imagenPerfil'
+>;
+
 export type PerfilPublico = Pick<
   Usuario,
   '_id' | 'nombre' | 'apellido' | 'nombreUsuario' | 'descripcion' | 'imagenPerfil'

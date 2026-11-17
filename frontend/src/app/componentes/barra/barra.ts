@@ -7,6 +7,7 @@ import { Desplazamiento } from '../../servicios/desplazamiento/desplazamiento';
 import { AvisosPush } from '../../servicios/avisos-push/avisos-push';
 import { Auth, MOTIVO_ACCESO_DOCENTE } from '../../servicios/auth/auth';
 import { Idioma } from '../../servicios/idioma/idioma';
+import { urlImagen } from '../../utilidades/imagen';
 import { Icono } from '../icono/icono';
 
 @Component({
@@ -20,6 +21,7 @@ export class Barra {
   private avisosPush = inject(AvisosPush);
   private router = inject(Router);
   protected desplazamiento = inject(Desplazamiento);
+  protected urlImagen = urlImagen;
 
   private readonly ruta = toSignal(
     this.router.events.pipe(

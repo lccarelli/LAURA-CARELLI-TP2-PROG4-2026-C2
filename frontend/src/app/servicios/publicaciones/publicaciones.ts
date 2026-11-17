@@ -1,6 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { SIN_INDICADOR_DE_CARGA } from '../carga/carga';
 import { Comentario, PaginaComentarios } from '../../interfaces/comentario';
 import {
   ListadoPublico,
@@ -8,6 +9,7 @@ import {
   LetraDelIndice,
   LetrasGuardadas,
   OrdenPublicaciones,
+  PaginaCompartidas,
   PaginaPublicaciones,
   Publicacion,
   Tipo,
@@ -70,6 +72,34 @@ export class PublicacionesApi {
     return this.http.post<{ guardada: boolean; cantidadGuardados: number }>(
       `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}/guardar`,
       {},
+    );
+  }
+
+  compartir(id: string, usuarios: string[]) {
+    return this.http.post<{ compartida: boolean; destinatarios: number }>(
+      `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}/compartir`,
+      { usuarios },
+    );
+  }
+
+  listarCompartidas(offset: number, limit = 10) {
+    return this.http.get<PaginaCompartidas>(`${environment.API_URL}/publicaciones/compartidas`, {
+      params: { offset, limit },
+    });
+  }
+
+  compartidasSinVer() {
+    return this.http.get<{ cantidad: number }>(
+      `${environment.API_URL}/publicaciones/compartidas/sin-ver`,
+      { context: new HttpContext().set(SIN_INDICADOR_DE_CARGA, true) },
+    );
+  }
+
+  marcarCompartidasVistas() {
+    return this.http.post<{ actualizadas: number }>(
+      `${environment.API_URL}/publicaciones/compartidas/marcar-vistas`,
+      {},
+      { context: new HttpContext().set(SIN_INDICADOR_DE_CARGA, true) },
     );
   }
 

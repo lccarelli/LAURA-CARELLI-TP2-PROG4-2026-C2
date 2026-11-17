@@ -53,11 +53,7 @@
   @for (columna of muro(); track $index) {
     <div class="muro-columna">
       @for (publicacion of columna; track publicacion._id) {
-        <app-tarjeta-publicacion
-          [publicacion]="publicacion"
-          (eliminada)="listado.quitar($event)"
-          (desguardada)="alDesguardar($event)"
-        />
+        <app-tarjeta-publicacion [publicacion]="publicacion" (desguardada)="alDesguardar($event)" />
       }
     </div>
   }

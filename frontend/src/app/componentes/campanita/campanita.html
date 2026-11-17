@@ -65,7 +65,16 @@
             <a
               class="notificacion"
               [class.sin-leer]="!notificacion.leida"
-              [routerLink]="['/publicaciones', notificacion.publicacion._id]"
+              [routerLink]="
+                notificacion.tipo === 'compartida'
+                  ? ['/perfil']
+                  : ['/publicaciones', notificacion.publicacion._id]
+              "
+              [queryParams]="
+                notificacion.tipo === 'compartida'
+                  ? { solapa: 'compartidos', publicacion: notificacion.publicacion._id }
+                  : null
+              "
               [fragment]="notificacion.tipo === 'comentario' ? 'comentarios' : undefined"
               (click)="abrirNotificacion(notificacion)"
             >

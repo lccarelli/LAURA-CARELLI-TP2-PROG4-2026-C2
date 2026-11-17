@@ -29,7 +29,7 @@
     @if (ultimas().length) {
       <div class="fila-tarjetas">
         @for (publicacion of ultimas(); track publicacion._id) {
-          <app-tarjeta-publicacion [publicacion]="publicacion" (eliminada)="quitar($event)" />
+          <app-tarjeta-publicacion [publicacion]="publicacion" />
         }
       </div>
     } @else if (cargaronPublicaciones()) {
