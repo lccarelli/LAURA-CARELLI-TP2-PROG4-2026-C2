@@ -153,15 +153,17 @@ describe('Barra', () => {
     expect(texto()).toContain('Ingresar');
   });
 
-  it('[S] el botón de tema alterna entre claro y oscuro y avisa qué hará', async () => {
-    const boton = () => fixture.nativeElement.querySelector('.boton-tema') as HTMLButtonElement;
-    expect(boton().getAttribute('aria-label')).toBe('Activar modo oscuro');
+  it('[I] no ofrece cambiar de tema: la aplicación es sólo clara', async () => {
+    await iniciarSesion();
 
-    boton().click();
-    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('.boton-tema')).toBeNull();
+    expect(document.documentElement.dataset['tema']).toBeUndefined();
+  });
 
-    expect(document.documentElement.dataset['tema']).toBe('oscuro');
-    expect(boton().getAttribute('aria-label')).toBe('Activar modo claro');
+  it('[I] el logo es siempre el ícono principal', () => {
+    const logo = fixture.nativeElement.querySelector('.logo') as HTMLImageElement;
+
+    expect(logo.getAttribute('src')).toBe('favicon.png');
   });
 
   it('[S] al pulsar Salir se borra la sesión y va a la pantalla de inicio', async () => {

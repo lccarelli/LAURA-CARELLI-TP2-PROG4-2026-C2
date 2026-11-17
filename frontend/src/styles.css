@@ -67,38 +67,6 @@
   --tema-torta-3: #1fa3b8;
 }
 
-:root[data-tema='oscuro'] {
-  color-scheme: dark;
-  --tema-barra: #abc9f7;
-  --tema-barra-tinta: #263044;
-  --tema-papel: #2b3547;
-  --tema-hoja: #3a465c;
-  --tema-marco: #eef1f6;
-  --tema-tinta: #eef1f6;
-  --tema-suave: #b3bdce;
-  --tema-linea: #4a5875;
-  --tema-linea-fuerte: #8a98b3;
-  --tema-primario: #abc9f7;
-  --tema-sobre-primario: #263044;
-  --tema-primario-fuerte: #c4d9fa;
-  --tema-primario-borde: #abc9f7;
-  --tema-enlace: #abc9f7;
-  --tema-acento: #2f4466;
-  --tema-acento-tinta: #dce9ff;
-  --tema-secundario: #46536b;
-  --tema-secundario-tinta: #eef1f6;
-  --tema-error: #ff9a8a;
-  --tema-brillo: rgb(255 255 255 / 0.05);
-  --tema-serie-1: #abc9f7;
-  --tema-serie-2: #abc9f7;
-  --tema-serie-3: #ffb703;
-  --tema-serie-4: #5cc8e8;
-  --tema-serie-5: #c77dff;
-  --tema-torta-1: #abc9f7;
-  --tema-torta-2: #ffb703;
-  --tema-torta-3: #c77dff;
-}
-
 @utility anillo-foco {
   @apply focus-visible:ring-2 focus-visible:ring-barra focus-visible:outline-none;
 }
@@ -472,19 +440,23 @@ body {
   }
 
   .panel-publicaciones {
-    @apply hidden flex-col justify-center gap-4 bg-secundario/40 p-8 md:flex lg:p-12;
+    @apply hidden flex-col items-center justify-center gap-4 bg-secundario/40 p-8 md:flex lg:p-12;
+  }
+
+  .panel-publicaciones > * {
+    @apply w-full max-w-xl;
   }
 
   .panel-fotos {
-    @apply grid grid-cols-2 gap-3;
+    @apply grid grid-cols-3 gap-3;
   }
 
   .panel-foto {
-    @apply relative block aspect-[4/5] overflow-hidden rounded-3xl bg-secundario anillo-foco;
+    @apply relative block aspect-square overflow-hidden rounded-2xl bg-secundario anillo-foco;
   }
 
   .panel-foto-ancha {
-    @apply col-span-2 aspect-[16/10];
+    @apply col-span-2 row-span-2 rounded-3xl;
   }
 
   .panel-imagen {
@@ -492,15 +464,27 @@ body {
   }
 
   .panel-pie {
-    @apply absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-tinta/75 to-transparent p-4 pt-10 text-hoja;
+    @apply absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-tinta/75 to-transparent p-2 pt-8 text-hoja;
+  }
+
+  .panel-foto-ancha .panel-pie {
+    @apply p-4 pt-12;
   }
 
   .panel-titulo {
-    @apply line-clamp-2 font-serif text-lg leading-tight font-black;
+    @apply line-clamp-2 font-serif text-xs leading-tight font-black;
+  }
+
+  .panel-foto-ancha .panel-titulo {
+    @apply text-lg;
   }
 
   .panel-autor {
-    @apply text-xs opacity-90;
+    @apply hidden text-xs opacity-90;
+  }
+
+  .panel-foto-ancha .panel-autor {
+    @apply block;
   }
 
   .pagina-angosta {
@@ -938,10 +922,6 @@ body {
 
   .notificaciones-vacio {
     @apply py-6 text-center text-sm text-suave;
-  }
-
-  .boton-tema {
-    @apply grid size-9 shrink-0 place-items-center rounded-full anillo-foco hover:bg-hoja/40;
   }
 
   .boton-salir {

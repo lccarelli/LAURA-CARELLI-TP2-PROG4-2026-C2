@@ -1,7 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { CartelInstalar } from '../../componentes/cartel-instalar/cartel-instalar';
 import { TarjetaPublicacion } from '../../componentes/tarjeta-publicacion/tarjeta-publicacion';
 import { Publicacion } from '../../interfaces/publicacion';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
@@ -9,7 +8,7 @@ import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 const PUBLICACIONES_VISIBLES = 8;
 
 @Component({
-  imports: [CartelInstalar, RouterLink, TranslatePipe, TarjetaPublicacion],
+  imports: [RouterLink, TranslatePipe, TarjetaPublicacion],
   selector: 'app-inicio',
   templateUrl: './inicio.html',
 })

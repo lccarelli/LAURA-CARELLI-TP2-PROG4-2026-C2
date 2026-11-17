@@ -28,8 +28,6 @@
     "ingresar": "Ingresar",
     "registrarme": "Registrarme",
     "idioma": "Idioma",
-    "modo_oscuro": "Activar modo oscuro",
-    "modo_claro": "Activar modo claro",
     "home": "Inicio",
     "guardadas": "Guardadas"
   },
@@ -479,9 +477,9 @@
     "titulo": "Usá Banquete como una app",
     "beneficio": "A pantalla completa, sin la barra del navegador, y con avisos cuando comentan tus publicaciones.",
     "boton": "Instalar la app",
-    "ahora_no": "Ahora no",
     "paso_compartir": "Tocá Compartir (el cuadrado con la flecha).",
     "paso_agregar": "Elegí «Agregar a inicio».",
-    "paso_abrir": "Abrila desde el ícono nuevo."
+    "paso_abrir": "Abrila desde el ícono nuevo.",
+    "no_preguntar": "No volver a preguntar"
   }
 }

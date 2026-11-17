@@ -1,12 +1,6 @@
 <header class="barra">
   <a class="enlace-marca" routerLink="/" [attr.aria-label]="'barra.marca' | translate">
-    <img
-      class="logo"
-      [src]="tema.actual() === 'oscuro' ? 'favicon-oscuro.png' : 'favicon.png'"
-      alt=""
-      width="44"
-      height="44"
-    />
+    <img class="logo" src="favicon.png" alt="" width="44" height="44" />
   </a>
 
   <nav class="barra-nav" [class.subiendo]="subiendo()">
@@ -190,18 +184,6 @@
         </button>
       }
     </div>
-
-    <button
-      type="button"
-      class="boton-tema"
-      [attr.aria-label]="
-        (tema.actual() === 'claro' ? 'barra.modo_oscuro' : 'barra.modo_claro') | translate
-      "
-      (click)="tema.alternar()"
-    >
-      <app-icono [nombre]="tema.actual() === 'claro' ? 'luna' : 'sol'" />
-    </button>
-
     @if (auth.usuario()) {
       <button type="button" class="boton-salir" (click)="salir()">
         <svg

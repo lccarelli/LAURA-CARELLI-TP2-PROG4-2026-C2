@@ -5,9 +5,9 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CampoClave } from '../../componentes/campo-clave/campo-clave';
 import { Aviso } from '../../componentes/aviso/aviso';
-import { CartelInstalar } from '../../componentes/cartel-instalar/cartel-instalar';
 import { PanelPublicaciones } from '../../componentes/panel-publicaciones/panel-publicaciones';
 import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
+import { Instalacion } from '../../servicios/instalacion/instalacion';
 import { Auth } from '../../servicios/auth/auth';
 import { mensajeDeApi } from '../../utilidades/errores';
 
@@ -17,7 +17,6 @@ import { mensajeDeApi } from '../../utilidades/errores';
     ReactiveFormsModule,
     RouterLink,
     Aviso,
-    CartelInstalar,
     PanelPublicaciones,
     TranslatePipe,
     CampoClave,
@@ -30,6 +29,7 @@ export class Login {
   private auth = inject(Auth);
   private router = inject(Router);
   private traductor = inject(TranslateService);
+  private instalacion = inject(Instalacion);
 
   protected readonly motivoDeSalida = this.auth.motivoDeSalida;
 
@@ -72,7 +72,10 @@ export class Login {
     const { identificador, clave } = this.formulario.getRawValue();
     this.enviando.set(true);
     this.auth.ingresar(identificador.trim(), clave).subscribe({
-      next: () => this.router.navigateByUrl(this.destinoAlIngresar()),
+      next: () => {
+        this.instalacion.ofrecerAlIngresar();
+        this.router.navigateByUrl(this.destinoAlIngresar());
+      },
       error: (error: HttpErrorResponse) => {
         this.enviando.set(false);
         this.mensajeError.set(mensajeDeApi(error));

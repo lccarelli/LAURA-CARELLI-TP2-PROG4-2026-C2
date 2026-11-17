@@ -1,5 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { DIAS_SIN_INSISTIR, Instalacion } from './instalacion';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { usuarioDePrueba } from '../../../testing/usuario';
+import { Auth } from '../auth/auth';
+import { CLAVE_DECIDIDAS, Instalacion } from './instalacion';
 
 const eventoDeInstalacion = (resultado: 'accepted' | 'dismissed' = 'accepted') => {
   const evento = new Event('beforeinstallprompt', { cancelable: true });
@@ -10,6 +14,12 @@ const eventoDeInstalacion = (resultado: 'accepted' | 'dismissed' = 'accepted') =
 };
 
 describe('Instalacion', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+  });
+
   const crear = () => {
     const instalacion = TestBed.inject(Instalacion);
     instalacion.iniciar();
@@ -89,76 +99,177 @@ describe('Instalacion', () => {
         platform: 'iPhone',
         maxTouchPoints: 5,
       });
+    const ingresarComo = (id: string) =>
+      TestBed.inject(Auth).usuario.set({ ...usuarioDePrueba, _id: id });
+    const preparar = (id = 'u1') => {
+      simularCelular(true);
+      simularIphone();
+      const instalacion = crear();
+      ingresarComo(id);
+      return instalacion;
+    };
 
     beforeEach(() => localStorage.clear());
 
-    it('[Z] en la compu no se ofrece, aunque el navegador permita instalar', () => {
-      simularCelular(false);
-      const instalacion = crear();
-
-      window.dispatchEvent(eventoDeInstalacion());
+    it('[Z] sin haber ingresado o creado la cuenta recién no se ofrece, aunque haya sesión', () => {
+      const instalacion = preparar();
 
       expect(instalacion.mostrarCartel()).toBe(false);
     });
 
-    it('[O] en un celular con instalación nativa (Android) se ofrece', () => {
-      simularCelular(true);
-      const instalacion = crear();
+    it('[O] justo después de ingresar o crear la cuenta, en un iPhone, se ofrece', () => {
+      const instalacion = preparar();
 
-      window.dispatchEvent(eventoDeInstalacion());
+      instalacion.ofrecerAlIngresar();
 
       expect(instalacion.mostrarCartel()).toBe(true);
     });
 
-    it('[O] en un iPhone se ofrece con los pasos, porque no hay instalación nativa', () => {
+    it('[O] justo después de ingresar, en Android con instalación nativa, se ofrece', () => {
       simularCelular(true);
-      simularIphone();
+      const instalacion = crear();
+      ingresarComo('u1');
+      window.dispatchEvent(eventoDeInstalacion());
 
-      expect(crear().mostrarCartel()).toBe(true);
+      instalacion.ofrecerAlIngresar();
+
+      expect(instalacion.mostrarCartel()).toBe(true);
     });
 
-    it('[Z] en un celular sin instalación posible (ni nativa ni iPhone) no se ofrece', () => {
-      simularCelular(true);
+    it('[Z] en la compu no se ofrece', () => {
+      simularCelular(false);
+      const instalacion = crear();
+      ingresarComo('u1');
+      window.dispatchEvent(eventoDeInstalacion());
 
-      expect(crear().mostrarCartel()).toBe(false);
+      instalacion.ofrecerAlIngresar();
+
+      expect(instalacion.mostrarCartel()).toBe(false);
+    });
+
+    it('[Z] en un celular que no puede instalar (ni nativo ni iPhone) no se ofrece', () => {
+      simularCelular(true);
+      const instalacion = crear();
+      ingresarComo('u1');
+
+      instalacion.ofrecerAlIngresar();
+
+      expect(instalacion.mostrarCartel()).toBe(false);
     });
 
     it('[E] si la app ya está instalada no se ofrece', () => {
       simularCelular(true, true);
       simularIphone();
+      const instalacion = crear();
+      ingresarComo('u1');
 
-      expect(crear().mostrarCartel()).toBe(false);
+      instalacion.ofrecerAlIngresar();
+
+      expect(instalacion.mostrarCartel()).toBe(false);
     });
 
-    it('[S] al descartarlo desaparece y no vuelve en las visitas siguientes', () => {
+    it('[E] sin persona con sesión no se ofrece', () => {
       simularCelular(true);
       simularIphone();
-      const primera = crear();
+      const instalacion = crear();
+
+      instalacion.ofrecerAlIngresar();
+
+      expect(instalacion.mostrarCartel()).toBe(false);
+    });
+
+    it('[S] al cerrarlo se guarda la decisión de esa persona y no se vuelve a preguntar nunca', () => {
+      const primera = preparar();
+      primera.ofrecerAlIngresar();
 
       primera.descartarCartel();
 
       expect(primera.mostrarCartel()).toBe(false);
       TestBed.resetTestingModule();
-      expect(crear().mostrarCartel()).toBe(false);
+      TestBed.configureTestingModule({
+        providers: [provideHttpClient(), provideHttpClientTesting()],
+      });
+      const otraVisita = preparar();
+      otraVisita.ofrecerAlIngresar();
+      expect(otraVisita.mostrarCartel()).toBe(false);
+      expect(JSON.parse(localStorage.getItem(CLAVE_DECIDIDAS)!)).toEqual(['u1']);
     });
 
-    it('[B] a los 14 días vuelve a ofrecerse, y justo antes todavía no', () => {
-      simularCelular(true);
-      simularIphone();
-      const quinceDias = (dias: number) => String(Date.now() - dias * 24 * 60 * 60 * 1000);
+    it('[S] la decisión es de cada persona: otra que ingresa en el mismo dispositivo sí lo ve', () => {
+      const instalacion = preparar('u1');
+      instalacion.ofrecerAlIngresar();
+      instalacion.descartarCartel();
 
-      localStorage.setItem('instalacion:descartado', quinceDias(DIAS_SIN_INSISTIR - 1));
-      expect(crear().mostrarCartel()).toBe(false);
+      ingresarComo('u2');
 
-      TestBed.resetTestingModule();
-      localStorage.setItem('instalacion:descartado', quinceDias(DIAS_SIN_INSISTIR + 1));
-      expect(crear().mostrarCartel()).toBe(true);
+      expect(instalacion.mostrarCartel()).toBe(true);
     });
 
-    it('[E] si no hay almacenamiento, descartar igual lo oculta en esta visita', () => {
+    it('[S] decidir dos veces no duplica la anotación', () => {
+      const instalacion = preparar();
+
+      instalacion.descartarCartel();
+      instalacion.descartarCartel();
+
+      expect(JSON.parse(localStorage.getItem(CLAVE_DECIDIDAS)!)).toEqual(['u1']);
+    });
+
+    it('[S] instalar desde el botón también cuenta como decisión', async () => {
       simularCelular(true);
-      simularIphone();
       const instalacion = crear();
+      ingresarComo('u1');
+      window.dispatchEvent(eventoDeInstalacion('accepted'));
+      instalacion.ofrecerAlIngresar();
+
+      await instalacion.instalar();
+
+      expect(JSON.parse(localStorage.getItem(CLAVE_DECIDIDAS)!)).toEqual(['u1']);
+      expect(instalacion.mostrarCartel()).toBe(false);
+    });
+
+    it('[S] si se cierra el cartel nativo sin instalar, no se da por decidido', async () => {
+      simularCelular(true);
+      const instalacion = crear();
+      ingresarComo('u1');
+      window.dispatchEvent(eventoDeInstalacion('dismissed'));
+      instalacion.ofrecerAlIngresar();
+
+      await instalacion.instalar();
+
+      expect(localStorage.getItem(CLAVE_DECIDIDAS)).toBeNull();
+      expect(instalacion.mostrarCartel()).toBe(true);
+    });
+
+    it('[S] si el sistema avisa que se instaló, queda decidido', () => {
+      const instalacion = preparar();
+
+      window.dispatchEvent(new Event('appinstalled'));
+
+      expect(instalacion.mostrarCartel()).toBe(false);
+      expect(JSON.parse(localStorage.getItem(CLAVE_DECIDIDAS)!)).toEqual(['u1']);
+    });
+
+    it('[E] si lo guardado está dañado se ignora y se ofrece', () => {
+      localStorage.setItem(CLAVE_DECIDIDAS, 'esto no es json');
+      const instalacion = preparar();
+
+      instalacion.ofrecerAlIngresar();
+
+      expect(instalacion.mostrarCartel()).toBe(true);
+    });
+
+    it('[E] si lo guardado no es una lista se ignora y se ofrece', () => {
+      localStorage.setItem(CLAVE_DECIDIDAS, '{"u1":true}');
+      const instalacion = preparar();
+
+      instalacion.ofrecerAlIngresar();
+
+      expect(instalacion.mostrarCartel()).toBe(true);
+    });
+
+    it('[E] sin almacenamiento, cerrarlo igual lo oculta en esta visita', () => {
+      const instalacion = preparar();
+      instalacion.ofrecerAlIngresar();
       vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
         throw new Error('sin lugar');
       });
@@ -167,16 +278,6 @@ describe('Instalacion', () => {
 
       expect(instalacion.mostrarCartel()).toBe(false);
       vi.restoreAllMocks();
-    });
-
-    it('[S] al terminar la instalación desaparece', () => {
-      simularCelular(true);
-      const instalacion = crear();
-      window.dispatchEvent(eventoDeInstalacion());
-
-      window.dispatchEvent(new Event('appinstalled'));
-
-      expect(instalacion.mostrarCartel()).toBe(false);
     });
   });
 });

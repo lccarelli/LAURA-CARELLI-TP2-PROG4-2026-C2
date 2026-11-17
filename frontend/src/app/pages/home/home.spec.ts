@@ -92,6 +92,15 @@ describe('Home', () => {
     http = TestBed.inject(HttpTestingController);
   });
 
+  it('[I] incluye el cartel de instalar, que se muestra sólo cuando se acaba de ingresar', async () => {
+    await abrir();
+    vaciar();
+    await actualizar();
+
+    expect(fixture.nativeElement.querySelector('app-cartel-instalar')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.cartel-instalar')).toBeNull();
+  });
+
   it('[O] saluda por el nombre y resume qué es Banquete en un solo párrafo', async () => {
     await abrir();
     vaciar();

@@ -60,9 +60,9 @@ describe('PanelPublicaciones', () => {
     simularPantalla(true);
     const fixture = await crear();
 
-    await responder(fixture, [1, 2, 3, 4, 5, 6].map(conImagen));
+    await responder(fixture, [1, 2, 3, 4, 5, 6, 7].map(conImagen));
 
-    expect(imagenes(fixture)).toEqual([1, 2, 3, 4, 5].map((n) => `https://cdn.test/${n}.jpg`));
+    expect(imagenes(fixture)).toEqual([1, 2, 3, 4, 5, 6].map((n) => `https://cdn.test/${n}.jpg`));
     const primera = fixture.nativeElement.querySelector('a.panel-foto') as HTMLAnchorElement;
     expect(primera.getAttribute('href')).toBe('/publico/id1');
     expect(primera.textContent).toContain('Título 1');
@@ -81,13 +81,29 @@ describe('PanelPublicaciones', () => {
     expect(fotos[1].classList).not.toContain('panel-foto-ancha');
   });
 
+  it('[B] siempre completa los seis lugares: lo que falta se llena con fotos de comidas, sin enlace', async () => {
+    simularPantalla(true);
+    const fixture = await crear();
+
+    await responder(fixture, [1, 2, 3].map(conImagen));
+
+    const fuentes = imagenes(fixture);
+    expect(fuentes).toHaveLength(6);
+    expect(fuentes.slice(0, 3)).toEqual([1, 2, 3].map((n) => `https://cdn.test/${n}.jpg`));
+    fuentes.slice(3).forEach((src) => expect(src).toMatch(/^comidas\/[a-z-]+\.jpg$/));
+    expect(fixture.nativeElement.querySelectorAll('a.panel-foto')).toHaveLength(3);
+  });
+
   it('[S] las publicaciones sin imagen no cuentan', async () => {
     simularPantalla(true);
     const fixture = await crear();
 
     await responder(fixture, [conImagen(1), publicacionDePrueba(2), conImagen(3), conImagen(4)]);
 
-    expect(imagenes(fixture)).toEqual([1, 3, 4].map((n) => `https://cdn.test/${n}.jpg`));
+    expect(imagenes(fixture).slice(0, 3)).toEqual(
+      [1, 3, 4].map((n) => `https://cdn.test/${n}.jpg`),
+    );
+    expect(fixture.nativeElement.querySelectorAll('a.panel-foto')).toHaveLength(3);
   });
 
   it('[B] con menos de 3 imágenes reales se queda con las fotos de comidas', async () => {
@@ -96,7 +112,7 @@ describe('PanelPublicaciones', () => {
 
     await responder(fixture, [conImagen(1), conImagen(2)]);
 
-    expect(imagenes(fixture)).toHaveLength(5);
+    expect(imagenes(fixture)).toHaveLength(6);
     imagenes(fixture).forEach((src) => expect(src).toMatch(/^comidas\/[a-z-]+\.jpg$/));
     expect(fixture.nativeElement.querySelector('a.panel-foto')).toBeNull();
     expect(fixture.nativeElement.querySelector('.etiqueta-seccion')).toBeNull();
@@ -112,7 +128,7 @@ describe('PanelPublicaciones', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(imagenes(fixture)).toHaveLength(5);
+    expect(imagenes(fixture)).toHaveLength(6);
     expect(fixture.nativeElement.querySelector('.panel-fotos').getAttribute('aria-hidden')).toBe(
       'true',
     );

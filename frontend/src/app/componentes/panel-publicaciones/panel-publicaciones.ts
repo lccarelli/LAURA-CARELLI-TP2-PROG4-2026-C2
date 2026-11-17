@@ -6,7 +6,7 @@ import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 const ANCHO_DE_ESCRITORIO = '(min-width: 768px)';
 const CANDIDATAS = 12;
 const FOTOS_MINIMAS = 3;
-const FOTOS_VISIBLES = 5;
+const FOTOS_VISIBLES = 6;
 
 interface FotoDelPanel {
   imagen: string;
@@ -15,9 +15,11 @@ interface FotoDelPanel {
   enlace?: string;
 }
 
-const COMIDAS = ['locro-y-empanadas', 'asado', 'locro', 'alfajores', 'humitas'].map((archivo) => ({
-  imagen: `comidas/${archivo}.jpg`,
-}));
+const COMIDAS = ['locro-y-empanadas', 'asado', 'locro', 'alfajores', 'humitas', 'guiso'].map(
+  (archivo) => ({
+    imagen: `comidas/${archivo}.jpg`,
+  }),
+);
 
 @Component({
   imports: [RouterLink, TranslatePipe],
@@ -47,7 +49,7 @@ export class PanelPublicaciones {
               enlace: `/publico/${_id}`,
             }));
           if (reales.length >= FOTOS_MINIMAS) {
-            this.fotos.set(reales);
+            this.fotos.set([...reales, ...COMIDAS.slice(reales.length, FOTOS_VISIBLES)]);
             this.conPublicaciones.set(true);
           }
         },

@@ -1,33 +1,38 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, inject, Service, signal } from '@angular/core';
+import { Auth } from '../auth/auth';
 
 interface EventoDeInstalacion extends Event {
   prompt(): Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-const CLAVE_DESCARTADO = 'instalacion:descartado';
-export const DIAS_SIN_INSISTIR = 14;
-const UN_DIA = 24 * 60 * 60 * 1000;
+export const CLAVE_DECIDIDAS = 'instalacion:decididas';
 const ANCHO_DE_CELULAR = '(max-width: 767px)';
 
 @Service()
 export class Instalacion {
   private documento = inject(DOCUMENT);
   private ventana = this.documento.defaultView!;
+  private auth = inject(Auth);
   private evento: EventoDeInstalacion | null = null;
 
   readonly puedeInstalar = signal(false);
   readonly instalada = signal(this.estaInstalada());
   readonly esIos = this.detectarIos();
-  readonly descartado = signal(this.descartadoVigente());
-  readonly mostrarCartel = computed(
-    () =>
+  readonly alIngresar = signal(false);
+  private readonly decididas = signal(this.leerDecididas());
+  readonly mostrarCartel = computed(() => {
+    const persona = this.auth.usuario()?._id;
+    return (
+      this.alIngresar() &&
+      persona !== undefined &&
+      !this.decididas().includes(persona) &&
       !this.instalada() &&
-      !this.descartado() &&
       this.esCelular() &&
-      (this.puedeInstalar() || this.esIos),
-  );
+      (this.puedeInstalar() || this.esIos)
+    );
+  });
 
   iniciar() {
     this.ventana.addEventListener('beforeinstallprompt', (evento) => {
@@ -39,16 +44,16 @@ export class Instalacion {
       this.evento = null;
       this.puedeInstalar.set(false);
       this.instalada.set(true);
+      this.registrarDecision();
     });
   }
 
+  ofrecerAlIngresar() {
+    this.alIngresar.set(true);
+  }
+
   descartarCartel() {
-    try {
-      this.ventana.localStorage.setItem(CLAVE_DESCARTADO, String(Date.now()));
-    } catch {
-      // sin almacenamiento el cartel vuelve en la próxima visita
-    }
-    this.descartado.set(true);
+    this.registrarDecision();
   }
 
   async instalar() {
@@ -60,6 +65,7 @@ export class Instalacion {
     const { outcome } = await evento.userChoice;
     if (outcome === 'accepted') {
       this.puedeInstalar.set(false);
+      this.registrarDecision();
     }
   }
 
@@ -67,12 +73,26 @@ export class Instalacion {
     return this.ventana.matchMedia?.(ANCHO_DE_CELULAR).matches === true;
   }
 
-  private descartadoVigente() {
+  private registrarDecision() {
+    const persona = this.auth.usuario()?._id;
+    if (!persona || this.decididas().includes(persona)) {
+      return;
+    }
+    const nuevas = [...this.decididas(), persona];
+    this.decididas.set(nuevas);
     try {
-      const guardado = Number(this.ventana.localStorage.getItem(CLAVE_DESCARTADO));
-      return guardado > 0 && Date.now() - guardado < DIAS_SIN_INSISTIR * UN_DIA;
+      this.ventana.localStorage.setItem(CLAVE_DECIDIDAS, JSON.stringify(nuevas));
     } catch {
-      return false;
+      // sin almacenamiento la decisión vale hasta cerrar la pestaña
+    }
+  }
+
+  private leerDecididas(): string[] {
+    try {
+      const guardado = JSON.parse(this.ventana.localStorage.getItem(CLAVE_DECIDIDAS) ?? '[]');
+      return Array.isArray(guardado) ? guardado.filter((id) => typeof id === 'string') : [];
+    } catch {
+      return [];
     }
   }
 

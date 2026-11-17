@@ -48,20 +48,11 @@ const PARES_SOBRE_PAPEL: Record<string, [string, string, number][]> = {
     ['error', 'papel', 4.5],
     ['primario-borde', 'papel', 3],
   ],
-  oscuro: [
-    ['tinta', 'papel', 7],
-    ['suave', 'papel', 4.5],
-    ['enlace', 'papel', 4.5],
-    ['error', 'papel', 4.5],
-    ['primario-borde', 'papel', 3],
-  ],
 };
 
-describe.each([
-  ['claro', colores(bloque(':root'))],
-  ['oscuro', colores(bloque(":root[data-tema='oscuro']"))],
-])('paleta en modo %s', (modo, paleta) => {
-  const pares = [...PARES_SOBRE_HOJA, ...PARES_SOBRE_PAPEL[modo]];
+describe('paleta', () => {
+  const paleta = colores(bloque(':root'));
+  const pares = [...PARES_SOBRE_HOJA, ...PARES_SOBRE_PAPEL['claro']];
 
   it('[Z] define todos los colores', () => {
     for (const [a, b] of pares) {
@@ -75,11 +66,10 @@ describe.each([
   });
 });
 
-describe('los dos modos', () => {
-  it('[I] definen exactamente los mismos colores', () => {
-    const claro = Object.keys(colores(bloque(':root'))).sort();
-    const oscuro = Object.keys(colores(bloque(":root[data-tema='oscuro']"))).sort();
-
-    expect(oscuro).toEqual(claro);
+describe('un solo modo', () => {
+  it('[I] no hay una paleta oscura: la aplicación es sólo clara', () => {
+    expect(css).not.toContain("data-tema='oscuro'");
+    expect(css).not.toContain('prefers-color-scheme: dark');
+    expect(css).not.toContain('color-scheme: dark');
   });
 });
