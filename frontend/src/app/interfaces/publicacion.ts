@@ -53,6 +53,7 @@ export interface Publicacion {
   meGusta?: boolean;
   cantidadComentarios: number;
   fecha: string;
+  fechaEdicion?: string;
 }
 
 export const ORDENES = ['fecha', 'megusta'] as const;

@@ -79,6 +79,10 @@ export class DetallePublicacion implements OnInit {
     return publicacion !== null && puedeEliminarPublicacion(this.auth.usuario(), publicacion);
   });
 
+  protected readonly puedeEditar = computed(
+    () => this.publicacion()?.usuario._id === this.auth.usuario()?._id,
+  );
+
   protected readonly ingredientes = computed(() => {
     const lista = this.publicacion()?.ingredientes;
     return Array.isArray(lista) ? lista.filter(esIngrediente) : [];

@@ -29,13 +29,15 @@
   @if (esDeQuienIngreso() && !editando()) {
     <button
       type="button"
-      class="boton-mini ml-auto"
+      class="boton-mini-icono ml-auto"
+      [attr.title]="'comentarios.editar' | translate"
       [attr.aria-label]="
         'comentarios.editar_aria' | translate: { nombre: comentario.usuario.nombreUsuario }
       "
       (click)="editar()"
     >
-      {{ 'comentarios.editar' | translate }}
+      <app-icono nombre="lapiz" [chico]="true" />
+      <span class="texto-oculto">{{ 'comentarios.editar' | translate }}</span>
     </button>
   }
 </header>

@@ -78,6 +78,13 @@ export class PublicacionesApi {
     return this.http.delete<void>(`${environment.API_URL}/publicaciones/${encodeURIComponent(id)}`);
   }
 
+  editar(id: string, datos: FormData) {
+    return this.http.put<Publicacion>(
+      `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}`,
+      datos,
+    );
+  }
+
   crear(datos: FormData) {
     return this.http.post<Publicacion>(`${environment.API_URL}/publicaciones`, datos);
   }

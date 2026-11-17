@@ -245,6 +245,16 @@ Pantalla `/publicaciones/nueva` (requiere sesión). Se elige un tipo y el formul
 - Lo que se lee del almacenamiento se valida otra vez (tipos, medidas, máximos, solo dígitos en la ficha), porque `localStorage` se puede modificar a mano.
 - Si la sesión ya venció, la pantalla avisa, mantiene el borrador y ofrece "Ingresar de nuevo".
 
+### Editar una publicación
+
+Quien publicó ve el botón **Editar** en el detalle de su publicación (nadie más lo ve, ni siquiera una persona con perfil administrador: el administrador puede eliminar, no reescribir lo que dijo otra persona). Lleva a `/publicaciones/:id/editar`, que reutiliza el formulario de nueva publicación con todo cargado: título, mensaje, ficha, ingredientes, pasos y fotos.
+
+- **El tipo no se cambia:** una receta no puede pasar a ser un tip, porque perdería su estructura. En la pantalla no aparecen las solapas de tipo y la API responde `400` si se manda `tipo`.
+- **Fotos:** las que ya tiene se ven y se pueden quitar o sumar otras. Al guardar viajan las URL de las que se conservan (`imagenes`) y los archivos nuevos (`imagenesPasos`, referenciados por `fotos`). Para la portada, `imagen` la reemplaza y `quitarImagen=true` la borra. La API sólo acepta conservar fotos que ya eran de esa publicación.
+- **`PUT /publicaciones/:id`** reemplaza el contenido: lo que no se envía se borra. Sólo la autoría puede editar (`403 PUBLICACION_AJENA`); sigue sin cambiar la autoría, la fecha ni los contadores. Guarda `fechaEdicion` y el detalle muestra "Editada".
+- **Sin borrador:** mientras se edita no se guarda ni se recupera el borrador de una publicación nueva.
+- Las imágenes reemplazadas no se borran de Cloudinary (igual que al eliminar una publicación, que es baja lógica).
+
 ### Comentarios
 
 - Debajo de cada publicación. Del más reciente al más antiguo, **10 por página**.
