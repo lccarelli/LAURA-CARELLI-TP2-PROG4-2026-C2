@@ -137,10 +137,10 @@ describe('panel de notificaciones sobre las barras', () => {
     expect(zDe('.barra-superior:has(.notificaciones-panel)')).toBeGreaterThan(zDe('.barra-nav'));
   });
 
-  it('[S] con el panel abierto la barra no se esconde: una transformación movería el panel, que es fijo', () => {
-    expect(regla('.barra-superior:has(.notificaciones-panel)')).toContain('translate-y-0');
-    expect(hojaDeEstilos.indexOf('.barra-superior:has(.notificaciones-panel)')).toBeGreaterThan(
-      hojaDeEstilos.indexOf('.barra-superior.oculta'),
+  it('[S] con el panel abierto la barra no lleva ninguna transformación: el panel es fijo y una transformación lo encerraría en la barra', () => {
+    expect(regla('.barra-superior.oculta:not(:has(.notificaciones-panel))')).toContain(
+      '-translate-y-full',
     );
+    expect(regla('.barra-superior:has(.notificaciones-panel)')).not.toMatch(/translate|transform/);
   });
 });

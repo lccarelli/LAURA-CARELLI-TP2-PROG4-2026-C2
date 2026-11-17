@@ -86,6 +86,25 @@ export class UsuariosService {
     });
   }
 
+  async asegurarCuentaDeAdministrador(dto: RegistroDto) {
+    const existente = await this.usuarioModel
+      .findOne({ correo: dto.correo })
+      .lean();
+    if (!existente) {
+      const creado = await this.registrar(dto, 'administrador');
+      return { accion: 'creada' as const, usuario: creado };
+    }
+    const clave = await bcrypt.hash(dto.clave, this.config.rondasBcrypt);
+    await this.usuarioModel.updateOne(
+      { _id: existente._id },
+      { perfil: 'administrador', habilitado: true, clave },
+    );
+    return {
+      accion: 'actualizada' as const,
+      usuario: await this.usuarioModel.findById(existente._id).lean(),
+    };
+  }
+
   async crear(datos: Partial<Usuario> & { _id?: Types.ObjectId }) {
     try {
       const creado = await this.usuarioModel.create(datos);

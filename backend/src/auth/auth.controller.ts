@@ -42,6 +42,13 @@ export class AuthController {
     return this.authService.ingresar(dto);
   }
 
+  @Post('acceso-docente')
+  @Throttle(LIMITES_AUTENTICACION)
+  @HttpCode(200)
+  accesoDocente() {
+    return this.authService.accesoDocente();
+  }
+
   @Post('autorizar')
   @UseGuards(AuthGuard)
   @HttpCode(200)

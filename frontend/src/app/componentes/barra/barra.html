@@ -184,6 +184,18 @@
         </button>
       }
     </div>
+    @if (!auth.usuario()) {
+      <button
+        type="button"
+        class="boton-docente"
+        [attr.aria-label]="'barra.acceso_docente' | translate"
+        [attr.title]="'barra.acceso_docente' | translate"
+        [disabled]="entrandoComoDocente()"
+        (click)="entrarComoDocente()"
+      >
+        <app-icono nombre="birrete" [chico]="true" />
+      </button>
+    }
     @if (auth.usuario()) {
       <button type="button" class="boton-salir" (click)="salir()">
         <svg

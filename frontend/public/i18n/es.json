@@ -29,7 +29,8 @@
     "registrarme": "Registrarme",
     "idioma": "Idioma",
     "home": "Inicio",
-    "guardadas": "Guardadas"
+    "guardadas": "Guardadas",
+    "acceso_docente": "Ingreso docente"
   },
   "inicio": {
     "titulo": "Un lugar para compartir tu mundo culinario",
@@ -53,7 +54,8 @@
     "sin_cuenta": "¿No tenés cuenta?",
     "registrarme": "Registrarme",
     "error_titulo": "No se pudo ingresar",
-    "sesion_cerrada_titulo": "Sesión cerrada"
+    "sesion_cerrada_titulo": "Sesión cerrada",
+    "acceso_docente_titulo": "Acceso docente"
   },
   "registro": {
     "titulo": "Crear cuenta",
@@ -335,7 +337,8 @@
     "CUENTA_PROPIA": "No podés cambiar el estado de tu propia cuenta.",
     "USUARIO_NO_ENCONTRADO": "El usuario no existe.",
     "RANGO_INVALIDO": "La fecha desde no puede ser posterior a la fecha hasta.",
-    "RANGO_DEMASIADO_LARGO": "El rango no puede superar 366 días."
+    "RANGO_DEMASIADO_LARGO": "El rango no puede superar 366 días.",
+    "ACCESO_DOCENTE_NO_DISPONIBLE": "El acceso docente no está disponible."
   },
   "tipos": {
     "receta": "Receta",

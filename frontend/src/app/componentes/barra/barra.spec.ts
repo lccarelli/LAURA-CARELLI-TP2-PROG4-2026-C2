@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { environment } from '../../../environments/environment';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { Auth } from '../../servicios/auth/auth';
@@ -259,6 +260,84 @@ describe('Barra', () => {
       desplazarA(300);
 
       expect(escondida()).toBe(true);
+    });
+  });
+
+  describe('ingreso docente', () => {
+    const URL_DOCENTE = `${environment.API_URL}/auth/acceso-docente`;
+    const botonDocente = () =>
+      fixture.nativeElement.querySelector('.boton-docente') as HTMLButtonElement | null;
+    const sesionDeAdministrador = {
+      token: 't',
+      usuario: { _id: 'd1', nombreUsuario: 'docente', perfil: 'administrador' },
+    };
+
+    it('[O] sin sesión hay un botón muy discreto, sin texto a la vista y con su nombre para lectores de pantalla', () => {
+      const boton = botonDocente()!;
+
+      expect(boton.getAttribute('aria-label')).toBe('Ingreso docente');
+      expect(boton.getAttribute('title')).toBe('Ingreso docente');
+      expect(boton.textContent!.trim()).toBe('');
+      expect(boton.querySelector('svg')).not.toBeNull();
+    });
+
+    it('[Z] con sesión no se muestra', async () => {
+      await iniciarSesion();
+
+      expect(botonDocente()).toBeNull();
+    });
+
+    it('[O] al tocarlo entra con la cuenta docente sin pedir ningún dato y lleva al panel de administración', async () => {
+      const navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+      botonDocente()!.click();
+      const solicitud = TestBed.inject(HttpTestingController).expectOne(URL_DOCENTE);
+      solicitud.flush(sesionDeAdministrador);
+      await fixture.whenStable();
+
+      expect(solicitud.request.method).toBe('POST');
+      expect(solicitud.request.body).toEqual({});
+      expect(TestBed.inject(Auth).token()).toBe('t');
+      expect(TestBed.inject(Auth).usuario()?.perfil).toBe('administrador');
+      expect(navegar).toHaveBeenCalledWith(['/dashboard/usuarios']);
+    });
+
+    it('[S] mientras espera la respuesta se deshabilita y no manda dos pedidos', async () => {
+      botonDocente()!.click();
+      fixture.detectChanges();
+
+      expect(botonDocente()!.disabled).toBe(true);
+      botonDocente()!.click();
+      expect(TestBed.inject(HttpTestingController).match(URL_DOCENTE)).toHaveLength(1);
+    });
+
+    it('[E] si no está disponible (404) vuelve al ingreso con un aviso y no inicia sesión', async () => {
+      const navegar = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+      botonDocente()!.click();
+      TestBed.inject(HttpTestingController)
+        .expectOne(URL_DOCENTE)
+        .flush(
+          { message: 'x', codigo: 'ACCESO_DOCENTE_NO_DISPONIBLE' },
+          { status: 404, statusText: 'Not Found' },
+        );
+      await fixture.whenStable();
+
+      expect(TestBed.inject(Auth).token()).toBeNull();
+      expect(TestBed.inject(Auth).motivoDeSalida()).toBe('api.ACCESO_DOCENTE_NO_DISPONIBLE');
+      expect(navegar).toHaveBeenCalledWith(['/login']);
+    });
+
+    it('[S] después de un fallo se puede volver a intentar', async () => {
+      vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      botonDocente()!.click();
+      TestBed.inject(HttpTestingController)
+        .expectOne(URL_DOCENTE)
+        .flush({}, { status: 500, statusText: 'x' });
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(botonDocente()!.disabled).toBe(false);
     });
   });
 });

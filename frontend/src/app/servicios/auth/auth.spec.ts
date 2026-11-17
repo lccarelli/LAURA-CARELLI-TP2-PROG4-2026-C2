@@ -178,6 +178,34 @@ describe('Auth', () => {
     });
   });
 
+  describe('accesoDocente', () => {
+    it('[O] pide el acceso sin datos, guarda la sesión que devuelve y la deja lista para usar', () => {
+      const { auth, http } = crearAuth();
+
+      auth.accesoDocente().subscribe();
+      const pedido = http.expectOne(`${environment.API_URL}/auth/acceso-docente`);
+      pedido.flush({ ...sesion, usuario: { ...sesion.usuario, perfil: 'administrador' } });
+
+      expect(pedido.request.method).toBe('POST');
+      expect(pedido.request.body).toEqual({});
+      expect(auth.token()).toBe('token-de-prueba');
+      expect(auth.usuario()?.perfil).toBe('administrador');
+      expect(JSON.parse(localStorage.getItem('usuario') ?? '{}').perfil).toBe('administrador');
+    });
+
+    it('[E] si no está disponible no guarda nada', () => {
+      const { auth, http } = crearAuth();
+
+      auth.accesoDocente().subscribe({ error: () => undefined });
+      http
+        .expectOne(`${environment.API_URL}/auth/acceso-docente`)
+        .flush({ codigo: 'ACCESO_DOCENTE_NO_DISPONIBLE' }, { status: 404, statusText: 'x' });
+
+      expect(auth.token()).toBeNull();
+      expect(auth.usuario()).toBeNull();
+    });
+  });
+
   describe('editarPerfil', () => {
     it('[O] envía el formulario por PUT, guarda el usuario devuelto y conserva el token', () => {
       const { auth, http } = crearAuth();

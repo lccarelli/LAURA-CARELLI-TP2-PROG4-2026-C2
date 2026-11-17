@@ -1,5 +1,6 @@
 import {
   ForbiddenException,
+  NotFoundException,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -82,6 +83,25 @@ export class AuthService {
       nombre_usuario: encontrado.nombreUsuario,
     });
 
+    const { clave: _clave, ...usuario } = encontrado;
+    return { token: this.generarToken(usuario), usuario };
+  }
+
+  async accesoDocente() {
+    const correo = this.config.correoAccesoDocente;
+    const encontrado = correo
+      ? await this.usuariosService.buscarPorIdentificador(correo)
+      : null;
+    if (!encontrado?.habilitado || encontrado.perfil !== 'administrador') {
+      throw new NotFoundException({
+        message: 'El acceso docente no está disponible',
+        codigo: 'ACCESO_DOCENTE_NO_DISPONIBLE',
+      });
+    }
+    this.logger.info(EVENTOS_DE_LOG.ACCESO_DOCENTE, 'Acceso docente', {
+      id_usuario: String(encontrado._id),
+      nombre_usuario: encontrado.nombreUsuario,
+    });
     const { clave: _clave, ...usuario } = encontrado;
     return { token: this.generarToken(usuario), usuario };
   }

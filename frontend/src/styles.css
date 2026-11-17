@@ -835,12 +835,12 @@ body {
     @apply sticky top-[4.25rem] z-20 flex items-center gap-3 bg-papel px-4 py-3 motion-safe:transition-transform motion-safe:duration-200 lg:top-0 lg:px-6;
   }
 
-  .barra-superior.oculta {
+  .barra-superior.oculta:not(:has(.notificaciones-panel)) {
     @apply -translate-y-full focus-within:translate-y-0;
   }
 
   .barra-superior:has(.notificaciones-panel) {
-    @apply z-50 translate-y-0;
+    @apply z-50;
   }
 
   .buscador-barra {
@@ -930,6 +930,10 @@ body {
 
   .notificaciones-vacio {
     @apply py-6 text-center text-sm text-suave;
+  }
+
+  .boton-docente {
+    @apply grid size-9 shrink-0 place-items-center rounded-full opacity-20 anillo-foco hover:bg-hoja/40 hover:opacity-100 focus-visible:opacity-100 disabled:opacity-40 lg:size-11;
   }
 
   .boton-salir {
