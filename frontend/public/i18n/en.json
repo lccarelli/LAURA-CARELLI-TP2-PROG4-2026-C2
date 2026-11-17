@@ -36,18 +36,13 @@
     "titulo": "A place to share your culinary world",
     "saludo": "Write about your cooking experiences and practices, share super secret culinary tips, or simply share your love of food.",
     "vista_previa": "We are waiting for you inside the community",
-    "ejemplo_1_titulo": "Chocolate chip cookies",
-    "ejemplo_1_mensaje": "Crisp outside and soft inside. Best eaten warm, with a glass of milk.",
-    "ejemplo_2_titulo": "My first cookie afternoon",
-    "ejemplo_2_mensaje": "They came out uneven and addictive. Next time I promise to measure better.",
-    "ejemplo_3_titulo": "Crispier milanesas",
-    "ejemplo_3_mensaje": "Coat them twice in breadcrumbs and let them rest for 10 minutes before baking.",
-    "ejemplo_4_titulo": "Sauce Sundays",
-    "ejemplo_4_mensaje": "Tomatoes, garlic, basil and a lot of patience. That's how Sundays started at Grandma's.",
     "invitacion_titulo": "Join to see more",
     "invitacion_texto": "Log in or create your account to post and see what everyone else shares.",
     "crear_cuenta": "Create account",
-    "ingresar": "Log in"
+    "ingresar": "Log in",
+    "cta_comentar": "Log in or sign up to comment, like and save posts.",
+    "ultimos_comentarios": "Latest comments",
+    "sin_comentarios": "No comments yet"
   },
   "login": {
     "titulo": "Log in",
@@ -191,7 +186,8 @@
     "editar": "Edit",
     "editada": "Edited",
     "guardada_dar": "Save",
-    "guardada_quitar": "Remove from saved"
+    "guardada_quitar": "Remove from saved",
+    "me_gusta_total": "{{n}} likes"
   },
   "comentarios": {
     "titulo": "Comments",

@@ -1,7 +1,7 @@
 <div class="pagina-detalle">
   <a
     class="boton-icono cerrar-detalle"
-    routerLink="/publicaciones"
+    [routerLink]="salida"
     [attr.aria-label]="'comun.cerrar' | translate"
   >
     <app-icono nombre="cerrar" />
@@ -17,7 +17,7 @@
         <app-aviso titulo="publicaciones.error_detalle" (cerrar)="mensajeError.set(null)">{{
           mensaje | translate
         }}</app-aviso>
-        <a class="enlace" routerLink="/publicaciones">{{ 'comun.volver' | translate }}</a>
+        <a class="enlace" [routerLink]="salida">{{ 'comun.volver' | translate }}</a>
       }
     </div>
   }
@@ -77,17 +77,29 @@
           </div>
         </header>
         <span class="metricas metricas-detalle">
-          <app-boton-me-gusta
-            [publicacionId]="publicacion._id"
-            [meGustaDado]="publicacion.meGusta ?? false"
-            [cantidadMeGusta]="publicacion.cantidadMeGusta"
-            (fallo)="errorDeAccion.set($event)"
-          />
-          <app-boton-guardar
-            [publicacionId]="publicacion._id"
-            [guardada]="publicacion.guardada ?? false"
-            (fallo)="errorDeAccion.set($event)"
-          />
+          @if (soloLectura) {
+            <span
+              class="metrica"
+              [attr.aria-label]="
+                'publicaciones.me_gusta_total' | translate: { n: publicacion.cantidadMeGusta }
+              "
+            >
+              <app-icono nombre="corazon" [chico]="true" />
+              <span aria-hidden="true">{{ publicacion.cantidadMeGusta }}</span>
+            </span>
+          } @else {
+            <app-boton-me-gusta
+              [publicacionId]="publicacion._id"
+              [meGustaDado]="publicacion.meGusta ?? false"
+              [cantidadMeGusta]="publicacion.cantidadMeGusta"
+              (fallo)="errorDeAccion.set($event)"
+            />
+            <app-boton-guardar
+              [publicacionId]="publicacion._id"
+              [guardada]="publicacion.guardada ?? false"
+              (fallo)="errorDeAccion.set($event)"
+            />
+          }
           <span
             class="metrica"
             [attr.aria-label]="
@@ -183,7 +195,33 @@
           </ol>
         }
 
-        <app-comentarios [publicacionId]="publicacion._id" (creado)="sumarComentario()" />
+        @if (soloLectura) {
+          <section class="comentarios" aria-labelledby="titulo-comentarios">
+            <h2 id="titulo-comentarios" class="titulo-seccion">
+              {{ 'inicio.ultimos_comentarios' | translate }}
+            </h2>
+            @for (comentario of comentariosPublicos(); track comentario._id) {
+              <div class="comentario">
+                <app-item-comentario [comentario]="comentario" [publicacionId]="publicacion._id" />
+              </div>
+            } @empty {
+              <p class="estado-vacio">{{ 'inicio.sin_comentarios' | translate }}</p>
+            }
+            <div class="tarjeta text-center">
+              <p class="texto-suave mb-3">{{ 'inicio.cta_comentar' | translate }}</p>
+              <div class="acciones justify-center">
+                <a class="boton-principal" routerLink="/registro">{{
+                  'inicio.crear_cuenta' | translate
+                }}</a>
+                <a class="boton-secundario" routerLink="/login">{{
+                  'inicio.ingresar' | translate
+                }}</a>
+              </div>
+            </div>
+          </section>
+        } @else {
+          <app-comentarios [publicacionId]="publicacion._id" (creado)="sumarComentario()" />
+        }
       </div>
     </article>
   }

@@ -15,9 +15,16 @@ import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubrepla
 import { Aviso } from '../../componentes/aviso/aviso';
 import { BotonGuardar } from '../../componentes/boton-guardar/boton-guardar';
 import { BotonMeGusta } from '../../componentes/boton-me-gusta/boton-me-gusta';
+import { ItemComentario } from '../../componentes/item-comentario/item-comentario';
 import { Comentarios } from '../../componentes/comentarios/comentarios';
 import { EliminarPublicacion } from '../../componentes/eliminar-publicacion/eliminar-publicacion';
-import { Ingrediente, Paso, Publicacion, UNIDADES } from '../../interfaces/publicacion';
+import {
+  Ingrediente,
+  Paso,
+  Publicacion,
+  PublicacionPublica,
+  UNIDADES,
+} from '../../interfaces/publicacion';
 import { FechaRelativa } from '../../pipes/fecha-relativa';
 import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
@@ -57,6 +64,7 @@ const esIngrediente = (valor: unknown): valor is Ingrediente => {
     RouterLink,
     Aviso,
     Comentarios,
+    ItemComentario,
     TranslatePipe,
     Icono,
   ],
@@ -71,7 +79,12 @@ export class DetallePublicacion implements OnInit {
   private auth = inject(Auth);
   private injector = inject(Injector);
 
+  readonly soloLectura = this.ruta.snapshot.data?.['soloLectura'] === true;
+  protected readonly salida = this.soloLectura ? '/' : '/publicaciones';
   readonly publicacion = signal<Publicacion | null>(null);
+  protected readonly comentariosPublicos = computed(
+    () => (this.publicacion() as PublicacionPublica | null)?.comentarios ?? [],
+  );
   readonly cargando = signal(true);
   readonly mensajeError = signal<string | null>(null);
   protected readonly errorDeAccion = signal<string | null>(null);
@@ -136,7 +149,7 @@ export class DetallePublicacion implements OnInit {
   }
 
   protected cerrar() {
-    this.router.navigate(['/publicaciones']);
+    this.router.navigate([this.salida]);
   }
 
   private irALosComentariosSiSePidio() {
@@ -151,7 +164,8 @@ export class DetallePublicacion implements OnInit {
 
   ngOnInit() {
     const id = this.ruta.snapshot.paramMap.get('id') ?? '';
-    this.api.obtener(id).subscribe({
+    const pedido = this.soloLectura ? this.api.obtenerPublico(id) : this.api.obtener(id);
+    pedido.subscribe({
       next: (publicacion) => {
         this.publicacion.set(publicacion);
         this.cargando.set(false);

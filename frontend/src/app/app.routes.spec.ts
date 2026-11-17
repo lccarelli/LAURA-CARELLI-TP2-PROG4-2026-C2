@@ -21,47 +21,58 @@ describe('rutas', () => {
     }).compileComponents();
   });
 
-  it('[O] un invitado que entra a la raíz ve el inicio', async () => {
-    const harness = await RouterTestingHarness.create('/');
+  const ID = '64b64b64b64b64b64b64b64b';
 
-    expect(TestBed.inject(Router).url).toBe('/');
-    expect(harness.routeNativeElement?.tagName).toBe('APP-INICIO');
-  });
+  it.each([
+    ['[O] un invitado que entra a la raíz ve el inicio', false, '/', '/', 'APP-INICIO'],
+    ['[I] con sesión, la raíz lleva al inicio con la bienvenida', true, '/', '/home', null],
+    [
+      '[E] sin sesión, nueva publicación lleva al login',
+      false,
+      '/publicaciones/nueva',
+      '/login',
+      null,
+    ],
+    ['[E] sin sesión, el detalle lleva al login', false, `/publicaciones/${ID}`, '/login', null],
+    [
+      '[O] un invitado abre la vista pública de una publicación',
+      false,
+      `/publico/${ID}`,
+      `/publico/${ID}`,
+      'APP-DETALLE-PUBLICACION',
+    ],
+    [
+      '[I] con sesión, la vista pública lleva al detalle completo',
+      true,
+      `/publico/${ID}`,
+      `/publicaciones/${ID}`,
+      null,
+    ],
+    [
+      '[O] con sesión, /publicaciones/nueva es la página de nueva publicación',
+      true,
+      '/publicaciones/nueva',
+      '/publicaciones/nueva',
+      'APP-NUEVA-PUBLICACION',
+    ],
+    [
+      '[O] con sesión, /publicaciones/:id es la página de detalle',
+      true,
+      `/publicaciones/${ID}`,
+      `/publicaciones/${ID}`,
+      'APP-DETALLE-PUBLICACION',
+    ],
+  ])('%s', async (_nombre, conSesion, ruta, esperada, etiqueta) => {
+    if (conSesion) {
+      TestBed.inject(Auth).token.set('abc');
+    }
 
-  it('[I] con sesión, la raíz lleva al inicio con la bienvenida', async () => {
-    TestBed.inject(Auth).token.set('abc');
+    const harness = await RouterTestingHarness.create(ruta);
 
-    await RouterTestingHarness.create('/');
-
-    expect(TestBed.inject(Router).url).toBe('/home');
-  });
-
-  it('[E] sin sesión, la página de nueva publicación lleva al login', async () => {
-    await RouterTestingHarness.create('/publicaciones/nueva');
-
-    expect(TestBed.inject(Router).url).toBe('/login');
-  });
-
-  it('[E] sin sesión, el detalle de una publicación lleva al login', async () => {
-    await RouterTestingHarness.create('/publicaciones/64b64b64b64b64b64b64b64b');
-
-    expect(TestBed.inject(Router).url).toBe('/login');
-  });
-
-  it('[O] con sesión, /publicaciones/nueva es la página de nueva publicación', async () => {
-    TestBed.inject(Auth).token.set('abc');
-
-    const harness = await RouterTestingHarness.create('/publicaciones/nueva');
-
-    expect(harness.routeNativeElement?.tagName).toBe('APP-NUEVA-PUBLICACION');
-  });
-
-  it('[O] con sesión, /publicaciones/:id es la página de detalle', async () => {
-    TestBed.inject(Auth).token.set('abc');
-
-    const harness = await RouterTestingHarness.create('/publicaciones/64b64b64b64b64b64b64b64b');
-
-    expect(harness.routeNativeElement?.tagName).toBe('APP-DETALLE-PUBLICACION');
+    expect(TestBed.inject(Router).url).toBe(esperada);
+    if (etiqueta) {
+      expect(harness.routeNativeElement?.tagName).toBe(etiqueta);
+    }
   });
 
   describe('dashboard/usuarios', () => {

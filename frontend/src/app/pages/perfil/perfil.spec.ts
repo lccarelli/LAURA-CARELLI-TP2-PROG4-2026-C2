@@ -232,7 +232,7 @@ describe('Perfil', () => {
   });
 
   describe('guardadas', () => {
-    const guardadasUrl = `${environment.API_URL}/guardadas`;
+    const guardadasUrl = `${environment.API_URL}/publicaciones/guardadas`;
     const portadas = () =>
       Array.from(
         fixture.nativeElement.querySelectorAll(

@@ -38,10 +38,21 @@ export class BotonGuardar {
         this.enviando.set(false);
         this.cambio.emit(guardar);
       },
-      error: (error: HttpErrorResponse) => {
-        this.enviando.set(false);
-        this.fallo.emit(mensajeDeApi(error));
-      },
+      error: (error: HttpErrorResponse) => this.fallar(error, guardar),
     });
+  }
+
+  private fallar(error: HttpErrorResponse, queriaGuardar: boolean) {
+    this.enviando.set(false);
+    const codigo = error.error?.codigo;
+    const yaEstabaAsi =
+      (queriaGuardar && codigo === 'GUARDADA_REPETIDA') ||
+      (!queriaGuardar && codigo === 'GUARDADA_INEXISTENTE');
+    if (yaEstabaAsi) {
+      this.estado.set(queriaGuardar);
+      this.cambio.emit(queriaGuardar);
+      return;
+    }
+    this.fallo.emit(mensajeDeApi(error));
   }
 }

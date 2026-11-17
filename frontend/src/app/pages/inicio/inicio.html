@@ -4,14 +4,14 @@
     <p class="texto-suave mt-1">{{ 'inicio.saludo' | translate }}</p>
   </div>
 
-  <p class="etiqueta-seccion text-center">{{ 'inicio.vista_previa' | translate }}</p>
-  <div class="vista-previa" inert aria-hidden="true">
-    <div class="muro">
+  @if (publicaciones().length) {
+    <p class="etiqueta-seccion text-center">{{ 'inicio.vista_previa' | translate }}</p>
+    <div class="fila-tarjetas">
       @for (publicacion of publicaciones(); track publicacion._id) {
-        <app-tarjeta-publicacion [publicacion]="publicacion" />
+        <app-tarjeta-publicacion [publicacion]="publicacion" [soloLectura]="true" />
       }
     </div>
-  </div>
+  }
 
   <div class="tarjeta mx-auto w-full max-w-2xl text-center">
     <h2 class="titulo-tarjeta">{{ 'inicio.invitacion_titulo' | translate }}</h2>

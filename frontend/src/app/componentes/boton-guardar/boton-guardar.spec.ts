@@ -6,7 +6,8 @@ import { environment } from '../../../environments/environment';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { BotonGuardar } from './boton-guardar';
 
-const RUTA = `${environment.API_URL}/publicaciones/p1/guardar`;
+const GUARDAR = `${environment.API_URL}/publicaciones/p1/guardar`;
+const QUITAR = `${environment.API_URL}/publicaciones/p1/quitar-guardado`;
 
 @Component({
   imports: [BotonGuardar],
@@ -64,8 +65,8 @@ describe('BotonGuardar', () => {
     const fixture = await crear();
 
     boton(fixture).click();
-    const solicitud = http.expectOne(RUTA);
-    solicitud.flush({ guardada: true });
+    const solicitud = http.expectOne(GUARDAR);
+    solicitud.flush({ guardada: true, cantidadGuardados: 1 });
     await actualizar(fixture);
 
     expect(solicitud.request.method).toBe('POST');
@@ -73,15 +74,15 @@ describe('BotonGuardar', () => {
     expect(fixture.componentInstance.cambios).toHaveBeenCalledWith(true);
   });
 
-  it('[O] si ya estaba guardada, tocar la quita con un DELETE y avisa el cambio', async () => {
+  it('[O] si ya estaba guardada, tocar la quita con un POST a quitar-guardado y avisa el cambio', async () => {
     const fixture = await crear(true);
 
     boton(fixture).click();
-    const solicitud = http.expectOne(RUTA);
-    solicitud.flush(null, { status: 204, statusText: 'No Content' });
+    const solicitud = http.expectOne(QUITAR);
+    solicitud.flush({ guardada: false, cantidadGuardados: 0 });
     await actualizar(fixture);
 
-    expect(solicitud.request.method).toBe('DELETE');
+    expect(solicitud.request.method).toBe('POST');
     expect(boton(fixture).getAttribute('aria-pressed')).toBe('false');
     expect(fixture.componentInstance.cambios).toHaveBeenCalledWith(false);
   });
@@ -94,7 +95,7 @@ describe('BotonGuardar', () => {
     boton(fixture).click();
 
     expect(boton(fixture).disabled).toBe(true);
-    expect(http.match(RUTA)).toHaveLength(1);
+    expect(http.match(GUARDAR)).toHaveLength(1);
   });
 
   it('[E] si falla, avisa el error y deja el estado como estaba', async () => {
@@ -102,7 +103,7 @@ describe('BotonGuardar', () => {
 
     boton(fixture).click();
     http
-      .expectOne(RUTA)
+      .expectOne(GUARDAR)
       .flush(
         { message: 'x', codigo: 'PUBLICACION_NO_ENCONTRADA' },
         { status: 404, statusText: 'x' },
@@ -113,5 +114,39 @@ describe('BotonGuardar', () => {
     expect(fixture.componentInstance.cambios).not.toHaveBeenCalled();
     expect(boton(fixture).getAttribute('aria-pressed')).toBe('false');
     expect(boton(fixture).disabled).toBe(false);
+  });
+
+  it('[S] si el servidor dice que ya estaba guardada, queda guardada y avisa el cambio sin error', async () => {
+    const fixture = await crear();
+
+    boton(fixture).click();
+    http
+      .expectOne(GUARDAR)
+      .flush(
+        { message: 'x', codigo: 'GUARDADA_REPETIDA' },
+        { status: 409, statusText: 'Conflict' },
+      );
+    await actualizar(fixture);
+
+    expect(boton(fixture).getAttribute('aria-pressed')).toBe('true');
+    expect(fixture.componentInstance.cambios).toHaveBeenCalledWith(true);
+    expect(fixture.componentInstance.fallos).toHaveBeenLastCalledWith(null);
+  });
+
+  it('[S] si el servidor dice que no estaba guardada, queda sin guardar y avisa el cambio sin error', async () => {
+    const fixture = await crear(true);
+
+    boton(fixture).click();
+    http
+      .expectOne(QUITAR)
+      .flush(
+        { message: 'x', codigo: 'GUARDADA_INEXISTENTE' },
+        { status: 404, statusText: 'Not Found' },
+      );
+    await actualizar(fixture);
+
+    expect(boton(fixture).getAttribute('aria-pressed')).toBe('false');
+    expect(fixture.componentInstance.cambios).toHaveBeenCalledWith(false);
+    expect(fixture.componentInstance.fallos).toHaveBeenLastCalledWith(null);
   });
 });

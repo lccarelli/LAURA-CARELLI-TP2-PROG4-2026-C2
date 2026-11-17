@@ -1,4 +1,4 @@
-<a class="pin" [routerLink]="['/publicaciones', publicacion()._id]">
+<a class="pin" [routerLink]="[soloLectura() ? '/publico' : '/publicaciones', publicacion()._id]">
   @if (publicacion().imagen; as imagen) {
     <img class="pin-imagen" [src]="urlImagen(imagen)" alt="" />
   } @else {
@@ -19,7 +19,28 @@
   </span>
 </a>
 
-@if (confirmando()) {
+@if (soloLectura()) {
+  <div class="pin-acciones">
+    <span
+      class="metrica"
+      [attr.aria-label]="
+        'publicaciones.me_gusta_total' | translate: { n: publicacion().cantidadMeGusta }
+      "
+    >
+      <app-icono nombre="corazon" [chico]="true" />
+      <span aria-hidden="true">{{ publicacion().cantidadMeGusta }}</span>
+    </span>
+    <span
+      class="metrica"
+      [attr.aria-label]="
+        'publicaciones.comentarios' | translate: { n: publicacion().cantidadComentarios }
+      "
+    >
+      <app-icono nombre="comentario" [chico]="true" />
+      <span aria-hidden="true">{{ publicacion().cantidadComentarios }}</span>
+    </span>
+  </div>
+} @else if (confirmando()) {
   <div
     class="pin-confirmar"
     role="group"

@@ -45,6 +45,7 @@ export class TarjetaPublicacion {
   protected readonly letrasDelMensaje = LETRAS_DEL_MENSAJE;
 
   readonly publicacion = input.required<Publicacion>();
+  readonly soloLectura = input(false);
   readonly eliminada = output<string>();
   readonly desguardada = output<string>();
 

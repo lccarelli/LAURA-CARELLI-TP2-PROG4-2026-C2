@@ -36,18 +36,13 @@
     "titulo": "Un lugar para compartir tu mundo culinario",
     "saludo": "Escribí acerca de tus experiencias o prácticas de preparación, compartí tips culinarios súper secretos, o simplemente compartí tu amor por la comida.",
     "vista_previa": "Te esperamos dentro de la comunidad",
-    "ejemplo_1_titulo": "Galletitas con chips de chocolate",
-    "ejemplo_1_mensaje": "Crocantes por fuera y blandas por dentro. Se comen tibias, con un vaso de leche.",
-    "ejemplo_2_titulo": "Mi primera tarde de cookies",
-    "ejemplo_2_mensaje": "Salieron irregulares y adictivas. La próxima prometo medir mejor.",
-    "ejemplo_3_titulo": "Milanesas más crocantes",
-    "ejemplo_3_mensaje": "Pasalas dos veces por el pan rallado y dejalas reposar 10 minutos antes de hornearlas.",
-    "ejemplo_4_titulo": "Domingos de salsa",
-    "ejemplo_4_mensaje": "Tomates, ajo, albahaca y mucha paciencia. Así empezaban los domingos en lo de la abuela.",
     "invitacion_titulo": "Sumate para ver más",
     "invitacion_texto": "Ingresá o creá tu cuenta para publicar y ver lo que comparten los demás.",
     "crear_cuenta": "Crear cuenta",
-    "ingresar": "Ingresar"
+    "ingresar": "Ingresar",
+    "cta_comentar": "Ingresá o registrate para comentar, dar me gusta y guardar publicaciones.",
+    "ultimos_comentarios": "Últimos comentarios",
+    "sin_comentarios": "Todavía no hay comentarios"
   },
   "login": {
     "titulo": "Ingresar",
@@ -191,7 +186,8 @@
     "editar": "Editar",
     "editada": "Editada",
     "guardada_dar": "Guardar",
-    "guardada_quitar": "Quitar de guardadas"
+    "guardada_quitar": "Quitar de guardadas",
+    "me_gusta_total": "{{n}} me gusta"
   },
   "comentarios": {
     "titulo": "Comentarios",

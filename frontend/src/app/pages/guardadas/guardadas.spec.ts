@@ -35,14 +35,15 @@ describe('Guardadas', () => {
     http.expectOne((solicitud) => {
       const esperados: Record<string, string | null> = { offset: '0', limit: '10', ...extra };
       return (
-        solicitud.url === `${RAIZ}/guardadas` &&
+        solicitud.url === `${RAIZ}/publicaciones/guardadas` &&
         Object.entries(esperados).every(([k, v]) => solicitud.params.get(k) === v)
       );
     });
   const letras = (q: string | null = null) =>
     http.expectOne(
       (solicitud) =>
-        solicitud.url === `${RAIZ}/guardadas/letras` && solicitud.params.get('q') === q,
+        solicitud.url === `${RAIZ}/publicaciones/guardadas/letras` &&
+        solicitud.params.get('q') === q,
     );
   const actualizar = async () => {
     fixture.detectChanges();
@@ -180,8 +181,8 @@ describe('Guardadas', () => {
 
     (fixture.nativeElement.querySelector('app-boton-guardar button') as HTMLButtonElement).click();
     http
-      .expectOne({ method: 'DELETE', url: `${RAIZ}/publicaciones/id1/guardar` })
-      .flush(null, { status: 204, statusText: 'No Content' });
+      .expectOne({ method: 'POST', url: `${RAIZ}/publicaciones/id1/quitar-guardado` })
+      .flush({ guardada: false, cantidadGuardados: 0 });
     await actualizar();
 
     expect(titulos()).toEqual([]);

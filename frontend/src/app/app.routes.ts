@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './guards/admin-guard';
 import { invitadoGuard } from './guards/invitado-guard';
+import { publicoGuard } from './guards/publico-guard';
 import { sesionGuard } from './guards/sesion-guard';
 
 export const routes: Routes = [
@@ -9,6 +10,13 @@ export const routes: Routes = [
     pathMatch: 'full',
     canActivate: [invitadoGuard],
     loadComponent: () => import('./pages/inicio/inicio').then((m) => m.Inicio),
+  },
+  {
+    path: 'publico/:id',
+    canActivate: [publicoGuard],
+    data: { soloLectura: true },
+    loadComponent: () =>
+      import('./pages/detalle-publicacion/detalle-publicacion').then((m) => m.DetallePublicacion),
   },
   {
     path: 'registro',

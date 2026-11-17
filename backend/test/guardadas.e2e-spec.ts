@@ -24,15 +24,15 @@ describe('publicaciones guardadas', () => {
         .set('Authorization', `Bearer ${sesion.token}`),
     quitar: (id: string) =>
       request(app.getHttpServer())
-        .delete(`/publicaciones/${id}/guardar`)
+        .post(`/publicaciones/${id}/quitar-guardado`)
         .set('Authorization', `Bearer ${sesion.token}`),
     listar: (consulta = '') =>
       request(app.getHttpServer())
-        .get(`/guardadas${consulta}`)
+        .get(`/publicaciones/guardadas${consulta}`)
         .set('Authorization', `Bearer ${sesion.token}`),
     letras: (consulta = '') =>
       request(app.getHttpServer())
-        .get(`/guardadas/letras${consulta}`)
+        .get(`/publicaciones/guardadas/letras${consulta}`)
         .set('Authorization', `Bearer ${sesion.token}`),
   });
 
@@ -51,9 +51,14 @@ describe('publicaciones guardadas', () => {
     for (const titulo of titulos) {
       await con(yo)
         .guardar(await crear(titulo, tipo))
-        .expect(200);
+        .expect(201);
     }
   };
+
+  const detalleDe = (id: string, sesion: Sesion) =>
+    request(app.getHttpServer())
+      .get(`/publicaciones/${id}`)
+      .set('Authorization', `Bearer ${sesion.token}`);
 
   const titulosDe = async (consulta = '') =>
     (await con(yo).listar(consulta).expect(200)).body.datos.map(
@@ -76,21 +81,20 @@ describe('publicaciones guardadas', () => {
   });
 
   describe('guardar y quitar', () => {
-    it('[O] guardar responde 200 y la publicación queda marcada como guardada', async () => {
+    it('[O] guardar deja la publicación marcada como guardada', async () => {
       const id = await crear('Tarta');
 
-      const { body } = await con(yo).guardar(id).expect(200);
+      await con(yo).guardar(id).expect(201);
       const detalle = await request(app.getHttpServer())
         .get(`/publicaciones/${id}`)
         .set('Authorization', `Bearer ${yo.token}`);
 
-      expect(body).toEqual({ guardada: true });
       expect(detalle.body.guardada).toBe(true);
     });
 
     it('[I] la marca es de cada persona: la otra no la ve guardada', async () => {
       const id = await crear('Tarta');
-      await con(yo).guardar(id).expect(200);
+      await con(yo).guardar(id).expect(201);
 
       const detalle = await request(app.getHttpServer())
         .get(`/publicaciones/${id}`)
@@ -102,7 +106,7 @@ describe('publicaciones guardadas', () => {
     it('[I] el listado general también marca cuáles están guardadas', async () => {
       const guardada = await crear('Tarta');
       await crear('Pan');
-      await con(yo).guardar(guardada).expect(200);
+      await con(yo).guardar(guardada).expect(201);
 
       const { body } = await request(app.getHttpServer())
         .get('/publicaciones')
@@ -117,38 +121,82 @@ describe('publicaciones guardadas', () => {
       expect(marcas).toEqual({ Tarta: true, Pan: false });
     });
 
-    it('[B] guardar dos veces es lo mismo que una', async () => {
+    it('[O] guardar responde 201 con la cantidad de veces que se guardó', async () => {
       const id = await crear('Tarta');
 
-      await con(yo).guardar(id).expect(200);
-      await con(yo).guardar(id).expect(200);
+      const { body } = await con(yo).guardar(id).expect(201);
 
-      expect(await titulosDe()).toEqual(['Tarta']);
+      expect(body).toEqual({ guardada: true, cantidadGuardados: 1 });
     });
 
-    it('[S] quitar la saca de la lista y responde 204', async () => {
+    it('[S] la cantidad cuenta a cada persona que la guardó y baja al quitarla', async () => {
       const id = await crear('Tarta');
-      await con(yo).guardar(id).expect(200);
+      await con(yo).guardar(id).expect(201);
+      const segunda = await con(otra).guardar(id).expect(201);
 
-      await con(yo).quitar(id).expect(204);
+      const quitada = await con(yo).quitar(id).expect(200);
+
+      expect(segunda.body.cantidadGuardados).toBe(2);
+      expect(quitada.body).toEqual({ guardada: false, cantidadGuardados: 1 });
+      expect((await detalleDe(id, yo)).body.cantidadGuardados).toBe(1);
+    });
+
+    it('[I] las publicaciones nuevas empiezan con cero guardadas', async () => {
+      const id = await crear('Tarta');
+
+      expect((await detalleDe(id, yo)).body.cantidadGuardados).toBe(0);
+    });
+
+    it('[E] guardar dos veces responde 409 GUARDADA_REPETIDA y no duplica ni suma', async () => {
+      const id = await crear('Tarta');
+      await con(yo).guardar(id).expect(201);
+
+      const { body } = await con(yo).guardar(id).expect(409);
+
+      expect(body.codigo).toBe('GUARDADA_REPETIDA');
+      expect(await titulosDe()).toEqual(['Tarta']);
+      expect((await detalleDe(id, yo)).body.cantidadGuardados).toBe(1);
+    });
+
+    it('[S] quitar la saca de la lista', async () => {
+      const id = await crear('Tarta');
+      await con(yo).guardar(id).expect(201);
+
+      await con(yo).quitar(id).expect(200);
 
       expect(await titulosDe()).toEqual([]);
     });
 
-    it('[B] quitar una que no estaba guardada también responde 204', async () => {
-      await con(yo)
-        .quitar(await crear('Tarta'))
-        .expect(204);
+    it('[E] quitar una que no estaba guardada responde 404 GUARDADA_INEXISTENTE sin tocar la cantidad', async () => {
+      const id = await crear('Tarta');
+      await con(otra).guardar(id).expect(201);
+
+      const { body } = await con(yo).quitar(id).expect(404);
+
+      expect(body.codigo).toBe('GUARDADA_INEXISTENTE');
+      expect((await detalleDe(id, yo)).body.cantidadGuardados).toBe(1);
+    });
+
+    it('[S] se puede quitar una que se guardó y después se eliminó', async () => {
+      const id = await crear('Tarta');
+      await con(yo).guardar(id).expect(201);
+      await modelo.updateOne({ _id: id }, { activa: false });
+
+      await con(yo).quitar(id).expect(200);
     });
 
     it('[S] quitar la propia no toca la de otra persona', async () => {
       const id = await crear('Tarta');
-      await con(yo).guardar(id).expect(200);
-      await con(otra).guardar(id).expect(200);
+      await con(yo).guardar(id).expect(201);
+      await con(otra).guardar(id).expect(201);
 
-      await con(yo).quitar(id).expect(204);
+      await con(yo).quitar(id).expect(200);
 
       expect((await con(otra).listar().expect(200)).body.datos).toHaveLength(1);
+    });
+
+    it('[E] quitar con un id inválido responde 400', async () => {
+      await con(yo).quitar('abc').expect(400);
     });
 
     it.each([
@@ -175,9 +223,9 @@ describe('publicaciones guardadas', () => {
       const servidor = request(app.getHttpServer());
 
       await servidor.post(`/publicaciones/${id}/guardar`).expect(401);
-      await servidor.delete(`/publicaciones/${id}/guardar`).expect(401);
-      await servidor.get('/guardadas').expect(401);
-      await servidor.get('/guardadas/letras').expect(401);
+      await servidor.post(`/publicaciones/${id}/quitar-guardado`).expect(401);
+      await servidor.get('/publicaciones/guardadas').expect(401);
+      await servidor.get('/publicaciones/guardadas/letras').expect(401);
     });
   });
 
@@ -215,15 +263,15 @@ describe('publicaciones guardadas', () => {
     it('[S] sólo devuelve las guardadas por la persona', async () => {
       const mia = await crear('Mía');
       const deLaOtra = await crear('De la otra');
-      await con(yo).guardar(mia).expect(200);
-      await con(otra).guardar(deLaOtra).expect(200);
+      await con(yo).guardar(mia).expect(201);
+      await con(otra).guardar(deLaOtra).expect(201);
 
       expect(await titulosDe()).toEqual(['Mía']);
     });
 
     it('[S] puede guardar publicaciones de otras personas y todas vienen marcadas', async () => {
       const ajena = await crear('Ajena', 'tip', otra);
-      await con(yo).guardar(ajena).expect(200);
+      await con(yo).guardar(ajena).expect(201);
 
       const { body } = await con(yo).listar().expect(200);
 
@@ -237,7 +285,7 @@ describe('publicaciones guardadas', () => {
 
     it('[S] una publicación eliminada deja de aparecer', async () => {
       const id = await crear('Tarta');
-      await con(yo).guardar(id).expect(200);
+      await con(yo).guardar(id).expect(201);
       await modelo.updateOne({ _id: id }, { activa: false });
 
       expect(await titulosDe()).toEqual([]);
@@ -361,11 +409,11 @@ describe('publicaciones guardadas', () => {
     it('[S] sólo cuenta las guardadas por la persona y las que siguen activas', async () => {
       const mia = await crear('Mía');
       const eliminada = await crear('Eliminada');
-      await con(yo).guardar(mia).expect(200);
-      await con(yo).guardar(eliminada).expect(200);
+      await con(yo).guardar(mia).expect(201);
+      await con(yo).guardar(eliminada).expect(201);
       await con(otra)
         .guardar(await crear('Otra'))
-        .expect(200);
+        .expect(201);
       await modelo.updateOne({ _id: eliminada }, { activa: false });
 
       const { body } = await con(yo).letras().expect(200);

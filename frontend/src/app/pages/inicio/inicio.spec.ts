@@ -1,16 +1,42 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { environment } from '../../../environments/environment';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
-import { Idioma } from '../../servicios/idioma/idioma';
+import { publicacionDePrueba } from '../../../testing/publicacion';
 import { Inicio } from './inicio';
 
+const RUTA = `${environment.API_URL}/publico/publicaciones`;
+
 describe('Inicio', () => {
-  async function mostrar() {
+  let http: HttpTestingController;
+
+  async function mostrar(respuesta: 'bien' | 'mal' = 'bien', cantidad = 4) {
     await TestBed.configureTestingModule({
       imports: [Inicio],
-      providers: [proveerIdiomaDePrueba(), provideRouter([])],
+      providers: [
+        proveerIdiomaDePrueba(),
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
+    http = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(Inicio);
+    await fixture.whenStable();
+    const solicitud = http.expectOne((s) => s.url === RUTA);
+    if (respuesta === 'bien') {
+      solicitud.flush({
+        datos: Array.from({ length: cantidad }, (_, i) =>
+          publicacionDePrueba(i + 1, { imagen: i === 0 ? 'https://cdn.test/1.jpg' : undefined }),
+        ),
+        limit: 8,
+      });
+    } else {
+      solicitud.flush({ message: 'x', codigo: 'E' }, { status: 500, statusText: 'x' });
+    }
+    fixture.detectChanges();
     await fixture.whenStable();
     return fixture;
   }
@@ -24,13 +50,42 @@ describe('Inicio', () => {
     expect(pagina.textContent).toContain('Sumate para ver más');
   });
 
-  it('[O] muestra cuatro publicaciones de ejemplo con su autor', async () => {
+  it('[O] pide las 8 publicaciones más recientes sin token, a la ruta pública', async () => {
+    await TestBed.configureTestingModule({
+      imports: [Inicio],
+      providers: [
+        proveerIdiomaDePrueba(),
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+    }).compileComponents();
+    TestBed.createComponent(Inicio);
+
+    const solicitud = TestBed.inject(HttpTestingController).expectOne((s) => s.url === RUTA);
+
+    expect(solicitud.request.method).toBe('GET');
+    expect(solicitud.request.params.get('limit')).toBe('8');
+    solicitud.flush({ datos: [], limit: 8 });
+  });
+
+  it('[O] muestra las publicaciones reales con su autor', async () => {
     const { nativeElement: pagina } = await mostrar();
+
     const tarjetas = pagina.querySelectorAll('app-tarjeta-publicacion');
 
     expect(tarjetas).toHaveLength(4);
-    expect(tarjetas[0].textContent).toContain('@ana_g');
-    expect(tarjetas[1].textContent).toContain('@juan_p');
+    expect(tarjetas[0].textContent).toContain('Título 1');
+    expect(tarjetas[0].textContent).toContain('@laura_c');
+  });
+
+  it('[I] las tarjetas son sólo de lectura: abren la vista pública y no tienen botones', async () => {
+    const { nativeElement: pagina } = await mostrar();
+
+    const enlace = pagina.querySelector('app-tarjeta-publicacion a.pin') as HTMLAnchorElement;
+
+    expect(enlace.getAttribute('href')).toBe('/publico/id1');
+    expect(pagina.querySelectorAll('app-tarjeta-publicacion button')).toHaveLength(0);
   });
 
   it('[I] ofrece crear la cuenta y también ingresar', async () => {
@@ -41,29 +96,17 @@ describe('Inicio', () => {
     expect(enlaces).toContain('/login');
   });
 
-  it('[I] la vista previa no es interactiva ni la leen los lectores de pantalla', async () => {
-    const { nativeElement: pagina } = await mostrar();
-    const vista = pagina.querySelector('.vista-previa');
+  it('[Z] si todavía no hay publicaciones no muestra la vista previa', async () => {
+    const { nativeElement: pagina } = await mostrar('bien', 0);
 
-    expect(vista.hasAttribute('inert')).toBe(true);
-    expect(vista.getAttribute('aria-hidden')).toBe('true');
+    expect(pagina.querySelector('app-tarjeta-publicacion')).toBeNull();
+    expect(pagina.textContent).not.toContain('Te esperamos dentro de la comunidad');
   });
 
-  it('[I] la imagen del ejemplo sale de la carpeta pública, no de la API', async () => {
-    const { nativeElement: pagina } = await mostrar();
-    const imagenes = [...pagina.querySelectorAll('.pin-imagen')].map((i) => i.getAttribute('src'));
+  it('[E] si falla la carga igual se ve la invitación y no se muestran publicaciones', async () => {
+    const { nativeElement: pagina } = await mostrar('mal');
 
-    expect(imagenes).toEqual(['/demo/galletitas-1.jpg', '/demo/galletitas-2.jpg']);
-  });
-
-  it('[S] los ejemplos se traducen al cambiar el idioma', async () => {
-    const fixture = await mostrar();
-    expect(fixture.nativeElement.textContent).toContain('Galletitas con chips de chocolate');
-
-    TestBed.inject(Idioma).cambiar('en');
-    await fixture.whenStable();
-
-    expect(fixture.nativeElement.textContent).toContain('Chocolate chip cookies');
-    expect(fixture.nativeElement.textContent).not.toContain('Galletitas con chips de chocolate');
+    expect(pagina.querySelector('app-tarjeta-publicacion')).toBeNull();
+    expect(pagina.textContent).toContain('Sumate para ver más');
   });
 });

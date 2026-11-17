@@ -3,6 +3,8 @@ import { inject, Service } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Comentario, PaginaComentarios } from '../../interfaces/comentario';
 import {
+  ListadoPublico,
+  PublicacionPublica,
   LetraDelIndice,
   LetrasGuardadas,
   OrdenPublicaciones,
@@ -53,25 +55,40 @@ export class PublicacionesApi {
     if (q) {
       params['q'] = q;
     }
-    return this.http.get<PaginaPublicaciones>(`${environment.API_URL}/guardadas`, { params });
+    return this.http.get<PaginaPublicaciones>(`${environment.API_URL}/publicaciones/guardadas`, {
+      params,
+    });
   }
 
   letrasGuardadas(q?: string) {
-    return this.http.get<LetrasGuardadas>(`${environment.API_URL}/guardadas/letras`, {
+    return this.http.get<LetrasGuardadas>(`${environment.API_URL}/publicaciones/guardadas/letras`, {
       params: q ? { q } : {},
     });
   }
 
   guardar(id: string) {
-    return this.http.post<{ guardada: boolean }>(
+    return this.http.post<{ guardada: boolean; cantidadGuardados: number }>(
       `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}/guardar`,
       {},
     );
   }
 
   quitarGuardada(id: string) {
-    return this.http.delete<void>(
-      `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}/guardar`,
+    return this.http.post<{ guardada: boolean; cantidadGuardados: number }>(
+      `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}/quitar-guardado`,
+      {},
+    );
+  }
+
+  listarPublico(limit = 8) {
+    return this.http.get<ListadoPublico>(`${environment.API_URL}/publico/publicaciones`, {
+      params: { limit },
+    });
+  }
+
+  obtenerPublico(id: string) {
+    return this.http.get<PublicacionPublica>(
+      `${environment.API_URL}/publico/publicaciones/${encodeURIComponent(id)}`,
     );
   }
 
