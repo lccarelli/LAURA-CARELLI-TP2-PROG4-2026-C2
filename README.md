@@ -176,6 +176,12 @@ La portada (`/`) muestra **publicaciones reales**, no ejemplos: las 8 más recie
 
 - **API sin token:** `GET /publico/publicaciones?limit` (1 a 12, 8 por defecto, más recientes primero) y `GET /publico/publicaciones/:id` (la publicación y sus 3 últimos comentarios). No traen marcas de me gusta ni de guardada, y el autor sólo con nombre, apellido, usuario y foto (nunca correo ni fecha de nacimiento). Escribir sigue pidiendo sesión (401). Tienen el límite de solicitudes de toda la API.
 
+### Registro de ingresos y visitas (datos para las estadísticas)
+
+- Cada **ingreso correcto** (ingresar o acceso docente) guarda `(usuario, fecha)` en `ingresos`. Crear la cuenta no cuenta. Si guardarlo falla, la persona entra igual y queda un aviso en el log.
+- Al abrir el perfil de otra persona, la aplicación hace `POST /usuarios/:id/visitas` y se guarda `(visitante, visitado, fecha)` en `visitas`: `201 { registrada: true }`, `400 VISITA_PROPIA` si es el propio perfil, `404` si no existe. Es un `POST` aparte para que el reintento de los `GET` no cuente dos visitas, y no muestra el indicador de espera.
+- Los gráficos que usan estos datos se agregan al final.
+
 ### Perfil de otra persona (Sprint 5)
 
 El **nombre** y la **foto** de quien publicó o comentó son enlaces que llevan a su perfil (`/perfil/:id`): sus datos públicos (foto, nombre, usuario y descripción; **nunca el correo ni la fecha de nacimiento**) y sus **últimas 3 publicaciones**, con la misma tarjeta, así que quien tiene perfil administrador conserva el botón de baja. Si el id es el de la propia persona, lleva a Mi perfil. En la vista pública (sin sesión) la autoría es texto, no enlace.

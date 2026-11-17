@@ -61,6 +61,7 @@ export class PerfilAjeno implements OnInit {
         this.perfil.set(perfil);
         this.cargando.set(false);
         this.cargarPublicaciones(id);
+        this.usuarios.registrarVisita(id).subscribe({ error: () => undefined });
       },
       error: (error: HttpErrorResponse) => {
         this.cargando.set(false);
