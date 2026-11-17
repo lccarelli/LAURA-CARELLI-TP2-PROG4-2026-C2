@@ -23,7 +23,7 @@ export class Registro {
   registrar(datos: FormData) {
     this.enviando.set(true);
     this.auth.registro(datos).subscribe({
-      next: () => this.router.navigate(['/publicaciones']),
+      next: () => this.router.navigate(['/home']),
       error: (error: HttpErrorResponse) => {
         this.enviando.set(false);
         this.mensajeError.set(mensajeDeApi(error));

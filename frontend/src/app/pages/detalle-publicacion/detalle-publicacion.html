@@ -83,6 +83,11 @@
             [cantidadMeGusta]="publicacion.cantidadMeGusta"
             (fallo)="errorDeAccion.set($event)"
           />
+          <app-boton-guardar
+            [publicacionId]="publicacion._id"
+            [guardada]="publicacion.guardada ?? false"
+            (fallo)="errorDeAccion.set($event)"
+          />
           <span
             class="metrica"
             [attr.aria-label]="

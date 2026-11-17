@@ -231,6 +231,56 @@ describe('Perfil', () => {
     });
   });
 
+  describe('guardadas', () => {
+    const guardadasUrl = `${environment.API_URL}/guardadas`;
+    const portadas = () =>
+      Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'a[href="/perfil/guardadas"] .tablero-portada',
+        ) as NodeListOf<HTMLImageElement>,
+      ).map((imagen) => imagen.getAttribute('src'));
+
+    it('[O] ofrece una tarjeta que lleva a las guardadas', async () => {
+      const raiz = await mostrar(usuario);
+
+      const tarjeta = raiz.querySelector('a.tablero[href="/perfil/guardadas"]') as HTMLElement;
+
+      expect(tarjeta.textContent).toContain('Guardadas');
+    });
+
+    it('[O] su collage usa las portadas de las primeras guardadas con imagen', async () => {
+      await mostrar(usuario);
+      http
+        .expectOne((s) => s.url === guardadasUrl && s.params.get('limit') === '12')
+        .flush({
+          datos: [
+            { ...publicacion(1), imagen: 'https://cdn.test/a.jpg' },
+            publicacion(2),
+            { ...publicacion(3), imagen: 'https://cdn.test/b.jpg' },
+          ],
+          offset: 0,
+          limit: 12,
+          hayMas: false,
+        });
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(portadas()).toEqual(['https://cdn.test/a.jpg', 'https://cdn.test/b.jpg']);
+    });
+
+    it('[E] si falla la carga la tarjeta se ve igual, con el collage vacío', async () => {
+      const raiz = await mostrar(usuario);
+      http
+        .expectOne((s) => s.url === guardadasUrl)
+        .flush({ message: 'x', codigo: 'E' }, { status: 500, statusText: 'x' });
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(portadas()).toEqual([]);
+      expect(raiz.querySelector('a.tablero[href="/perfil/guardadas"]')).not.toBeNull();
+    });
+  });
+
   describe('editar el perfil', () => {
     it('[O] el lápiz lleva a la pantalla de edición', async () => {
       const pagina = await mostrar(usuario);

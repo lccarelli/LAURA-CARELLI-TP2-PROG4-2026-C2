@@ -1,11 +1,13 @@
 @if (auth.usuario()) {
   <div class="barra-superior">
-    <app-buscador
-      class="buscador-barra"
-      [valor]="q()"
-      [descripcion]="descripcion()"
-      (buscar)="buscar($event)"
-    />
-    <app-campanita />
+    @if (conBuscador()) {
+      <app-buscador
+        class="buscador-barra"
+        [valor]="q()"
+        [descripcion]="descripcion()"
+        (buscar)="buscar($event)"
+      />
+    }
+    <app-campanita class="ml-auto" />
   </div>
 }

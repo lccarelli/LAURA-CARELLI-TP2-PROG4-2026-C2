@@ -63,13 +63,13 @@ describe('Registro', () => {
     expect(http.match(URL)).toHaveLength(0);
   });
 
-  it('[O] con datos válidos envía el registro y va a publicaciones', async () => {
+  it('[O] con datos válidos envía el registro y va al inicio', async () => {
     formulario().formulario.setValue(datosDelFormulario);
 
     await enviar();
     http.expectOne(URL).flush({ token: 't', usuario: { _id: '1' } });
 
-    expect(navegar).toHaveBeenCalledWith(['/publicaciones']);
+    expect(navegar).toHaveBeenCalledWith(['/home']);
   });
 
   it('[I] manda los datos sin repetirClave ni perfil y con la imagen elegida', async () => {

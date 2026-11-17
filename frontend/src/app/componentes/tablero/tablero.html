@@ -1,0 +1,9 @@
+<a class="tablero" [routerLink]="enlace()" [queryParams]="parametros()">
+  <span class="tablero-collage" aria-hidden="true">
+    @for (portada of portadas(); track portada) {
+      <img class="tablero-portada" [src]="portada" alt="" />
+    }
+  </span>
+  <span class="tablero-titulo">{{ titulo() | translate }}</span>
+  <span class="meta">{{ detalle() | translate }}</span>
+</a>

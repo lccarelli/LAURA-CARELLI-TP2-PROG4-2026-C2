@@ -29,7 +29,8 @@
     "registrarme": "Sign up",
     "idioma": "Language",
     "modo_oscuro": "Switch to dark mode",
-    "modo_claro": "Switch to light mode"
+    "modo_claro": "Switch to light mode",
+    "home": "Home"
   },
   "inicio": {
     "titulo": "A place to share your culinary world",
@@ -188,7 +189,9 @@
     "guardando": "Saving…",
     "guardar_cambios": "Save changes",
     "editar": "Edit",
-    "editada": "Edited"
+    "editada": "Edited",
+    "guardada_dar": "Save",
+    "guardada_quitar": "Remove from saved"
   },
   "comentarios": {
     "titulo": "Comments",
@@ -410,7 +413,8 @@
   "buscador": {
     "placeholder": "Search posts",
     "limpiar": "Clear search",
-    "placeholder_mias": "Search my posts"
+    "placeholder_mias": "Search my posts",
+    "placeholder_guardadas": "Search my saved posts"
   },
   "notificaciones": {
     "titulo": "Notifications",
@@ -440,5 +444,35 @@
     "instalar_ios": "To get alerts on iPhone, install the app: tap Share, then “Add to Home Screen”. Open it from the icon and turn on alerts.",
     "instalar_app": "Install the app",
     "error": "Alerts couldn't be changed. Try again."
+  },
+  "home": {
+    "saludo": "Hi, {{nombre}}",
+    "ver_perfil": "View my profile",
+    "lema": "Banquete is a community to share recipes with their ingredients and steps, time-saving tips and cooking experiences. Every post can be commented on and liked, so what you share comes back to you with ideas and answers.",
+    "tableros": "Your kitchen",
+    "crear": "Create a post",
+    "tablero_mias": "My posts",
+    "tablero_mias_detalle": "What you shared",
+    "tablero_guardadas": "Saved",
+    "tablero_guardadas_detalle": "Your favorites, from A to Z",
+    "tablero_gustadas": "Most liked",
+    "tablero_gustadas_detalle": "What the community likes most",
+    "tablero_receta": "Recipes",
+    "tablero_receta_detalle": "Ingredients and steps to cook",
+    "tablero_tip": "Cooking tips",
+    "tablero_tip_detalle": "Short tricks that save time",
+    "tablero_experiencia": "Experiences",
+    "tablero_experiencia_detalle": "How it turned out and what you learned",
+    "tablero_todas": "Everything shared",
+    "tablero_todas_detalle": "The latest from the community"
+  },
+  "guardadas": {
+    "titulo": "Saved",
+    "indice": "Alphabetical index",
+    "todas": "All",
+    "orden_alfabetico": "Sorted from A to Z",
+    "vacio": "You haven't saved any posts yet. Tap the bookmark on any of them to find it here.",
+    "tablero": "Saved",
+    "ver": "Your favorites, from A to Z"
   }
 }

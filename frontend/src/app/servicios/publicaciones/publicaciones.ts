@@ -3,6 +3,8 @@ import { inject, Service } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Comentario, PaginaComentarios } from '../../interfaces/comentario';
 import {
+  LetraDelIndice,
+  LetrasGuardadas,
   OrdenPublicaciones,
   PaginaPublicaciones,
   Publicacion,
@@ -32,6 +34,45 @@ export class PublicacionesApi {
       params['tipo'] = tipo;
     }
     return this.http.get<PaginaPublicaciones>(`${environment.API_URL}/publicaciones`, { params });
+  }
+
+  listarGuardadas(
+    offset: number,
+    limit = 10,
+    letra?: LetraDelIndice | null,
+    tipo?: Tipo,
+    q?: string,
+  ) {
+    const params: Record<string, string | number> = { offset, limit };
+    if (letra) {
+      params['letra'] = letra;
+    }
+    if (tipo) {
+      params['tipo'] = tipo;
+    }
+    if (q) {
+      params['q'] = q;
+    }
+    return this.http.get<PaginaPublicaciones>(`${environment.API_URL}/guardadas`, { params });
+  }
+
+  letrasGuardadas(q?: string) {
+    return this.http.get<LetrasGuardadas>(`${environment.API_URL}/guardadas/letras`, {
+      params: q ? { q } : {},
+    });
+  }
+
+  guardar(id: string) {
+    return this.http.post<{ guardada: boolean }>(
+      `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}/guardar`,
+      {},
+    );
+  }
+
+  quitarGuardada(id: string) {
+    return this.http.delete<void>(
+      `${environment.API_URL}/publicaciones/${encodeURIComponent(id)}/guardar`,
+    );
   }
 
   obtener(id: string) {

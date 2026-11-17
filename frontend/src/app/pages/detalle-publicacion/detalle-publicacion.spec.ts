@@ -200,8 +200,19 @@ describe('DetallePublicacion', () => {
     const detalle = fixture.nativeElement as HTMLElement;
     expect(detalle.textContent).toContain('Título 1');
     expect(detalle.textContent).toContain('Mensaje 1');
-    expect(detalle.querySelectorAll('.metrica')).toHaveLength(2);
+    expect(detalle.querySelectorAll('.metrica')).toHaveLength(3);
     expect(detalle.textContent).toContain('Laura Carelli');
+  });
+
+  it.each([
+    ['[Z] sin guardar ofrece guardarla', undefined, 'false'],
+    ['[I] ya guardada llega marcada', true, 'true'],
+  ])('%s', async (_caso, guardada, marcada) => {
+    await abrir(publicacionDePrueba(1, { guardada }));
+
+    const boton = fixture.nativeElement.querySelector('app-boton-guardar button') as HTMLElement;
+
+    expect(boton.getAttribute('aria-pressed')).toBe(marcada);
   });
 
   it('[E] con ingredientes y pasos en el formato viejo (texto) no muestra esas secciones', async () => {

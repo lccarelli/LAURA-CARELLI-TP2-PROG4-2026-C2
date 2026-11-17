@@ -1,0 +1,16 @@
+<button
+  type="button"
+  class="metrica boton-metrica"
+  [class.guardada]="estado()"
+  [disabled]="enviando()"
+  [attr.aria-pressed]="estado()"
+  [attr.aria-label]="
+    (estado() ? 'publicaciones.guardada_quitar' : 'publicaciones.guardada_dar') | translate
+  "
+  [attr.title]="
+    (estado() ? 'publicaciones.guardada_quitar' : 'publicaciones.guardada_dar') | translate
+  "
+  (click)="alternar()"
+>
+  <app-icono nombre="marcador" [chico]="true" [relleno]="estado()" />
+</button>

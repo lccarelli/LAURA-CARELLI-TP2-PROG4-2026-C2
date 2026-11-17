@@ -6,5 +6,5 @@ export const invitadoGuard: CanActivateFn = () => {
   const auth = inject(Auth);
   const router = inject(Router);
 
-  return auth.token() ? router.parseUrl('/publicaciones') : true;
+  return auth.token() ? router.parseUrl('/home') : true;
 };

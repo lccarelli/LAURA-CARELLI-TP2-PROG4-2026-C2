@@ -29,7 +29,8 @@
     "registrarme": "Registrarme",
     "idioma": "Idioma",
     "modo_oscuro": "Activar modo oscuro",
-    "modo_claro": "Activar modo claro"
+    "modo_claro": "Activar modo claro",
+    "home": "Inicio"
   },
   "inicio": {
     "titulo": "Un lugar para compartir tu mundo culinario",
@@ -188,7 +189,9 @@
     "guardando": "Guardando…",
     "guardar_cambios": "Guardar cambios",
     "editar": "Editar",
-    "editada": "Editada"
+    "editada": "Editada",
+    "guardada_dar": "Guardar",
+    "guardada_quitar": "Quitar de guardadas"
   },
   "comentarios": {
     "titulo": "Comentarios",
@@ -410,7 +413,8 @@
   "buscador": {
     "placeholder": "Buscar publicaciones",
     "limpiar": "Borrar la búsqueda",
-    "placeholder_mias": "Buscar en mis publicaciones"
+    "placeholder_mias": "Buscar en mis publicaciones",
+    "placeholder_guardadas": "Buscar en mis publicaciones guardadas"
   },
   "notificaciones": {
     "titulo": "Notificaciones",
@@ -440,5 +444,35 @@
     "instalar_ios": "Para recibir avisos en el iPhone, instalá la app: tocá Compartir y después «Agregar a inicio». Abrila desde el ícono y activá los avisos.",
     "instalar_app": "Instalar la app",
     "error": "No se pudo cambiar el estado de los avisos. Probá de nuevo."
+  },
+  "home": {
+    "saludo": "Hola, {{nombre}}",
+    "ver_perfil": "Ver mi perfil",
+    "lema": "Banquete es una comunidad para compartir recetas con sus ingredientes y pasos, tips que ahorran tiempo y experiencias de cocina. Cada publicación se puede comentar y marcar con me gusta, así lo que compartís vuelve a vos con ideas y respuestas.",
+    "tableros": "Tu cocina",
+    "crear": "Crear una publicación",
+    "tablero_mias": "Mis publicaciones",
+    "tablero_mias_detalle": "Lo que compartiste",
+    "tablero_guardadas": "Guardadas",
+    "tablero_guardadas_detalle": "Tus favoritas, de la A a la Z",
+    "tablero_gustadas": "Lo más gustado",
+    "tablero_gustadas_detalle": "Lo que más le gusta a la comunidad",
+    "tablero_receta": "Recetas",
+    "tablero_receta_detalle": "Ingredientes y pasos para cocinar",
+    "tablero_tip": "Tips culinarios",
+    "tablero_tip_detalle": "Trucos cortos que ahorran tiempo",
+    "tablero_experiencia": "Experiencias",
+    "tablero_experiencia_detalle": "Cómo te salió y qué aprendiste",
+    "tablero_todas": "Todo lo que se comparte",
+    "tablero_todas_detalle": "Lo último de la comunidad"
+  },
+  "guardadas": {
+    "titulo": "Guardadas",
+    "indice": "Índice alfabético",
+    "todas": "Todas",
+    "orden_alfabetico": "Ordenadas de la A a la Z",
+    "vacio": "Todavía no guardaste ninguna publicación. Tocá el marcador en cualquiera para encontrarla acá.",
+    "tablero": "Guardadas",
+    "ver": "Tus favoritas, de la A a la Z"
   }
 }

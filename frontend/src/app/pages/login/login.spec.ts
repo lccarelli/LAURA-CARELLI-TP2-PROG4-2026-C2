@@ -58,13 +58,13 @@ describe('Login', () => {
     expect(componente.mensajeDeError('clave')).toBe('Este campo es obligatorio');
   });
 
-  it('[O] con credenciales ingresa y va a publicaciones', async () => {
+  it('[O] con credenciales ingresa y va al inicio', async () => {
     componente.formulario.setValue({ identificador: 'laura_c', clave: 'Clave1234' });
 
     await enviar();
     http.expectOne(URL).flush({ token: 't', usuario: { _id: '1' } });
 
-    expect(navegar).toHaveBeenCalledWith('/publicaciones');
+    expect(navegar).toHaveBeenCalledWith('/home');
   });
 
   it.each([
@@ -73,8 +73,8 @@ describe('Login', () => {
       '/publicaciones/nueva',
       '/publicaciones/nueva',
     ],
-    ['[E] ignora un destino que sale de la aplicación', '//otro-sitio.com', '/publicaciones'],
-    ['[Z] sin destino recordado va a publicaciones', null, '/publicaciones'],
+    ['[E] ignora un destino que sale de la aplicación', '//otro-sitio.com', '/home'],
+    ['[Z] sin destino recordado va al inicio', null, '/home'],
   ])('%s', async (_nombre, recordado, esperado) => {
     TestBed.inject(Auth).volverA.set(recordado);
     componente.formulario.setValue({ identificador: 'laura_c', clave: 'Clave1234' });

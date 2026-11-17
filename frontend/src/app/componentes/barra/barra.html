@@ -13,6 +13,27 @@
     @if (auth.usuario(); as usuario) {
       <a
         class="item-nav"
+        routerLink="/home"
+        [attr.title]="'barra.home' | translate"
+        routerLinkActive="activo"
+      >
+        <svg
+          class="icono"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 11l8-7 8 7v9H4v-9z" />
+          <path d="M10 20v-6h4v6" />
+        </svg>
+        <span class="etiqueta-nav">{{ 'barra.home' | translate }}</span>
+      </a>
+      <a
+        class="item-nav"
         routerLink="/publicaciones"
         [attr.title]="'barra.publicaciones' | translate"
         routerLinkActive="activo"

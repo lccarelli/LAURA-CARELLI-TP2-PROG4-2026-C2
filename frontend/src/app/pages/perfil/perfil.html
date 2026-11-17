@@ -45,15 +45,18 @@
     <h2 class="pestana">{{ 'perfil.mi_actividad' | translate }}</h2>
 
     <div class="tableros">
-      <a class="tablero" routerLink="/perfil/publicaciones">
-        <span class="tablero-collage" aria-hidden="true">
-          @for (portada of portadas(); track portada) {
-            <img class="tablero-portada" [src]="portada" alt="" />
-          }
-        </span>
-        <span class="tablero-titulo">{{ 'perfil.mis_publicaciones' | translate }}</span>
-        <span class="meta">{{ 'perfil.ver_publicaciones' | translate }}</span>
-      </a>
+      <app-tablero
+        enlace="/perfil/publicaciones"
+        titulo="perfil.mis_publicaciones"
+        detalle="perfil.ver_publicaciones"
+        [portadas]="portadas()"
+      />
+      <app-tablero
+        enlace="/perfil/guardadas"
+        titulo="guardadas.tablero"
+        detalle="guardadas.ver"
+        [portadas]="portadasGuardadas()"
+      />
     </div>
   }
 </section>
