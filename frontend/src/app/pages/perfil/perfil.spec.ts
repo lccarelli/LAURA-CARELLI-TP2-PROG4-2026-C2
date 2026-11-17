@@ -7,6 +7,8 @@ import { PaginaPublicaciones, Publicacion } from '../../interfaces/publicacion';
 import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
 import { Idioma } from '../../servicios/idioma/idioma';
+import { comentarioDePrueba } from '../../../testing/comentario';
+import { PaginaComentarios } from '../../interfaces/comentario';
 import { Perfil } from './perfil';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 
@@ -228,6 +230,114 @@ describe('Perfil', () => {
       await mostrar(null);
 
       expect(http.match(URL)).toHaveLength(0);
+    });
+  });
+
+  describe('mis últimas 3 publicaciones con sus comentarios', () => {
+    const pedidoDeLaLista = () =>
+      http.expectOne(
+        (s) => s.url === URL && s.params.get('usuario') === '1' && s.params.get('limit') === '12',
+      );
+    const pedidoDeComentarios = (id: string) =>
+      http.expectOne((s) => s.url === `${URL}/${id}/comentarios`);
+    const actualizar = async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+    const articulos = () => fixture.nativeElement.querySelectorAll('article.ultima');
+    const paginaDeComentarios = (cantidad: number): PaginaComentarios => ({
+      datos: Array.from({ length: cantidad }, (_, i) =>
+        comentarioDePrueba({ _id: `c${i + 1}`, mensaje: `Comentario ${i + 1}` }),
+      ),
+      offset: 0,
+      limit: 3,
+      hayMas: false,
+    });
+    const listado = (cantidad: number): PaginaPublicaciones => ({
+      datos: Array.from({ length: cantidad }, (_, i) => publicacion(i + 1)),
+      offset: 0,
+      limit: 12,
+      hayMas: cantidad > 3,
+    });
+
+    it('[O] muestra sólo las 3 más recientes, con su título, aunque haya más', async () => {
+      await mostrar(usuario);
+      pedidoDeLaLista().flush(listado(8));
+      await actualizar();
+
+      expect(articulos()).toHaveLength(3);
+      expect(fixture.nativeElement.textContent).toContain('Mis últimas publicaciones');
+      expect(articulos()[0].textContent).toContain('Título 1');
+      expect(articulos()[2].textContent).toContain('Título 3');
+    });
+
+    it('[O] cada una pide y muestra sus propios últimos 3 comentarios', async () => {
+      await mostrar(usuario);
+      pedidoDeLaLista().flush(listado(2));
+      await actualizar();
+
+      const primera = pedidoDeComentarios('id1');
+      expect(primera.request.params.get('limit')).toBe('3');
+      expect(primera.request.params.get('offset')).toBe('0');
+      primera.flush(paginaDeComentarios(3));
+      pedidoDeComentarios('id2').flush(paginaDeComentarios(1));
+      await actualizar();
+
+      expect(articulos()[0].querySelectorAll('li.comentario')).toHaveLength(3);
+      expect(articulos()[1].querySelectorAll('li.comentario')).toHaveLength(1);
+      expect(articulos()[0].textContent).toContain('Comentario 1');
+    });
+
+    it('[I] enlaza a la publicación y a todos sus comentarios', async () => {
+      await mostrar(usuario);
+      pedidoDeLaLista().flush(listado(1));
+      await actualizar();
+      pedidoDeComentarios('id1').flush(paginaDeComentarios(2));
+      await actualizar();
+
+      const enlaces = Array.from(
+        articulos()[0].querySelectorAll('a') as NodeListOf<HTMLAnchorElement>,
+      ).map((a) => a.getAttribute('href'));
+
+      expect(enlaces).toEqual(['/publicaciones/id1', '/publicaciones/id1']);
+      expect(articulos()[0].textContent).toContain('Ver todos los comentarios (6)');
+    });
+
+    it('[Z] una publicación sin comentarios lo dice y no pide nada', async () => {
+      await mostrar(usuario);
+      pedidoDeLaLista().flush({
+        ...listado(1),
+        datos: [{ ...publicacion(1), cantidadComentarios: 0 }],
+      });
+      await actualizar();
+
+      http.expectNone((s) => s.url.endsWith('/comentarios'));
+      expect(articulos()[0].textContent).toContain('Todavía no tiene comentarios');
+    });
+
+    it('[E] si fallan los comentarios de una, las demás se siguen viendo', async () => {
+      await mostrar(usuario);
+      pedidoDeLaLista().flush(listado(2));
+      await actualizar();
+
+      pedidoDeComentarios('id1').flush(
+        { message: 'x', codigo: 'E' },
+        { status: 500, statusText: 'x' },
+      );
+      pedidoDeComentarios('id2').flush(paginaDeComentarios(2));
+      await actualizar();
+
+      expect(articulos()[0].textContent).toContain('No se pudieron cargar los comentarios');
+      expect(articulos()[1].querySelectorAll('li.comentario')).toHaveLength(2);
+    });
+
+    it('[Z] sin publicaciones no muestra la sección', async () => {
+      await mostrar(usuario);
+      pedidoDeLaLista().flush(listado(0));
+      await actualizar();
+
+      expect(articulos()).toHaveLength(0);
+      expect(fixture.nativeElement.textContent).not.toContain('Mis últimas publicaciones');
     });
   });
 

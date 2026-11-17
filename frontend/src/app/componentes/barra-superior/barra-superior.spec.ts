@@ -161,4 +161,49 @@ describe('BarraSuperior', () => {
 
     expect(campo().value).toBe('');
   });
+
+  describe('al desplazarse', () => {
+    const desplazarA = (posicion: number) => {
+      Object.defineProperty(window, 'scrollY', { value: posicion, configurable: true });
+      window.dispatchEvent(new Event('scroll'));
+      fixture.detectChanges();
+    };
+    const escondida = () => el('.barra-superior').classList.contains('oculta');
+
+    afterEach(() => desplazarA(0));
+
+    it('[Z] al abrir la página se ve', async () => {
+      await iniciarSesion();
+
+      expect(escondida()).toBe(false);
+    });
+
+    it('[I] al bajar se esconde y al subir vuelve a aparecer', async () => {
+      await iniciarSesion();
+
+      desplazarA(300);
+      expect(escondida()).toBe(true);
+
+      desplazarA(200);
+      expect(escondida()).toBe(false);
+    });
+
+    it('[S] al volver a bajar se esconde otra vez', async () => {
+      await iniciarSesion();
+      desplazarA(300);
+      desplazarA(200);
+
+      desplazarA(450);
+
+      expect(escondida()).toBe(true);
+    });
+
+    it('[B] arriba de todo siempre se ve', async () => {
+      await iniciarSesion();
+
+      desplazarA(40);
+
+      expect(escondida()).toBe(false);
+    });
+  });
 });

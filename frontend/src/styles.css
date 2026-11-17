@@ -832,7 +832,11 @@ body {
   }
 
   .barra-superior {
-    @apply sticky top-[4.25rem] z-20 flex items-center gap-3 bg-papel px-4 py-3 lg:top-0 lg:px-6;
+    @apply sticky top-[4.25rem] z-20 flex items-center gap-3 bg-papel px-4 py-3 motion-safe:transition-transform motion-safe:duration-200 lg:top-0 lg:px-6;
+  }
+
+  .barra-superior.oculta {
+    @apply -translate-y-full focus-within:translate-y-0;
   }
 
   .buscador-barra {
@@ -1022,15 +1026,11 @@ body {
   }
 
   .item-nav {
-    @apply flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-full px-0.5 py-1.5 text-center text-[0.7rem] leading-tight anillo-foco hover:bg-secundario/40 lg:size-12 lg:flex-none lg:justify-center lg:rounded-2xl lg:p-0 lg:hover:bg-hoja/40;
+    @apply flex min-w-0 flex-1 flex-col items-center justify-center rounded-full px-0.5 py-3 text-center anillo-foco hover:bg-secundario/40 lg:size-12 lg:flex-none lg:justify-center lg:rounded-2xl lg:p-0 lg:hover:bg-hoja/40;
   }
 
   .item-nav.activo {
     @apply bg-acento text-acento-tinta lg:bg-hoja lg:text-tinta;
-  }
-
-  .item-nav .etiqueta-nav {
-    @apply not-sr-only max-w-full truncate lg:sr-only;
   }
 
   .icono {
@@ -1038,8 +1038,12 @@ body {
   }
 
   @media (width < 64rem) {
-    .barra-nav.subiendo {
-      animation: empujon 0.28s ease-out;
+    .barra-nav {
+      @apply motion-safe:transition-transform motion-safe:duration-200;
+    }
+
+    .barra-nav.oculta {
+      @apply translate-y-[calc(100%+1.5rem+env(safe-area-inset-bottom))] focus-within:translate-y-0;
     }
   }
 
@@ -1220,6 +1224,34 @@ body {
     @apply list-decimal pl-5 text-sm text-suave;
   }
 
+  .ultimas {
+    @apply flex flex-col gap-4;
+  }
+
+  .ultima {
+    @apply grid gap-5 rounded-3xl bg-hoja p-4 shadow-flota md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:p-5;
+  }
+
+  .ultima-cabecera {
+    @apply flex items-start gap-4 rounded-2xl anillo-foco;
+  }
+
+  .ultima-imagen {
+    @apply size-24 shrink-0 rounded-2xl object-cover md:size-28;
+  }
+
+  .ultima-texto {
+    @apply flex min-w-0 flex-col items-start gap-1;
+  }
+
+  .ultima-titulo {
+    @apply font-serif text-xl leading-tight font-black break-words text-tinta;
+  }
+
+  .ultima-comentarios {
+    @apply flex flex-col gap-3 border-t border-linea/25 pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-5;
+  }
+
   .tableros {
     @apply grid grid-cols-2 gap-x-5 gap-y-8 md:grid-cols-3 xl:grid-cols-5;
   }
@@ -1359,14 +1391,5 @@ body {
   100% {
     opacity: 0;
     transform: translateY(-14px);
-  }
-}
-
-@keyframes empujon {
-  from {
-    transform: translateY(0.5rem);
-  }
-  to {
-    transform: translateY(0);
   }
 }

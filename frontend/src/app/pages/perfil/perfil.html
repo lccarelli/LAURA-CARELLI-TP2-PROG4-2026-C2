@@ -42,6 +42,52 @@
       </div>
     </dl>
 
+    @if (ultimas().length) {
+      <h2 class="pestana">{{ 'perfil.ultimas_publicaciones' | translate }}</h2>
+
+      <div class="ultimas">
+        @for (publicacion of ultimas(); track publicacion._id) {
+          <article class="ultima">
+            <a class="ultima-cabecera" [routerLink]="['/publicaciones', publicacion._id]">
+              @if (publicacion.imagen; as imagen) {
+                <img class="ultima-imagen" [src]="imagen" alt="" />
+              }
+              <span class="ultima-texto">
+                <span class="pin-tipo">{{ 'tipos.' + publicacion.tipo | translate }}</span>
+                <span class="ultima-titulo">{{ publicacion.titulo }}</span>
+                <span class="meta">{{ publicacion.fecha | fechaRelativa }}</span>
+                <span class="metricas">
+                  <span
+                    class="metrica"
+                    [attr.aria-label]="
+                      'publicaciones.me_gusta_total' | translate: { n: publicacion.cantidadMeGusta }
+                    "
+                  >
+                    <app-icono nombre="corazon" [chico]="true" />
+                    <span aria-hidden="true">{{ publicacion.cantidadMeGusta }}</span>
+                  </span>
+                  <span
+                    class="metrica"
+                    [attr.aria-label]="
+                      'publicaciones.comentarios'
+                        | translate: { n: publicacion.cantidadComentarios }
+                    "
+                  >
+                    <app-icono nombre="comentario" [chico]="true" />
+                    <span aria-hidden="true">{{ publicacion.cantidadComentarios }}</span>
+                  </span>
+                </span>
+              </span>
+            </a>
+            <app-ultimos-comentarios
+              [publicacionId]="publicacion._id"
+              [cantidad]="publicacion.cantidadComentarios"
+            />
+          </article>
+        }
+      </div>
+    }
+
     <h2 class="pestana">{{ 'perfil.mi_actividad' | translate }}</h2>
 
     <div class="tableros">

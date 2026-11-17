@@ -235,7 +235,12 @@
     "cancelar": "Cancelar",
     "mi_actividad": "Mi actividad",
     "ver_publicaciones": "Ver todas, buscar y filtrar",
-    "titulo": "Mi perfil"
+    "titulo": "Mi perfil",
+    "ultimas_publicaciones": "Mis últimas publicaciones",
+    "ultimos_comentarios": "Últimos comentarios",
+    "sin_comentarios": "Todavía no tiene comentarios.",
+    "error_comentarios": "No se pudieron cargar los comentarios",
+    "ver_comentarios": "Ver todos los comentarios ({{n}})"
   },
   "usuarios": {
     "titulo": "Usuarios",

@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { Auth } from '../../servicios/auth/auth';
+import { Desplazamiento } from '../../servicios/desplazamiento/desplazamiento';
 import { Buscador } from '../buscador/buscador';
 import { Campanita } from '../campanita/campanita';
 
@@ -23,6 +24,7 @@ const BUSCABLES: Record<string, string> = {
 })
 export class BarraSuperior {
   protected auth = inject(Auth);
+  protected desplazamiento = inject(Desplazamiento);
   private router = inject(Router);
 
   private readonly url = toSignal(
