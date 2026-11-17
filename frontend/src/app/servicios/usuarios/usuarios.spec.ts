@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
+import { SIN_INDICADOR_DE_CARGA } from '../carga/carga';
 import { UsuariosApi } from './usuarios';
 
 const URL = `${environment.API_URL}/usuarios`;
@@ -151,5 +152,17 @@ describe('UsuariosApi', () => {
 
     expect(solicitud.request.url).toContain('/usuarios/a%2Fb');
     solicitud.flush({});
+  });
+
+  it('[O] registrarVisita avisa con POST a la ruta de visitas del usuario, sin mostrar el indicador de espera', () => {
+    TestBed.inject(UsuariosApi).registrarVisita('u7').subscribe();
+
+    const solicitud = TestBed.inject(HttpTestingController).expectOne(
+      `${environment.API_URL}/usuarios/u7/visitas`,
+    );
+
+    expect(solicitud.request.method).toBe('POST');
+    expect(solicitud.request.context.get(SIN_INDICADOR_DE_CARGA)).toBe(true);
+    solicitud.flush({ registrada: true });
   });
 });

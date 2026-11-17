@@ -6,9 +6,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
+import { InjectModel } from '@nestjs/mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   EVENTOS_DE_LOG,
   LoggerFactory,
@@ -18,6 +19,7 @@ import { UsuariosService } from '../usuarios/usuarios.service.js';
 import { authConfig } from './auth.config.js';
 import { IngresarDto } from './dto/ingresar.dto.js';
 import { RegistroDto } from './dto/registro.dto.js';
+import { Ingreso } from './schemas/ingreso.schema.js';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +29,8 @@ export class AuthService {
     @Inject(authConfig.KEY)
     private readonly config: ConfigType<typeof authConfig>,
     private readonly usuariosService: UsuariosService,
+    @InjectModel(Ingreso.name)
+    private readonly ingresoModel: Model<Ingreso>,
     loggerFactory: LoggerFactory,
   ) {
     this.logger = loggerFactory.crear(AuthService.name);
@@ -83,6 +87,7 @@ export class AuthService {
       nombre_usuario: encontrado.nombreUsuario,
     });
 
+    await this.registrarIngreso(encontrado._id);
     const { clave: _clave, ...usuario } = encontrado;
     return { token: this.generarToken(usuario), usuario };
   }
@@ -102,8 +107,21 @@ export class AuthService {
       id_usuario: String(encontrado._id),
       nombre_usuario: encontrado.nombreUsuario,
     });
+    await this.registrarIngreso(encontrado._id);
     const { clave: _clave, ...usuario } = encontrado;
     return { token: this.generarToken(usuario), usuario };
+  }
+
+  private async registrarIngreso(usuario: Types.ObjectId) {
+    try {
+      await this.ingresoModel.create({ usuario });
+    } catch (error) {
+      this.logger.advertir(
+        EVENTOS_DE_LOG.INGRESO_NO_REGISTRADO,
+        'No se pudo registrar el ingreso',
+        { id_usuario: String(usuario), motivo: (error as Error).message },
+      );
+    }
   }
 
   verificarToken(token: string) {

@@ -5,6 +5,8 @@ import { LoggerFactory } from '../logs/logs.factory.js';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
 import { authConfig } from './auth.config.js';
 import { AuthGuard } from './auth.guard.js';
+import type { Model } from 'mongoose';
+import type { Ingreso } from './schemas/ingreso.schema.js';
 import { AuthService } from './auth.service.js';
 
 const SECRETO = 'secreto-de-pruebas';
@@ -27,6 +29,7 @@ describe('AuthGuard', () => {
   const authService = new AuthService(
     config,
     {} as UsuariosService,
+    {} as Model<Ingreso>,
     loggerFactory,
   );
   const guard = new AuthGuard(authService, loggerFactory);

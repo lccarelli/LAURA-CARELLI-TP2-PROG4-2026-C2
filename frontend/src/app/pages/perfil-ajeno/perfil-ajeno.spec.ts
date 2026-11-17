@@ -72,6 +72,43 @@ describe('PerfilAjeno', () => {
     TestBed.inject(Auth).usuario.set(usuarioDePrueba);
   });
 
+  it('[O] al mostrar el perfil registra la visita a esa persona', async () => {
+    await abrir();
+    pedirPerfil().flush(perfil);
+    await actualizar();
+
+    const visita = http.expectOne({ method: 'POST', url: `${RAIZ}/usuarios/u7/visitas` });
+
+    expect(visita.request.method).toBe('POST');
+    visita.flush({ registrada: true });
+    pedirPublicaciones().flush(pagina([]));
+  });
+
+  it('[E] si el perfil no existe no registra ninguna visita', async () => {
+    await abrir();
+    pedirPerfil().flush(
+      { codigo: 'USUARIO_NO_ENCONTRADO' },
+      { status: 404, statusText: 'Not Found' },
+    );
+    await actualizar();
+
+    expect(http.match(`${RAIZ}/usuarios/u7/visitas`)).toHaveLength(0);
+  });
+
+  it('[E] si falla el registro de la visita la pantalla sigue mostrando el perfil', async () => {
+    await abrir();
+    pedirPerfil().flush(perfil);
+    await actualizar();
+    http
+      .expectOne({ method: 'POST', url: `${RAIZ}/usuarios/u7/visitas` })
+      .flush({}, { status: 500, statusText: 'Error' });
+    pedirPublicaciones().flush(pagina([]));
+    await actualizar();
+
+    expect(texto()).toContain('ana_g');
+    expect(fixture.componentInstance.mensajeError()).toBeNull();
+  });
+
   it('[O] pide el perfil por el id de la dirección y muestra nombre, usuario y descripción', async () => {
     await abrir();
     pedirPerfil().flush(perfil);

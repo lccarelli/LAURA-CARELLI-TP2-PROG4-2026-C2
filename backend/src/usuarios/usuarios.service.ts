@@ -21,6 +21,7 @@ import {
 import { EditarPerfilDto } from './dto/editar-perfil.dto.js';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto.js';
 import { Usuario } from './schemas/usuario.schema.js';
+import { Visita } from './schemas/visita.schema.js';
 
 @Injectable()
 export class UsuariosService {
@@ -28,6 +29,7 @@ export class UsuariosService {
 
   constructor(
     @InjectModel(Usuario.name) private readonly usuarioModel: Model<Usuario>,
+    @InjectModel(Visita.name) private readonly visitaModel: Model<Visita>,
     @Inject(authConfig.KEY)
     private readonly config: ConfigType<typeof authConfig>,
     private readonly imagenesService: ImagenesService,
@@ -98,6 +100,22 @@ export class UsuariosService {
       });
     }
     return usuario;
+  }
+
+  async registrarVisita(visitanteId: string, id: string) {
+    if (visitanteId === id) {
+      throw new BadRequestException({
+        message: 'No se registran las visitas al propio perfil',
+        codigo: 'VISITA_PROPIA',
+      });
+    }
+    await this.perfilPublico(id);
+    await this.visitaModel.create({ visitante: visitanteId, visitado: id });
+    this.logger.info(EVENTOS_DE_LOG.VISITA_REGISTRADA, 'Visita registrada', {
+      id_visitante: visitanteId,
+      id_visitado: id,
+    });
+    return { registrada: true };
   }
 
   async asegurarCuentaDeAdministrador(dto: RegistroDto) {
