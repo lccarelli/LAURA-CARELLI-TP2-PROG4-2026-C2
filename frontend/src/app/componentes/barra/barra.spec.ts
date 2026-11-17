@@ -128,6 +128,7 @@ describe('Barra', () => {
     await iniciarSesion();
 
     botonSalir().click();
+    await fixture.whenStable();
 
     expect(TestBed.inject(Auth).token()).toBeNull();
     expect(navegar).toHaveBeenCalledWith(['/']);

@@ -21,6 +21,9 @@ import {
 import type { ArchivosPublicacion } from './archivos-publicacion.pipe.js';
 import { EventosMeGustaService } from './eventos-me-gusta.service.js';
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
+import { EditarPublicacionDto } from './dto/editar-publicacion.dto.js';
+import { MAXIMO_FOTOS_POR_PASO } from '../imagenes/imagenes.constantes.js';
+import type { PasoDto, PasoEdicionDto } from './dto/paso.dto.js';
 import { filtroDeBusqueda } from '../common/busqueda.js';
 import { NotificacionesService } from '../notificaciones/notificaciones.service.js';
 import { ListarPublicacionesDto } from './dto/listar-publicaciones.dto.js';
@@ -28,6 +31,12 @@ import { MeGusta } from './schemas/me-gusta.schema.js';
 import { Publicacion } from './schemas/publicacion.schema.js';
 
 type PublicacionConId = { _id: Types.ObjectId };
+
+type PublicacionEditable = {
+  usuario: Types.ObjectId;
+  tipo: string;
+  pasos?: { imagenes?: string[] }[];
+};
 
 type Listado = {
   datos: PublicacionConId[];
@@ -85,7 +94,7 @@ export class PublicacionesService {
   ) {
     const imagen = archivos?.imagen?.[0];
     const fotosPasos = archivos?.imagenesPasos ?? [];
-    this.validarFotosDePasos(dto, fotosPasos.length);
+    this.validarFotosDePasos(dto.pasos, fotosPasos.length);
 
     const urlImagen = imagen
       ? (
@@ -99,7 +108,7 @@ export class PublicacionesService {
       : undefined;
 
     const pasos = dto.pasos
-      ? await this.subirFotosDePasos(dto, fotosPasos, usuarioId)
+      ? await this.subirFotosDePasos(dto.pasos, dto.tipo, fotosPasos, usuarioId)
       : undefined;
 
     const creada = await this.publicacionModel.create({
@@ -128,36 +137,45 @@ export class PublicacionesService {
     return creada.toObject();
   }
 
-  private validarFotosDePasos(dto: CrearPublicacionDto, cantidad: number) {
-    const usadas = (dto.pasos ?? []).flatMap(({ fotos }) => fotos ?? []);
+  private validarFotosDePasos(pasos: PasoDto[] | undefined, cantidad: number) {
+    const usadas = (pasos ?? []).flatMap(({ fotos }) => fotos ?? []);
     const repetida = new Set(usadas).size !== usadas.length;
     if (repetida || usadas.some((foto) => foto >= cantidad)) {
-      throw new BadRequestException({
-        message:
-          'Las fotos de los pasos no coinciden con los archivos enviados',
-        codigo: 'FOTO_DE_PASO_INVALIDA',
-      });
+      throw this.fotoDePasoInvalida(
+        'Las fotos de los pasos no coinciden con los archivos enviados',
+      );
     }
   }
 
+  private fotoDePasoInvalida(message: string) {
+    return new BadRequestException({
+      message,
+      codigo: 'FOTO_DE_PASO_INVALIDA',
+    });
+  }
+
   private subirFotosDePasos(
-    dto: CrearPublicacionDto,
+    pasos: PasoDto[] | PasoEdicionDto[],
+    tipo: string,
     fotos: Express.Multer.File[],
     usuarioId: string,
   ) {
     return Promise.all(
-      (dto.pasos ?? []).map(async ({ titulo, texto, fotos: indices = [] }) => {
-        const imagenes = await Promise.all(
+      pasos.map(async (paso) => {
+        const { titulo, texto, fotos: indices = [] } = paso;
+        const conservadas = (paso as PasoEdicionDto).imagenes ?? [];
+        const nuevas = await Promise.all(
           indices.map(async (indice) => {
             const { url } = await this.imagenesService.guardar(
               fotos[indice],
               Destino.PUBLICACIONES,
               usuarioId,
-              `${dto.tipo}-paso-${indice}`,
+              `${tipo}-paso-${indice}`,
             );
             return url;
           }),
         );
+        const imagenes = [...conservadas, ...nuevas];
         return {
           ...(texto && { texto }),
           ...(titulo && { titulo }),
@@ -165,6 +183,113 @@ export class PublicacionesService {
         };
       }),
     );
+  }
+
+  async editar(
+    id: string,
+    usuarioId: string,
+    dto: EditarPublicacionDto,
+    archivos?: ArchivosPublicacion,
+  ) {
+    const actual = await this.publicacionModel
+      .findOne({ _id: id, activa: true })
+      .select('usuario tipo pasos')
+      .lean<PublicacionEditable>();
+    if (!actual) {
+      throw this.noEncontrada();
+    }
+    if (String(actual.usuario) !== usuarioId) {
+      throw new ForbiddenException({
+        message: 'Sólo podés editar tus propias publicaciones',
+        codigo: 'PUBLICACION_AJENA',
+      });
+    }
+    const fotosNuevas = archivos?.imagenesPasos ?? [];
+    this.validarFotosDePasos(dto.pasos, fotosNuevas.length);
+    this.validarFotosConservadas(dto.pasos, actual.pasos);
+
+    const portada = archivos?.imagen?.[0];
+    const urlPortada = portada
+      ? (
+          await this.imagenesService.guardar(
+            portada,
+            Destino.PUBLICACIONES,
+            usuarioId,
+            actual.tipo,
+          )
+        ).url
+      : undefined;
+    const pasos = dto.pasos?.length
+      ? await this.subirFotosDePasos(
+          dto.pasos,
+          actual.tipo,
+          fotosNuevas,
+          usuarioId,
+        )
+      : undefined;
+
+    const nuevos = {
+      titulo: dto.titulo,
+      mensaje: dto.mensaje,
+      fechaEdicion: new Date(),
+      ingredientes: dto.ingredientes?.length ? dto.ingredientes : undefined,
+      pasos,
+      porciones: dto.porciones,
+      tipoRinde: dto.tipoRinde,
+      tiempoMinutos: dto.tiempoMinutos,
+      costo: dto.costo,
+      calorias: dto.calorias,
+      imagen: urlPortada,
+    };
+    const quitar = dto.quitarImagen && !urlPortada ? ['imagen'] : [];
+    const sinValor = Object.entries(nuevos)
+      .filter(([campo, valor]) => valor === undefined && campo !== 'imagen')
+      .map(([campo]) => campo)
+      .concat(quitar);
+    await this.publicacionModel.updateOne(
+      { _id: id },
+      {
+        $set: Object.fromEntries(
+          Object.entries(nuevos).filter(([, valor]) => valor !== undefined),
+        ),
+        ...(sinValor.length && {
+          $unset: Object.fromEntries(sinValor.map((campo) => [campo, ''])),
+        }),
+      },
+    );
+    await this.cache.clear();
+    this.logger.info(
+      EVENTOS_DE_LOG.PUBLICACION_EDITADA,
+      'Publicación editada',
+      {
+        id_publicacion: id,
+        id_usuario: usuarioId,
+        nombre_usuario: await this.nombreDe(usuarioId),
+        tipo: actual.tipo,
+      },
+    );
+    return this.obtener(id, usuarioId);
+  }
+
+  private validarFotosConservadas(
+    pasos: PasoEdicionDto[] | undefined,
+    pasosActuales: PublicacionEditable['pasos'],
+  ) {
+    const existentes = new Set(
+      (pasosActuales ?? []).flatMap(({ imagenes }) => imagenes ?? []),
+    );
+    const conservadas = (pasos ?? []).flatMap(({ imagenes }) => imagenes ?? []);
+    const repetida = new Set(conservadas).size !== conservadas.length;
+    const ajena = conservadas.some((url) => !existentes.has(url));
+    const demasiadas = (pasos ?? []).some(
+      ({ imagenes, fotos }) =>
+        (imagenes?.length ?? 0) + (fotos?.length ?? 0) > MAXIMO_FOTOS_POR_PASO,
+    );
+    if (repetida || ajena || demasiadas) {
+      throw this.fotoDePasoInvalida(
+        'Las fotos que se conservan no pertenecen a esta publicación',
+      );
+    }
   }
 
   async obtener(id: string, usuarioId: string) {

@@ -8,6 +8,7 @@ import { AppModule } from '../../src/app.module.js';
 import { LimiteSolicitudesGuard } from '../../src/common/limite-solicitudes.guard.js';
 import type { Destino } from '../../src/imagenes/destinos.js';
 import { CloudinaryCliente } from '../../src/imagenes/cloudinary.cliente.js';
+import { ClienteWebPush } from '../../src/push/cliente-web-push.js';
 import { aplicarValidacionGlobal } from '../../src/validacion-global.js';
 import { PUBLIC_ID_IMAGEN_SUBIDA, URL_IMAGEN_SUBIDA } from './datos.js';
 
@@ -25,12 +26,20 @@ export const cloudinaryFalso = {
   borrar: vi.fn(async (_publicId: string) => undefined),
 };
 
+export const webPushFalso = {
+  habilitado: true,
+  clavePublica: 'clave-publica-de-prueba',
+  enviar: vi.fn(async (_destino: object, _contenido: object) => undefined),
+};
+
 export async function crearApp(conLimites = false): Promise<INestApplication> {
   let constructor = Test.createTestingModule({
     imports: [AppModule],
   })
     .overrideProvider(CloudinaryCliente)
-    .useValue(cloudinaryFalso);
+    .useValue(cloudinaryFalso)
+    .overrideProvider(ClienteWebPush)
+    .useValue(webPushFalso);
   if (!conLimites) {
     constructor = constructor
       .overrideProvider(LimiteSolicitudesGuard)

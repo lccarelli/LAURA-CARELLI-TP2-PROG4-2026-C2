@@ -28,6 +28,7 @@ import type { ArchivosPublicacion } from './archivos-publicacion.pipe.js';
 import { ComentarioParamDto } from './dto/comentario-param.dto.js';
 import { CrearComentarioDto } from './dto/crear-comentario.dto.js';
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
+import { EditarPublicacionDto } from './dto/editar-publicacion.dto.js';
 import { EditarComentarioDto } from './dto/editar-comentario.dto.js';
 import { ListarPublicacionesDto } from './dto/listar-publicaciones.dto.js';
 import { PublicacionesService } from './publicaciones.service.js';
@@ -56,6 +57,30 @@ export class PublicacionesController {
     @UploadedFiles(ArchivosPublicacionPipe) archivos: ArchivosPublicacion,
   ) {
     return this.publicacionesService.crear(solicitud.usuario.id, dto, archivos);
+  }
+
+  @Put(':id')
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'imagen', maxCount: 1 },
+        { name: 'imagenesPasos', maxCount: MAXIMO_FOTOS_PASOS },
+      ],
+      { limits: { fileSize: TAMANO_MAXIMO_IMAGEN } },
+    ),
+  )
+  editar(
+    @Param() { id }: IdParamDto,
+    @Req() solicitud: SolicitudAutenticada,
+    @Body() dto: EditarPublicacionDto,
+    @UploadedFiles(ArchivosPublicacionPipe) archivos: ArchivosPublicacion,
+  ) {
+    return this.publicacionesService.editar(
+      id,
+      solicitud.usuario.id,
+      dto,
+      archivos,
+    );
   }
 
   @Get()

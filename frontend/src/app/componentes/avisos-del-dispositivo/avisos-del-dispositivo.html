@@ -1,0 +1,44 @@
+@if (avisos.estado() !== 'no-disponible' || instalacion.puedeInstalar()) {
+  <section class="avisos-dispositivo" [attr.aria-label]="'avisos.titulo' | translate">
+    @switch (avisos.estado()) {
+      @case ('instalar') {
+        <p class="avisos-texto">{{ 'avisos.instalar_ios' | translate }}</p>
+      }
+      @case ('bloqueado') {
+        <p class="avisos-texto">{{ 'avisos.bloqueado' | translate }}</p>
+      }
+      @case ('inactivo') {
+        <p class="avisos-texto">{{ 'avisos.explicacion' | translate }}</p>
+        <button
+          type="button"
+          class="boton-secundario"
+          [disabled]="avisos.trabajando()"
+          (click)="avisos.activar()"
+        >
+          {{ (avisos.trabajando() ? 'avisos.activando' : 'avisos.activar') | translate }}
+        </button>
+      }
+      @case ('activo') {
+        <p class="avisos-texto">{{ 'avisos.activados' | translate }}</p>
+        <button
+          type="button"
+          class="boton-secundario"
+          [disabled]="avisos.trabajando()"
+          (click)="avisos.desactivar()"
+        >
+          {{ 'avisos.desactivar' | translate }}
+        </button>
+      }
+    }
+
+    @if (avisos.fallo()) {
+      <p class="mensaje-error" role="alert">{{ 'avisos.error' | translate }}</p>
+    }
+
+    @if (instalacion.puedeInstalar()) {
+      <button type="button" class="boton-principal" (click)="instalacion.instalar()">
+        {{ 'avisos.instalar_app' | translate }}
+      </button>
+    }
+  </section>
+}

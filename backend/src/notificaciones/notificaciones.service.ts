@@ -11,6 +11,7 @@ import {
   Notificacion,
   TIPOS_NOTIFICACION,
 } from './schemas/notificacion.schema.js';
+import { PushService } from '../push/push.service.js';
 import { WebhookService } from './webhook.service.js';
 
 export type DatosNotificacion = {
@@ -21,6 +22,19 @@ export type DatosNotificacion = {
 };
 
 type NotificacionGuardada = Notificacion & { _id: Types.ObjectId };
+
+const TITULOS = { es: 'Banquete', en: 'Banquete' } as const;
+
+const TEXTOS = {
+  comentario: {
+    es: (actor: string, titulo: string) => `${actor} comentó en «${titulo}»`,
+    en: (actor: string, titulo: string) => `${actor} commented on “${titulo}”`,
+  },
+  me_gusta: {
+    es: (actor: string, titulo: string) => `A ${actor} le gustó «${titulo}»`,
+    en: (actor: string, titulo: string) => `${actor} liked “${titulo}”`,
+  },
+} as const;
 
 const aRespuesta = (notificacion: NotificacionGuardada) => ({
   _id: notificacion._id,
@@ -42,6 +56,7 @@ export class NotificacionesService {
     @InjectModel(Notificacion.name)
     private readonly notificacionModel: Model<Notificacion>,
     private readonly webhook: WebhookService,
+    private readonly push: PushService,
     loggerFactory: LoggerFactory,
   ) {
     this.logger = loggerFactory.crear(NotificacionesService.name);
@@ -55,6 +70,7 @@ export class NotificacionesService {
       const fecha = new Date();
       const creada = await this.guardar(datos, fecha);
       if (creada) {
+        await this.avisarAlDispositivo(datos);
         await this.webhook.avisar({
           evento: datos.tipo,
           publicacion: datos.publicacion,
@@ -75,6 +91,17 @@ export class NotificacionesService {
         },
       );
     }
+  }
+
+  private avisarAlDispositivo(datos: DatosNotificacion) {
+    return this.push.avisar(datos.destinatarioId, (idioma) => ({
+      titulo: TITULOS[idioma],
+      texto: TEXTOS[datos.tipo][idioma](
+        datos.actor.nombreUsuario,
+        datos.publicacion.titulo,
+      ),
+      ruta: `/publicaciones/${datos.publicacion.id}${datos.tipo === 'comentario' ? '#comentarios' : ''}`,
+    }));
   }
 
   async listar(

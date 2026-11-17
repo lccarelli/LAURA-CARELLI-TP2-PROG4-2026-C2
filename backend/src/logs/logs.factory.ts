@@ -15,6 +15,7 @@ export const EVENTOS_DE_LOG = {
   ME_GUSTA_QUITADO: 'me_gusta_quitado',
   LIMITE_SUPERADO: 'limite_superado',
   PUBLICACION_CREADA: 'publicacion_creada',
+  PUBLICACION_EDITADA: 'publicacion_editada',
   PUBLICACION_ELIMINADA: 'publicacion_eliminada',
   SERVIDOR_INICIADO: 'servidor_iniciado',
   SOLICITUD_EXITOSA: 'solicitud_exitosa',
@@ -30,6 +31,7 @@ export const EVENTOS_DE_LOG = {
   USUARIO_NO_AUTORIZADO: 'usuario_no_autorizado',
   USUARIO_REGISTRADO: 'usuario_registrado',
   NOTIFICACION_NO_REGISTRADA: 'notificacion_no_registrada',
+  PUSH_NO_ENVIADO: 'push_no_enviado',
   WEBHOOK_NO_ENVIADO: 'webhook_no_enviado',
 } as const;
 

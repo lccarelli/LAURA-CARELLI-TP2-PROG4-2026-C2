@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../auth/auth.module.js';
+import { PushModule } from '../push/push.module.js';
 import { NotificacionesController } from './notificaciones.controller.js';
 import { NotificacionesService } from './notificaciones.service.js';
 import {
@@ -18,6 +19,7 @@ import { WebhookService } from './webhook.service.js';
     ]),
     ConfigModule.forFeature(webhookConfig),
     AuthModule,
+    PushModule,
   ],
   controllers: [NotificacionesController],
   providers: [NotificacionesService, WebhookService],

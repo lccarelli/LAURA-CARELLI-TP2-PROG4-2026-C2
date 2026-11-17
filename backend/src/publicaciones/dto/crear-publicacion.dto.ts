@@ -21,7 +21,7 @@ export const TIPOS_RINDE = ['porciones', 'unidades'] as const;
 
 export const TIPOS_PUBLICACION = ['receta', 'tip', 'experiencia'] as const;
 
-function leerJson(texto: string): unknown {
+export function leerJson(texto: string): unknown {
   try {
     return JSON.parse(texto);
   } catch {
@@ -29,10 +29,7 @@ function leerJson(texto: string): unknown {
   }
 }
 
-export class CrearPublicacionDto {
-  @IsIn(TIPOS_PUBLICACION)
-  tipo: (typeof TIPOS_PUBLICACION)[number];
-
+export class DatosPublicacionDto {
   @SacarEspacios()
   @IsString()
   @IsNotEmpty()
@@ -88,19 +85,27 @@ export class CrearPublicacionDto {
   @ArrayMaxSize(40)
   @ValidateNested({ each: true })
   ingredientes?: IngredienteDto[];
+}
 
-  @IsOptional()
-  @Transform(({ value }) => {
+export const comoPasos = <T extends object>(clase: new () => T) =>
+  Transform(({ value }) => {
     const lista = typeof value === 'string' ? leerJson(value) : value;
     return Array.isArray(lista)
       ? lista.map((paso: unknown) =>
           plainToInstance(
-            PasoDto,
+            clase,
             typeof paso === 'string' ? { texto: paso } : paso,
           ),
         )
       : lista;
-  })
+  });
+
+export class CrearPublicacionDto extends DatosPublicacionDto {
+  @IsIn(TIPOS_PUBLICACION)
+  tipo: (typeof TIPOS_PUBLICACION)[number];
+
+  @IsOptional()
+  @comoPasos(PasoDto)
   @IsArray()
   @ArrayMaxSize(40)
   @ValidateNested({ each: true })

@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { AvisosPush } from '../../servicios/avisos-push/avisos-push';
 import { Auth } from '../../servicios/auth/auth';
 import { Idioma } from '../../servicios/idioma/idioma';
 import { Tema } from '../../servicios/tema/tema';
@@ -18,6 +19,7 @@ export class Barra {
   protected auth = inject(Auth);
   protected idioma = inject(Idioma);
   protected tema = inject(Tema);
+  private avisosPush = inject(AvisosPush);
   private router = inject(Router);
   private posicion = 0;
 
@@ -33,7 +35,8 @@ export class Barra {
     this.posicion = actual;
   }
 
-  salir() {
+  async salir() {
+    await this.avisosPush.desvincular();
     this.auth.salir();
     this.router.navigate(['/']);
   }
