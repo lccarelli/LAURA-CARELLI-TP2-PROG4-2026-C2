@@ -101,14 +101,14 @@ describe('Home', () => {
     expect(fixture.nativeElement.querySelector('.cartel-instalar')).toBeNull();
   });
 
-  it('[O] saluda por el nombre y resume qué es Banquete en un solo párrafo', async () => {
+  it('[O] saluda por el nombre y explica para qué es el lugar en una sola frase', async () => {
     await abrir();
     vaciar();
     await actualizar();
 
     expect(fixture.nativeElement.querySelector('h1').textContent).toContain('Hola, Laura');
-    expect(fixture.nativeElement.querySelector('.home-lema').textContent).toContain(
-      'compartir recetas',
+    expect(fixture.nativeElement.querySelector('.home-lema').textContent.trim()).toBe(
+      'Este lugar está pensado para que puedas crear, guardar y compartir experiencias culinarias.',
     );
   });
 

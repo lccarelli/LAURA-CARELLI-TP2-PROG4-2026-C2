@@ -443,7 +443,7 @@
   "home": {
     "saludo": "Hola, {{nombre}}",
     "ver_perfil": "Ver mi perfil",
-    "lema": "Banquete es una comunidad para compartir recetas con sus ingredientes y pasos, tips que ahorran tiempo y experiencias de cocina. Cada publicación se puede comentar y marcar con me gusta, así lo que compartís vuelve a vos con ideas y respuestas.",
+    "lema": "Este lugar está pensado para que puedas crear, guardar y compartir experiencias culinarias.",
     "tableros": "Tu cocina",
     "crear": "Crear una publicación",
     "tablero_mias": "Mis publicaciones",
