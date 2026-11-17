@@ -5,6 +5,7 @@ import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { FormularioUsuario } from '../../componentes/formulario-usuario/formulario-usuario';
+import { Instalacion } from '../../servicios/instalacion/instalacion';
 import { Registro } from './registro';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { datosDelFormulario } from '../../../testing/usuario';
@@ -61,6 +62,16 @@ describe('Registro', () => {
     await enviar();
 
     expect(http.match(URL)).toHaveLength(0);
+  });
+
+  it('[S] al crear la cuenta, activa el ofrecimiento de instalar la app', async () => {
+    const ofrecer = vi.spyOn(TestBed.inject(Instalacion), 'ofrecerAlIngresar');
+    formulario().formulario.setValue(datosDelFormulario);
+
+    await enviar();
+    http.expectOne(URL).flush({ token: 't', usuario: { _id: '1' } });
+
+    expect(ofrecer).toHaveBeenCalledTimes(1);
   });
 
   it('[O] con datos válidos envía el registro y va al inicio', async () => {

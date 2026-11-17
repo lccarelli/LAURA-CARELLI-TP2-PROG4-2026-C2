@@ -5,6 +5,7 @@ import { By } from '@angular/platform-browser';
 import { Router, provideRouter } from '@angular/router';
 import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
 import { environment } from '../../../environments/environment';
+import { Instalacion } from '../../servicios/instalacion/instalacion';
 import { Auth } from '../../servicios/auth/auth';
 import { Login } from './login';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
@@ -56,6 +57,28 @@ describe('Login', () => {
     http.expectNone(URL);
     expect(componente.mensajeDeError('identificador')).toBe('Este campo es obligatorio');
     expect(componente.mensajeDeError('clave')).toBe('Este campo es obligatorio');
+  });
+
+  it('[S] al ingresar, activa el ofrecimiento de instalar la app', async () => {
+    const ofrecer = vi.spyOn(TestBed.inject(Instalacion), 'ofrecerAlIngresar');
+    componente.formulario.setValue({ identificador: 'laura_c', clave: 'Clave1234' });
+
+    await enviar();
+    http.expectOne(URL).flush({ token: 't', usuario: { _id: '1' } });
+
+    expect(ofrecer).toHaveBeenCalledTimes(1);
+  });
+
+  it('[E] si el ingreso falla no ofrece instalar la app', async () => {
+    const ofrecer = vi.spyOn(TestBed.inject(Instalacion), 'ofrecerAlIngresar');
+    componente.formulario.setValue({ identificador: 'laura_c', clave: 'Clave1234' });
+
+    await enviar();
+    http
+      .expectOne(URL)
+      .flush({ codigo: 'CREDENCIALES_INVALIDAS' }, { status: 401, statusText: 'x' });
+
+    expect(ofrecer).not.toHaveBeenCalled();
   });
 
   it('[O] con credenciales ingresa y va al inicio', async () => {

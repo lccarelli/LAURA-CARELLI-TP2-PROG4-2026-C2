@@ -30,13 +30,12 @@ describe('aplicación instalable', () => {
     expect(manifiesto.background_color).toBe(colorDelTema(':root', 'papel'));
   });
 
-  it('[I] la barra del navegador toma el color de la barra en claro y en oscuro', () => {
+  it('[I] la barra del navegador toma el color de la barra, sin variante oscura', () => {
     expect(portada).toContain(
-      `content="${colorDelTema(':root', 'barra')}" media="(prefers-color-scheme: light)"`,
+      `<meta name="theme-color" content="${colorDelTema(':root', 'barra')}" />`,
     );
-    expect(portada).toContain(
-      `content="${colorDelTema(":root[data-tema='oscuro']", 'barra')}" media="(prefers-color-scheme: dark)"`,
-    );
+    expect(portada).not.toContain('prefers-color-scheme: dark');
+    expect(portada).toContain('<meta name="color-scheme" content="light" />');
   });
 
   it('[O] tiene los íconos de 192 y 512 píxeles y uno enmascarable, y todos existen', () => {
@@ -56,14 +55,11 @@ describe('aplicación instalable', () => {
     expect(existsSync(join(RAIZ, 'public/icons/apple-touch-icon.png'))).toBe(true);
   });
 
-  it('[I] la pestaña tiene un ícono para el modo claro y otro para el oscuro, y los dos existen', () => {
-    const tema = leer('src/app/servicios/tema/tema.ts');
-
+  it('[I] la pestaña y la barra usan un solo ícono, el principal, y existe', () => {
     expect(portada).toContain('rel="icon" type="image/png" href="favicon.png"');
-    expect(portada).toContain("href = 'favicon-oscuro.png'");
-    expect(tema).toContain("oscuro: 'favicon-oscuro.png'");
+    expect(portada).not.toContain('favicon-oscuro');
     expect(existsSync(join(RAIZ, 'public/favicon.png'))).toBe(true);
-    expect(existsSync(join(RAIZ, 'public/favicon-oscuro.png'))).toBe(true);
+    expect(existsSync(join(RAIZ, 'public/favicon-oscuro.png'))).toBe(false);
   });
 
   it('[S] los atajos del manifiesto llevan a una dirección de la aplicación', () => {

@@ -5,6 +5,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { Aviso } from '../../componentes/aviso/aviso';
 import { FormularioUsuario } from '../../componentes/formulario-usuario/formulario-usuario';
 import { PanelPublicaciones } from '../../componentes/panel-publicaciones/panel-publicaciones';
+import { Instalacion } from '../../servicios/instalacion/instalacion';
 import { Auth } from '../../servicios/auth/auth';
 import { mensajeDeApi } from '../../utilidades/errores';
 
@@ -16,6 +17,7 @@ import { mensajeDeApi } from '../../utilidades/errores';
 export class Registro {
   private auth = inject(Auth);
   private router = inject(Router);
+  private instalacion = inject(Instalacion);
 
   readonly enviando = signal(false);
   readonly mensajeError = signal<string | null>(null);
@@ -23,7 +25,10 @@ export class Registro {
   registrar(datos: FormData) {
     this.enviando.set(true);
     this.auth.registro(datos).subscribe({
-      next: () => this.router.navigate(['/home']),
+      next: () => {
+        this.instalacion.ofrecerAlIngresar();
+        this.router.navigate(['/home']);
+      },
       error: (error: HttpErrorResponse) => {
         this.enviando.set(false);
         this.mensajeError.set(mensajeDeApi(error));

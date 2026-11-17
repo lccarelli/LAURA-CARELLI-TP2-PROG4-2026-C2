@@ -1,4 +1,8 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { Auth } from '../../servicios/auth/auth';
+import { usuarioDePrueba } from '../../../testing/usuario';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { Instalacion } from '../../servicios/instalacion/instalacion';
 import { CartelInstalar } from './cartel-instalar';
@@ -23,12 +27,17 @@ describe('CartelInstalar', () => {
     }
   };
 
-  async function crear() {
+  async function crear(alIngresar = true) {
     await TestBed.configureTestingModule({
       imports: [CartelInstalar],
-      providers: [proveerIdiomaDePrueba()],
+      providers: [proveerIdiomaDePrueba(), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
-    TestBed.inject(Instalacion).iniciar();
+    const instalacion = TestBed.inject(Instalacion);
+    instalacion.iniciar();
+    TestBed.inject(Auth).usuario.set(usuarioDePrueba);
+    if (alIngresar) {
+      instalacion.ofrecerAlIngresar();
+    }
     const fixture = TestBed.createComponent(CartelInstalar);
     await fixture.whenStable();
     return fixture;
@@ -45,6 +54,14 @@ describe('CartelInstalar', () => {
     simular(false, true);
 
     const fixture = await crear();
+
+    expect(fixture.nativeElement.querySelector('.cartel-instalar')).toBeNull();
+  });
+
+  it('[Z] si no es justo después de ingresar no muestra nada', async () => {
+    simular(true, true);
+
+    const fixture = await crear(false);
 
     expect(fixture.nativeElement.querySelector('.cartel-instalar')).toBeNull();
   });
@@ -92,17 +109,21 @@ describe('CartelInstalar', () => {
     expect(evento.prompt).toHaveBeenCalledTimes(1);
   });
 
-  it('[S] «Ahora no» lo cierra, y queda recordado', async () => {
+  it('[S] la cruz lo cierra y no se vuelve a preguntar a esa persona', async () => {
     simular(true, true);
     const fixture = await crear();
 
     (
-      fixture.nativeElement.querySelector('button[aria-label="Ahora no"]') as HTMLButtonElement
+      fixture.nativeElement.querySelector(
+        'button[aria-label="No volver a preguntar"]',
+      ) as HTMLButtonElement
     ).click();
     await actualizar(fixture);
 
     expect(fixture.nativeElement.querySelector('.cartel-instalar')).toBeNull();
-    expect(localStorage.getItem('instalacion:descartado')).not.toBeNull();
+    expect(JSON.parse(localStorage.getItem('instalacion:decididas')!)).toEqual([
+      usuarioDePrueba._id,
+    ]);
   });
 
   it('[I] no es un aviso urgente ni bloquea nada: es una sección con nombre, sin role de alerta ni de diálogo', async () => {

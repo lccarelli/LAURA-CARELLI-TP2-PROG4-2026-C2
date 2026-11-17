@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
+import { CartelInstalar } from '../../componentes/cartel-instalar/cartel-instalar';
 import { Tablero } from '../../componentes/tablero/tablero';
 import { PaginaPublicaciones, Tipo } from '../../interfaces/publicacion';
 import { Auth } from '../../servicios/auth/auth';
@@ -28,7 +29,7 @@ const TABLEROS: DatosDeTablero[] = [
 ];
 
 @Component({
-  imports: [RouterLink, Tablero, TranslatePipe],
+  imports: [CartelInstalar, RouterLink, Tablero, TranslatePipe],
   selector: 'app-home',
   templateUrl: './home.html',
 })

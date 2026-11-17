@@ -6,7 +6,6 @@ import { filter, map } from 'rxjs';
 import { AvisosPush } from '../../servicios/avisos-push/avisos-push';
 import { Auth } from '../../servicios/auth/auth';
 import { Idioma } from '../../servicios/idioma/idioma';
-import { Tema } from '../../servicios/tema/tema';
 import { Icono } from '../icono/icono';
 
 const DESPLAZAMIENTO_MINIMO = 8;
@@ -20,7 +19,6 @@ const DESPLAZAMIENTO_MINIMO = 8;
 export class Barra {
   protected auth = inject(Auth);
   protected idioma = inject(Idioma);
-  protected tema = inject(Tema);
   private avisosPush = inject(AvisosPush);
   private router = inject(Router);
   private posicion = 0;

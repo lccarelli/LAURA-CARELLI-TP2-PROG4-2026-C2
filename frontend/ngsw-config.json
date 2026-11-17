@@ -8,7 +8,6 @@
       "resources": {
         "files": [
           "/favicon.png",
-          "/favicon-oscuro.png",
           "/index.html",
           "/manifest.webmanifest",
           "/*.css",

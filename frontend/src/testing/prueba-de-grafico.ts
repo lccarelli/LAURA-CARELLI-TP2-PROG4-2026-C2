@@ -1,7 +1,6 @@
 import { Type } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GraficoBase } from '../app/componentes/grafico-base';
-import { Tema } from '../app/servicios/tema/tema';
 import { ConfiguracionFalsa, graficos } from './chart-falso';
 
 export interface BancoDeGrafico {
@@ -44,7 +43,7 @@ export function prepararBancoDeGrafico(
 }
 
 export function pruebasComunesDeGrafico(
-  { variable, fixture, poner, dibujados }: BancoDeGrafico,
+  { fixture, poner, dibujados }: BancoDeGrafico,
   esperado: {
     tipo: string;
     colorDe: (serie: ConfiguracionFalsa['data']['datasets'][number]) => unknown;
@@ -90,17 +89,6 @@ export function pruebasComunesDeGrafico(
     expect(graficos[0].destroy).toHaveBeenCalledTimes(1);
     expect(graficos[1].destroy).not.toHaveBeenCalled();
     expect(graficos[1].config.data.datasets[0].data).toEqual([5]);
-  });
-
-  it('[S] al cambiar el tema lo dibuja de nuevo con los colores nuevos', async () => {
-    poner(['A'], [3]);
-    await dibujados(1);
-
-    document.documentElement.style.setProperty(variable, '#aabbcc');
-    TestBed.inject(Tema).alternar();
-    await dibujados(2);
-
-    expect(esperado.colorDe(graficos[1].config.data.datasets[0])).toBe('#aabbcc');
   });
 
   it('[I] al salir de la pantalla destruye el gráfico', async () => {

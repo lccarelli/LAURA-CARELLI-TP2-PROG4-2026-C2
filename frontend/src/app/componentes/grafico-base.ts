@@ -8,7 +8,6 @@ import {
   viewChild,
 } from '@angular/core';
 import type { Chart, ChartConfiguration } from 'chart.js';
-import { Tema } from '../servicios/tema/tema';
 
 type ChartJs = typeof import('chart.js');
 
@@ -31,14 +30,12 @@ export abstract class GraficoBase {
   readonly descripcion = input.required<string>();
   readonly detalles = input<string[]>();
 
-  private tema = inject(Tema);
   private lienzo = viewChild.required<ElementRef<HTMLCanvasElement>>('lienzo');
   private grafico?: Chart;
   private destruido = false;
 
   constructor() {
     afterRenderEffect(() => {
-      this.tema.actual();
       void this.dibujar({
         etiquetas: this.etiquetas(),
         valores: this.valores(),
