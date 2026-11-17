@@ -1,6 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { filter, map } from 'rxjs';
 import { AvisosPush } from '../../servicios/avisos-push/avisos-push';
 import { Auth } from '../../servicios/auth/auth';
 import { Idioma } from '../../servicios/idioma/idioma';
@@ -24,6 +26,17 @@ export class Barra {
   private posicion = 0;
 
   protected subiendo = signal(false);
+
+  private readonly ruta = toSignal(
+    this.router.events.pipe(
+      filter((evento) => evento instanceof NavigationEnd),
+      map(({ urlAfterRedirects }) => urlAfterRedirects.split('?')[0]),
+    ),
+    { initialValue: this.router.url.split('?')[0] },
+  );
+  protected readonly enPerfil = computed(
+    () => this.ruta().startsWith('/perfil') && !this.ruta().startsWith('/perfil/guardadas'),
+  );
 
   alDesplazar() {
     const actual = Math.max(0, window.scrollY);

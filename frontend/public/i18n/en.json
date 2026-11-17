@@ -30,7 +30,8 @@
     "idioma": "Language",
     "modo_oscuro": "Switch to dark mode",
     "modo_claro": "Switch to light mode",
-    "home": "Home"
+    "home": "Home",
+    "guardadas": "Saved"
   },
   "inicio": {
     "titulo": "A place to share your culinary world",
@@ -470,5 +471,17 @@
     "vacio": "You haven't saved any posts yet. Tap the bookmark on any of them to find it here.",
     "tablero": "Saved",
     "ver": "Your favorites, from A to Z"
+  },
+  "acceso": {
+    "panel_titulo": "What's shared on Banquete"
+  },
+  "instalar": {
+    "titulo": "Use Banquete like an app",
+    "beneficio": "Full screen, without the browser bar, and with alerts when someone comments on your posts.",
+    "boton": "Install the app",
+    "ahora_no": "Not now",
+    "paso_compartir": "Tap Share (the square with the arrow).",
+    "paso_agregar": "Choose “Add to Home Screen”.",
+    "paso_abrir": "Open it from the new icon."
   }
 }

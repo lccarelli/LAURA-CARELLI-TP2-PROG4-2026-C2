@@ -39,7 +39,13 @@ describe('Barra', () => {
       imports: [Barra],
       providers: [
         proveerIdiomaDePrueba(),
-        provideRouter([]),
+        provideRouter([
+          { path: 'perfil', children: [] },
+          { path: 'perfil/publicaciones', children: [] },
+          { path: 'perfil/editar', children: [] },
+          { path: 'perfil/guardadas', children: [] },
+          { path: 'publicaciones', children: [] },
+        ]),
         provideHttpClient(),
         provideHttpClientTesting(),
       ],
@@ -89,6 +95,41 @@ describe('Barra', () => {
 
   it('[Z] sin sesión tampoco aparece Administración', () => {
     expect(texto()).not.toContain('Administración');
+  });
+
+  it('[O] con sesión ofrece ir a Guardadas, con el ícono de marcador', async () => {
+    await iniciarSesion();
+
+    const enlace = fixture.nativeElement.querySelector(
+      'a[href="/perfil/guardadas"]',
+    ) as HTMLAnchorElement;
+
+    expect(enlace.textContent).toContain('Guardadas');
+    expect(enlace.getAttribute('title')).toBe('Guardadas');
+    expect(enlace.querySelector('svg')).not.toBeNull();
+  });
+
+  it('[Z] sin sesión no hay enlace a Guardadas', () => {
+    expect(fixture.nativeElement.querySelector('a[href="/perfil/guardadas"]')).toBeNull();
+  });
+
+  it.each([
+    ['/perfil', 'Mi perfil'],
+    ['/perfil/publicaciones', 'Mi perfil'],
+    ['/perfil/editar', 'Mi perfil'],
+    ['/perfil/guardadas', 'Guardadas'],
+    ['/publicaciones', 'Publicaciones'],
+  ])('[I] en %s queda marcada sólo «%s»', async (ruta, marcada) => {
+    await iniciarSesion();
+
+    await TestBed.inject(Router).navigateByUrl(ruta);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const activos = Array.from(
+      fixture.nativeElement.querySelectorAll('.item-nav.activo') as NodeListOf<HTMLElement>,
+    ).map((item) => item.getAttribute('title'));
+    expect(activos).toEqual([marcada]);
   });
 
   it('[I] ofrece español e inglés y marca el idioma actual', () => {

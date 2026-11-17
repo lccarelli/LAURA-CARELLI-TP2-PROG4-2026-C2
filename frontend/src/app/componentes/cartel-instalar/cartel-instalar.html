@@ -1,0 +1,29 @@
+@if (instalacion.mostrarCartel()) {
+  <section class="cartel-instalar" [attr.aria-label]="'instalar.titulo' | translate">
+    <app-icono nombre="telefono" />
+    <div class="cartel-instalar-cuerpo">
+      <p class="cartel-instalar-titulo">{{ 'instalar.titulo' | translate }}</p>
+      <p class="texto-suave">{{ 'instalar.beneficio' | translate }}</p>
+      @if (instalacion.puedeInstalar()) {
+        <button type="button" class="boton-principal" (click)="instalar()">
+          {{ 'instalar.boton' | translate }}
+        </button>
+      } @else {
+        <ol class="cartel-instalar-pasos">
+          <li>{{ 'instalar.paso_compartir' | translate }}</li>
+          <li>{{ 'instalar.paso_agregar' | translate }}</li>
+          <li>{{ 'instalar.paso_abrir' | translate }}</li>
+        </ol>
+      }
+    </div>
+    <button
+      type="button"
+      class="boton-mini-icono"
+      [attr.aria-label]="'instalar.ahora_no' | translate"
+      [attr.title]="'instalar.ahora_no' | translate"
+      (click)="instalacion.descartarCartel()"
+    >
+      <app-icono nombre="cerrar" [chico]="true" />
+    </button>
+  </section>
+}

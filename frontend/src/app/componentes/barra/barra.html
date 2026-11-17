@@ -55,9 +55,18 @@
       </a>
       <a
         class="item-nav"
+        routerLink="/perfil/guardadas"
+        [attr.title]="'barra.guardadas' | translate"
+        routerLinkActive="activo"
+      >
+        <app-icono nombre="marcador" />
+        <span class="etiqueta-nav">{{ 'barra.guardadas' | translate }}</span>
+      </a>
+      <a
+        class="item-nav"
         routerLink="/perfil"
         [attr.title]="'barra.mi_perfil' | translate"
-        routerLinkActive="activo"
+        [class.activo]="enPerfil()"
       >
         <svg
           class="icono"
