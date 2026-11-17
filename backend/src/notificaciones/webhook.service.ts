@@ -9,7 +9,7 @@ import {
 import { webhookConfig } from './webhook.config.js';
 
 export type EventoWebhook = {
-  evento: 'comentario' | 'me_gusta';
+  evento: 'comentario' | 'me_gusta' | 'compartida';
   publicacion: { id: string; titulo: string };
   actor: { id: string; nombreUsuario: string };
   destinatario: { id: string };

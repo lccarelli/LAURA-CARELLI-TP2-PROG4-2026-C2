@@ -11,6 +11,7 @@ import bcrypt from 'bcrypt';
 import { Model, Types } from 'mongoose';
 import { authConfig } from '../auth/auth.config.js';
 import type { RegistroDto } from '../auth/dto/registro.dto.js';
+import { patronDePalabra } from '../common/busqueda.js';
 import { Destino } from '../imagenes/destinos.js';
 import { ImagenesService } from '../imagenes/imagenes.service.js';
 import {
@@ -22,6 +23,9 @@ import { EditarPerfilDto } from './dto/editar-perfil.dto.js';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto.js';
 import { Usuario } from './schemas/usuario.schema.js';
 import { Visita } from './schemas/visita.schema.js';
+
+const CAMPOS_DIRECTORIO = 'nombre apellido nombreUsuario imagenPerfil';
+const LIMITE_DIRECTORIO = 10;
 
 @Injectable()
 export class UsuariosService {
@@ -100,6 +104,26 @@ export class UsuariosService {
       });
     }
     return usuario;
+  }
+
+  async directorio(texto: string, usuarioId: string) {
+    const palabras = texto.split(' ').map((palabra) => {
+      const coincide = new RegExp(patronDePalabra(palabra), 'i');
+      return {
+        $or: [
+          { nombre: coincide },
+          { apellido: coincide },
+          { nombreUsuario: coincide },
+        ],
+      };
+    });
+    const datos = await this.usuarioModel
+      .find({ habilitado: true, _id: { $ne: usuarioId }, $and: palabras })
+      .select(CAMPOS_DIRECTORIO)
+      .sort({ nombreUsuario: 1 })
+      .limit(LIMITE_DIRECTORIO)
+      .lean();
+    return { datos };
   }
 
   async registrarVisita(visitanteId: string, id: string) {

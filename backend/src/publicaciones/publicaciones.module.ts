@@ -7,6 +7,8 @@ import { NotificacionesModule } from '../notificaciones/notificaciones.module.js
 import { Usuario, UsuarioSchema } from '../usuarios/schemas/usuario.schema.js';
 import { ComentariosService } from './comentarios.service.js';
 import { EventosMeGustaService } from './eventos-me-gusta.service.js';
+import { CompartidasController } from './compartidas.controller.js';
+import { CompartidasService } from './compartidas.service.js';
 import { GuardadasController } from './guardadas.controller.js';
 import { GuardadasService } from './guardadas.service.js';
 import { PublicoController } from './publico.controller.js';
@@ -17,6 +19,7 @@ import {
   EventoMeGusta,
   EventoMeGustaSchema,
 } from './schemas/evento-me-gusta.schema.js';
+import { Compartida, CompartidaSchema } from './schemas/compartida.schema.js';
 import { Guardada, GuardadaSchema } from './schemas/guardada.schema.js';
 import { MeGusta, MeGustaSchema } from './schemas/me-gusta.schema.js';
 import {
@@ -32,6 +35,7 @@ export const TTL_LISTADO_MS = 1000;
       { name: Publicacion.name, schema: PublicacionSchema },
       { name: MeGusta.name, schema: MeGustaSchema },
       { name: Guardada.name, schema: GuardadaSchema },
+      { name: Compartida.name, schema: CompartidaSchema },
       { name: Comentario.name, schema: ComentarioSchema },
       { name: EventoMeGusta.name, schema: EventoMeGustaSchema },
       { name: Usuario.name, schema: UsuarioSchema },
@@ -43,12 +47,14 @@ export const TTL_LISTADO_MS = 1000;
   ],
   controllers: [
     GuardadasController,
+    CompartidasController,
     PublicoController,
     PublicacionesController,
   ],
   providers: [
     PublicacionesService,
     GuardadasService,
+    CompartidasService,
     ComentariosService,
     EventosMeGustaService,
   ],
