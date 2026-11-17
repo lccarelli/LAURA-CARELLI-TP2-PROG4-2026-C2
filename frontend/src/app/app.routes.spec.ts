@@ -42,6 +42,21 @@ describe('rutas', () => {
     expect(TestBed.inject(Router).url).toBe('/login');
   });
 
+  it('[O] un invitado puede abrir la vista pública de una publicación', async () => {
+    const harness = await RouterTestingHarness.create('/publico/64b64b64b64b64b64b64b64b');
+
+    expect(TestBed.inject(Router).url).toBe('/publico/64b64b64b64b64b64b64b64b');
+    expect(harness.routeNativeElement?.tagName).toBe('APP-DETALLE-PUBLICACION');
+  });
+
+  it('[I] con sesión, la vista pública lleva al detalle completo', async () => {
+    TestBed.inject(Auth).token.set('abc');
+
+    await RouterTestingHarness.create('/publico/64b64b64b64b64b64b64b64b');
+
+    expect(TestBed.inject(Router).url).toBe('/publicaciones/64b64b64b64b64b64b64b64b');
+  });
+
   it('[E] sin sesión, el detalle de una publicación lleva al login', async () => {
     await RouterTestingHarness.create('/publicaciones/64b64b64b64b64b64b64b64b');
 

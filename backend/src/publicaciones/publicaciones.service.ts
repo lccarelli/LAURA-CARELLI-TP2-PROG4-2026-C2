@@ -25,6 +25,7 @@ import { EditarPublicacionDto } from './dto/editar-publicacion.dto.js';
 import { MAXIMO_FOTOS_POR_PASO } from '../imagenes/imagenes.constantes.js';
 import type { PasoDto, PasoEdicionDto } from './dto/paso.dto.js';
 import { filtroDeBusqueda } from '../common/busqueda.js';
+import { esClaveDuplicada } from '../common/clave-duplicada.js';
 import { NotificacionesService } from '../notificaciones/notificaciones.service.js';
 import { ListarPublicacionesDto } from './dto/listar-publicaciones.dto.js';
 import { Guardada } from './schemas/guardada.schema.js';
@@ -58,13 +59,6 @@ const ORDENES = {
   fecha: { fecha: -1, _id: -1 },
   megusta: { cantidadMeGusta: -1, fecha: -1, _id: -1 },
 } as const;
-
-const CODIGO_CLAVE_DUPLICADA = 11000;
-
-const esClaveDuplicada = (error: unknown) =>
-  typeof error === 'object' &&
-  error !== null &&
-  (error as { code?: number }).code === CODIGO_CLAVE_DUPLICADA;
 
 export const CAMPOS_AUTOR = 'nombre apellido nombreUsuario imagenPerfil';
 
@@ -296,6 +290,12 @@ export class PublicacionesService {
   }
 
   async obtener(id: string, usuarioId: string) {
+    const publicacion = await this.obtenerPublico(id);
+    const [conMarca] = await this.marcarDelUsuario([publicacion], usuarioId);
+    return conMarca;
+  }
+
+  async obtenerPublico(id: string) {
     const publicacion = await this.publicacionModel
       .findOne({ _id: id, activa: true })
       .populate('usuario', CAMPOS_AUTOR)
@@ -303,8 +303,17 @@ export class PublicacionesService {
     if (!publicacion) {
       throw this.noEncontrada();
     }
-    const [conMarca] = await this.marcarDelUsuario([publicacion], usuarioId);
-    return conMarca;
+    return publicacion;
+  }
+
+  async listarPublico(limit: number) {
+    const publicaciones = await this.publicacionModel
+      .find({ activa: true })
+      .sort(ORDENES.fecha)
+      .limit(limit)
+      .populate('usuario', CAMPOS_AUTOR)
+      .lean();
+    return { datos: publicaciones, limit };
   }
 
   async listar(consulta: ListarPublicacionesDto, usuarioId: string) {
@@ -381,7 +390,7 @@ export class PublicacionesService {
       }
       throw error;
     }
-    const cantidadMeGusta = await this.sumarMeGusta(id, 1);
+    const cantidadMeGusta = await this.sumarContador(id, 'cantidadMeGusta', 1);
     await this.dejarConstancia('dado', publicacion, usuarioId, cantidadMeGusta);
     return { meGusta: true, cantidadMeGusta };
   }
@@ -398,7 +407,7 @@ export class PublicacionesService {
         codigo: 'ME_GUSTA_INEXISTENTE',
       });
     }
-    const cantidadMeGusta = await this.sumarMeGusta(id, -1);
+    const cantidadMeGusta = await this.sumarContador(id, 'cantidadMeGusta', -1);
     await this.dejarConstancia(
       'quitado',
       publicacion,
@@ -472,17 +481,21 @@ export class PublicacionesService {
     return usuario?.nombreUsuario;
   }
 
-  private async sumarMeGusta(id: string, cambio: 1 | -1) {
+  async sumarContador(
+    id: string,
+    campo: 'cantidadMeGusta' | 'cantidadGuardados',
+    cambio: 1 | -1,
+  ) {
     const publicacion = await this.publicacionModel
       .findByIdAndUpdate(
         id,
-        { $inc: { cantidadMeGusta: cambio } },
+        { $inc: { [campo]: cambio } },
         { returnDocument: 'after' },
       )
-      .select('cantidadMeGusta')
+      .select(campo)
       .lean();
     await this.cache.clear();
-    return publicacion?.cantidadMeGusta ?? 0;
+    return publicacion?.[campo] ?? 0;
   }
 
   async marcarDelUsuario<T extends PublicacionConId>(

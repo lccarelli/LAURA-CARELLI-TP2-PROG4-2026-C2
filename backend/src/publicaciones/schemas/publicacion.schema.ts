@@ -91,6 +91,9 @@ export class Publicacion {
   @Prop({ default: 0 })
   cantidadComentarios: number;
 
+  @Prop({ default: 0 })
+  cantidadGuardados: number;
+
   @Prop({ default: Date.now })
   fecha: Date;
 }
@@ -98,6 +101,12 @@ export class Publicacion {
 export const PublicacionSchema = SchemaFactory.createForClass(Publicacion);
 PublicacionSchema.index({ activa: 1, fecha: -1, _id: -1 });
 PublicacionSchema.index({ activa: 1, cantidadMeGusta: -1, fecha: -1, _id: -1 });
+PublicacionSchema.index({
+  activa: 1,
+  cantidadGuardados: -1,
+  fecha: -1,
+  _id: -1,
+});
 PublicacionSchema.index({ usuario: 1, activa: 1, fecha: -1, _id: -1 });
 PublicacionSchema.index({ activa: 1, tipo: 1, fecha: -1, _id: -1 });
 PublicacionSchema.index({

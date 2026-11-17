@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { filtroDeBusqueda } from '../common/busqueda.js';
@@ -9,6 +13,7 @@ import {
 } from '../common/inicial.js';
 import { ListarGuardadasDto } from './dto/listar-guardadas.dto.js';
 import { CAMPOS_AUTOR, PublicacionesService } from './publicaciones.service.js';
+import { esClaveDuplicada } from '../common/clave-duplicada.js';
 import { Guardada } from './schemas/guardada.schema.js';
 import { Publicacion } from './schemas/publicacion.schema.js';
 
@@ -35,16 +40,42 @@ export class GuardadasService {
         codigo: 'PUBLICACION_NO_ENCONTRADA',
       });
     }
-    await this.guardadaModel.updateOne(
-      { usuario: usuarioId, publicacion: id },
-      { $setOnInsert: { fecha: new Date() } },
-      { upsert: true },
+    try {
+      await this.guardadaModel.create({ usuario: usuarioId, publicacion: id });
+    } catch (error) {
+      if (esClaveDuplicada(error)) {
+        throw new ConflictException({
+          message: 'Ya guardaste esta publicación',
+          codigo: 'GUARDADA_REPETIDA',
+        });
+      }
+      throw error;
+    }
+    const cantidadGuardados = await this.publicaciones.sumarContador(
+      id,
+      'cantidadGuardados',
+      1,
     );
-    return { guardada: true };
+    return { guardada: true, cantidadGuardados };
   }
 
   async quitar(id: string, usuarioId: string) {
-    await this.guardadaModel.deleteOne({ usuario: usuarioId, publicacion: id });
+    const { deletedCount } = await this.guardadaModel.deleteOne({
+      usuario: usuarioId,
+      publicacion: id,
+    });
+    if (!deletedCount) {
+      throw new NotFoundException({
+        message: 'No habías guardado esta publicación',
+        codigo: 'GUARDADA_INEXISTENTE',
+      });
+    }
+    const cantidadGuardados = await this.publicaciones.sumarContador(
+      id,
+      'cantidadGuardados',
+      -1,
+    );
+    return { guardada: false, cantidadGuardados };
   }
 
   async listar(consulta: ListarGuardadasDto, usuarioId: string) {

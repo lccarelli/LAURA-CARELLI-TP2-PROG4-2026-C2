@@ -1,7 +1,7 @@
 <section class="pagina-ancha home">
   @if (auth.usuario(); as usuario) {
     <header class="perfil-cabecera">
-      <h1 class="titulo-perfil">{{ 'home.saludo' | translate: { nombre: usuario.nombre } }}</h1>
+      <h1 class="titulo">{{ 'home.saludo' | translate: { nombre: usuario.nombre } }}</h1>
 
       <div class="perfil-resumen">
         <img

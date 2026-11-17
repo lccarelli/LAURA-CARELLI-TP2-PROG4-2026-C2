@@ -1,3 +1,4 @@
+import { Comentario } from './comentario';
 import { Usuario } from './usuario';
 
 export const TIPOS = ['receta', 'tip', 'experiencia'] as const;
@@ -52,9 +53,19 @@ export interface Publicacion {
   cantidadMeGusta: number;
   meGusta?: boolean;
   guardada?: boolean;
+  cantidadGuardados?: number;
   cantidadComentarios: number;
   fecha: string;
   fechaEdicion?: string;
+}
+
+export interface PublicacionPublica extends Publicacion {
+  comentarios: Comentario[];
+}
+
+export interface ListadoPublico {
+  datos: Publicacion[];
+  limit: number;
 }
 
 export const ORDENES = ['fecha', 'megusta'] as const;

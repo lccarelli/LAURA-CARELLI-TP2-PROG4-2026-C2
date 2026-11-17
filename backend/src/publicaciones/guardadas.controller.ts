@@ -1,6 +1,5 @@
 import {
   Controller,
-  Delete,
   Get,
   HttpCode,
   Param,
@@ -20,19 +19,7 @@ import { GuardadasService } from './guardadas.service.js';
 export class GuardadasController {
   constructor(private readonly guardadasService: GuardadasService) {}
 
-  @Post('publicaciones/:id/guardar')
-  @HttpCode(200)
-  guardar(@Param() { id }: IdParamDto, @Req() solicitud: SolicitudAutenticada) {
-    return this.guardadasService.guardar(id, solicitud.usuario.id);
-  }
-
-  @Delete('publicaciones/:id/guardar')
-  @HttpCode(204)
-  quitar(@Param() { id }: IdParamDto, @Req() solicitud: SolicitudAutenticada) {
-    return this.guardadasService.quitar(id, solicitud.usuario.id);
-  }
-
-  @Get('guardadas')
+  @Get('publicaciones/guardadas')
   listar(
     @Query() consulta: ListarGuardadasDto,
     @Req() solicitud: SolicitudAutenticada,
@@ -40,11 +27,22 @@ export class GuardadasController {
     return this.guardadasService.listar(consulta, solicitud.usuario.id);
   }
 
-  @Get('guardadas/letras')
+  @Get('publicaciones/guardadas/letras')
   letras(
     @Query() consulta: ListarGuardadasDto,
     @Req() solicitud: SolicitudAutenticada,
   ) {
     return this.guardadasService.letras(consulta, solicitud.usuario.id);
+  }
+
+  @Post('publicaciones/:id/guardar')
+  guardar(@Param() { id }: IdParamDto, @Req() solicitud: SolicitudAutenticada) {
+    return this.guardadasService.guardar(id, solicitud.usuario.id);
+  }
+
+  @Post('publicaciones/:id/quitar-guardado')
+  @HttpCode(200)
+  quitar(@Param() { id }: IdParamDto, @Req() solicitud: SolicitudAutenticada) {
+    return this.guardadasService.quitar(id, solicitud.usuario.id);
   }
 }

@@ -139,7 +139,7 @@ body {
   }
 
   .subtitulo {
-    @apply font-serif text-2xl leading-tight font-medium break-words;
+    @apply font-serif text-2xl leading-tight font-black break-words;
   }
 
   .grafico {
@@ -147,7 +147,7 @@ body {
   }
 
   .titulo-tarjeta {
-    @apply font-serif text-3xl leading-tight font-medium break-words italic;
+    @apply font-serif text-3xl leading-tight font-black break-words;
   }
 
   .nombre {
@@ -715,12 +715,6 @@ body {
     @apply size-6 shrink-0 rounded-full object-cover;
   }
 
-  .vista-previa {
-    @apply pointer-events-none relative max-h-[30rem] overflow-hidden select-none;
-    mask-image: linear-gradient(to bottom, rgb(0 0 0) 55%, transparent);
-    -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0) 55%, transparent);
-  }
-
   .pagina-detalle {
     @apply fixed inset-0 z-50 overflow-y-auto bg-hoja;
   }
@@ -1044,7 +1038,7 @@ body {
   }
 
   .item-nav .etiqueta-nav {
-    @apply not-sr-only lg:sr-only;
+    @apply not-sr-only max-w-full truncate lg:sr-only;
   }
 
   .icono {
@@ -1146,10 +1140,6 @@ body {
     @apply flex flex-wrap items-center justify-between gap-x-8 gap-y-4 pt-4;
   }
 
-  .titulo-perfil {
-    @apply font-sans text-4xl font-semibold text-tinta sm:text-5xl;
-  }
-
   .perfil-resumen {
     @apply flex flex-wrap items-center gap-4;
   }
@@ -1159,7 +1149,7 @@ body {
   }
 
   .perfil-nombre {
-    @apply text-lg font-semibold text-tinta;
+    @apply font-serif text-lg font-black text-tinta;
   }
 
   .perfil-datos {
@@ -1167,7 +1157,7 @@ body {
   }
 
   .pestana {
-    @apply mt-8 mb-6 inline-block border-b-2 border-tinta pb-1 text-lg font-medium text-tinta;
+    @apply mt-8 mb-6 inline-block border-b-2 border-tinta pb-1 font-serif text-xl font-black text-tinta;
   }
 
   .home {
@@ -1179,7 +1169,7 @@ body {
   }
 
   .home-lema {
-    @apply text-lg text-suave;
+    @apply text-base text-suave sm:text-lg;
   }
 
   .home-barra {
@@ -1247,11 +1237,11 @@ body {
   }
 
   .tablero-titulo {
-    @apply mt-2 text-xl font-semibold text-tinta;
+    @apply mt-2 font-serif text-xl font-black text-tinta;
   }
 
   .titulo-seccion {
-    @apply font-serif text-2xl font-semibold text-tinta;
+    @apply font-serif text-2xl font-black text-tinta;
   }
 
   .fondo-modal {

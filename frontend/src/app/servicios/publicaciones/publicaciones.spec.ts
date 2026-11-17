@@ -180,13 +180,14 @@ describe('PublicacionesApi', () => {
     solicitud.flush({ guardada: true });
   });
 
-  it('[O] quitarGuardada envía un DELETE a la ruta de guardar', () => {
+  it('[O] quitarGuardada envía un POST sin body a quitar-guardado', () => {
     api.quitarGuardada('abc').subscribe();
 
-    const solicitud = http.expectOne(`${URL}/abc/guardar`);
+    const solicitud = http.expectOne(`${URL}/abc/quitar-guardado`);
 
-    expect(solicitud.request.method).toBe('DELETE');
-    solicitud.flush(null);
+    expect(solicitud.request.method).toBe('POST');
+    expect(solicitud.request.body).toEqual({});
+    solicitud.flush({ guardada: false, cantidadGuardados: 0 });
   });
 
   it.each([
@@ -203,7 +204,7 @@ describe('PublicacionesApi', () => {
       ...argumentos,
     ).subscribe();
 
-    const solicitud = http.expectOne((p) => p.url === `${environment.API_URL}/guardadas`);
+    const solicitud = http.expectOne((p) => p.url === `${URL}/guardadas`);
 
     expect(solicitud.request.method).toBe('GET');
     expect(
@@ -217,7 +218,7 @@ describe('PublicacionesApi', () => {
   it('[I] letrasGuardadas pide las cantidades, con el texto si hay', () => {
     api.letrasGuardadas('tarta').subscribe();
 
-    const solicitud = http.expectOne((p) => p.url === `${environment.API_URL}/guardadas/letras`);
+    const solicitud = http.expectOne((p) => p.url === `${URL}/guardadas/letras`);
 
     expect(solicitud.request.params.get('q')).toBe('tarta');
     solicitud.flush({ letras: {}, total: 0 });
@@ -226,7 +227,7 @@ describe('PublicacionesApi', () => {
   it('[Z] letrasGuardadas sin texto no manda q', () => {
     api.letrasGuardadas().subscribe();
 
-    const solicitud = http.expectOne((p) => p.url === `${environment.API_URL}/guardadas/letras`);
+    const solicitud = http.expectOne((p) => p.url === `${URL}/guardadas/letras`);
 
     expect(solicitud.request.params.has('q')).toBe(false);
     solicitud.flush({ letras: {}, total: 0 });

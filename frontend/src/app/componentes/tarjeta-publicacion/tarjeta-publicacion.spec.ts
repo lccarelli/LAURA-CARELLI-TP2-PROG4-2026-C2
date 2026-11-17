@@ -331,6 +331,40 @@ describe('TarjetaPublicacion', () => {
     });
   });
 
+  describe('sólo lectura', () => {
+    it('[O] abre la vista pública y no la del detalle con sesión', async () => {
+      await crear(base);
+      fixture.componentRef.setInput('soloLectura', true);
+      await fixture.whenStable();
+
+      const enlace = fixture.nativeElement.querySelector('a.pin') as HTMLAnchorElement;
+
+      expect(enlace.getAttribute('href')).toBe(`/publico/${base._id}`);
+    });
+
+    it('[I] muestra los números pero no hay ningún botón: ni me gusta, ni guardar, ni eliminar', async () => {
+      const elemento = await crear(base);
+      fixture.componentRef.setInput('soloLectura', true);
+      await fixture.whenStable();
+
+      expect(elemento.querySelectorAll('button')).toHaveLength(0);
+      const etiquetas = Array.from(elemento.querySelectorAll('.metrica')).map((m) =>
+        m.getAttribute('aria-label'),
+      );
+      expect(etiquetas).toEqual(['7 me gusta', '2 comentarios']);
+    });
+
+    it('[S] aunque la persona sea quien publicó no ofrece eliminar', async () => {
+      const elemento = await crear({ ...base, usuario: { ...base.usuario, _id: 'u1' } });
+      TestBed.inject(Auth).usuario.set(persona('u1'));
+      fixture.componentRef.setInput('soloLectura', true);
+      await fixture.whenStable();
+
+      expect(elemento.querySelector('.boton-eliminar')).toBeNull();
+      expect(elemento.querySelectorAll('button')).toHaveLength(0);
+    });
+  });
+
   describe('guardar', () => {
     const botonGuardar = () =>
       fixture.nativeElement.querySelector('app-boton-guardar button') as HTMLButtonElement;
@@ -355,7 +389,7 @@ describe('TarjetaPublicacion', () => {
       botonGuardar().click();
       http
         .expectOne({ method: 'POST', url: `${URL}/${base._id}/guardar` })
-        .flush({ guardada: true });
+        .flush({ guardada: true, cantidadGuardados: 1 });
       await fixture.whenStable();
 
       expect(quitadas).toEqual([]);
@@ -368,8 +402,8 @@ describe('TarjetaPublicacion', () => {
 
       botonGuardar().click();
       http
-        .expectOne({ method: 'DELETE', url: `${URL}/${base._id}/guardar` })
-        .flush(null, { status: 204, statusText: 'No Content' });
+        .expectOne({ method: 'POST', url: `${URL}/${base._id}/quitar-guardado` })
+        .flush({ guardada: false, cantidadGuardados: 0 });
       await fixture.whenStable();
 
       expect(quitadas).toEqual([base._id]);

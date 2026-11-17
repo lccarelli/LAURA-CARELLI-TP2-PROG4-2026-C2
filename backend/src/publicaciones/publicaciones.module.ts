@@ -9,6 +9,7 @@ import { ComentariosService } from './comentarios.service.js';
 import { EventosMeGustaService } from './eventos-me-gusta.service.js';
 import { GuardadasController } from './guardadas.controller.js';
 import { GuardadasService } from './guardadas.service.js';
+import { PublicoController } from './publico.controller.js';
 import { PublicacionesController } from './publicaciones.controller.js';
 import { PublicacionesService } from './publicaciones.service.js';
 import { Comentario, ComentarioSchema } from './schemas/comentario.schema.js';
@@ -40,7 +41,11 @@ export const TTL_LISTADO_MS = 1000;
     ImagenesModule,
     NotificacionesModule,
   ],
-  controllers: [PublicacionesController, GuardadasController],
+  controllers: [
+    GuardadasController,
+    PublicoController,
+    PublicacionesController,
+  ],
   providers: [
     PublicacionesService,
     GuardadasService,

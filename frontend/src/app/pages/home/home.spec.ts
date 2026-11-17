@@ -33,7 +33,7 @@ const TABLEROS = [
 
 const COLLAGES: [string, string, Record<string, string>, string][] = [
   ['las propias', '/publicaciones', { usuario: 'u1' }, '/perfil/publicaciones'],
-  ['las guardadas', '/guardadas', {}, '/perfil/guardadas'],
+  ['las guardadas', '/publicaciones/guardadas', {}, '/perfil/guardadas'],
   ['las más gustadas', '/publicaciones', { orden: 'megusta' }, '/publicaciones?orden=megusta'],
   ['las recetas', '/publicaciones', { tipo: 'receta' }, '/publicaciones?tipo=receta'],
   ['los tips', '/publicaciones', { tipo: 'tip' }, '/publicaciones?tipo=tip'],
@@ -167,7 +167,12 @@ describe('Home', () => {
 
   it('[B] el collage usa como máximo 3 portadas', async () => {
     await abrir();
-    responder('/guardadas', {}, [conImagen(1), conImagen(2), conImagen(3), conImagen(4)]);
+    responder('/publicaciones/guardadas', {}, [
+      conImagen(1),
+      conImagen(2),
+      conImagen(3),
+      conImagen(4),
+    ]);
     vaciar();
     await actualizar();
 
