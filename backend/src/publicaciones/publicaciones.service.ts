@@ -483,8 +483,8 @@ export class PublicacionesService {
 
   async sumarContador(
     id: string,
-    campo: 'cantidadMeGusta' | 'cantidadGuardados',
-    cambio: 1 | -1,
+    campo: 'cantidadMeGusta' | 'cantidadGuardados' | 'cantidadCompartidas',
+    cambio: number,
   ) {
     const publicacion = await this.publicacionModel
       .findByIdAndUpdate(

@@ -1,0 +1,102 @@
+<div class="fondo-modal">
+  <div
+    class="modal"
+    role="dialog"
+    tabindex="-1"
+    aria-modal="true"
+    aria-labelledby="modal-compartir-titulo"
+    (keydown.escape)="salir()"
+  >
+    <h2 id="modal-compartir-titulo" class="titulo-seccion">
+      {{ 'compartir.titulo' | translate }}
+    </h2>
+
+    @if (mensajeError(); as mensaje) {
+      <app-aviso titulo="compartir.error_titulo" (cerrar)="mensajeError.set(null)">{{
+        mensaje | translate
+      }}</app-aviso>
+    }
+
+    <label class="buscador-personas">
+      <span class="etiqueta">{{ 'compartir.buscar' | translate }}</span>
+      <span class="buscador-personas-caja">
+        <app-icono nombre="lupa" [chico]="true" />
+        <input
+          appAutoFoco
+          #campo
+          class="buscador-personas-campo"
+          type="search"
+          autocomplete="off"
+          [placeholder]="'compartir.buscar_ayuda' | translate"
+          (input)="buscar(campo.value)"
+        />
+      </span>
+    </label>
+
+    @if (resultados().length) {
+      <ul class="personas" [attr.aria-label]="'compartir.resultados' | translate">
+        @for (persona of resultados(); track persona._id) {
+          <li>
+            <button type="button" class="persona" [disabled]="completo()" (click)="elegir(persona)">
+              <img class="avatar" [src]="urlImagen(persona.imagenPerfil)" alt="" />
+              <span class="persona-datos">
+                <span class="persona-nombre">{{ persona.nombre }} {{ persona.apellido }}</span>
+                <span class="meta">&#64;{{ persona.nombreUsuario }}</span>
+              </span>
+              <span class="persona-agregar">
+                <app-icono nombre="mas" [chico]="true" />
+                {{ 'compartir.agregar' | translate }}
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+    } @else if (sinResultados()) {
+      <p class="meta">{{ 'compartir.sin_resultados' | translate }}</p>
+    }
+
+    @if (elegidas().length) {
+      <div class="elegidas">
+        <p class="etiqueta">
+          {{ 'compartir.elegidas' | translate }} ({{ elegidas().length }}/{{ maximo }})
+        </p>
+        <ul class="destinatarios">
+          @for (persona of elegidas(); track persona._id) {
+            <li class="destinatario">
+              <img class="avatar-chico" [src]="urlImagen(persona.imagenPerfil)" alt="" />
+              <span>&#64;{{ persona.nombreUsuario }}</span>
+              <button
+                type="button"
+                class="destinatario-quitar"
+                [attr.aria-label]="
+                  'compartir.quitar' | translate: { usuario: persona.nombreUsuario }
+                "
+                (click)="quitar(persona._id)"
+              >
+                <app-icono nombre="cerrar" [chico]="true" />
+              </button>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    @if (completo()) {
+      <p class="meta">{{ 'compartir.maximo' | translate: { n: maximo } }}</p>
+    }
+
+    <div class="modal-acciones">
+      <button type="button" class="boton-secundario" [disabled]="enviando()" (click)="salir()">
+        {{ 'usuarios.cancelar' | translate }}
+      </button>
+      <button
+        type="button"
+        class="boton-principal"
+        [disabled]="enviando() || !elegidas().length"
+        (click)="compartir()"
+      >
+        {{ 'compartir.enviar' | translate: { n: elegidas().length } }}
+      </button>
+    </div>
+  </div>
+</div>

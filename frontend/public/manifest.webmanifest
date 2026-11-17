@@ -10,10 +10,7 @@
   "scope": "/",
   "theme_color": "#404d63",
   "background_color": "#eeece8",
-  "categories": [
-    "food",
-    "social"
-  ],
+  "categories": ["food", "social"],
   "icons": [
     {
       "src": "icons/icon-192.png",

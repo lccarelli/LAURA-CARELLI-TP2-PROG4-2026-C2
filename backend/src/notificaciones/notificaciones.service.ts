@@ -34,6 +34,11 @@ const TEXTOS = {
     es: (actor: string, titulo: string) => `A ${actor} le gustó «${titulo}»`,
     en: (actor: string, titulo: string) => `${actor} liked “${titulo}”`,
   },
+  compartida: {
+    es: (actor: string, titulo: string) => `${actor} te compartió «${titulo}»`,
+    en: (actor: string, titulo: string) =>
+      `${actor} shared “${titulo}” with you`,
+  },
 } as const;
 
 const aRespuesta = (notificacion: NotificacionGuardada) => ({
@@ -100,8 +105,15 @@ export class NotificacionesService {
         datos.actor.nombreUsuario,
         datos.publicacion.titulo,
       ),
-      ruta: `/publicaciones/${datos.publicacion.id}${datos.tipo === 'comentario' ? '#comentarios' : ''}`,
+      ruta: this.rutaDelAviso(datos),
     }));
+  }
+
+  private rutaDelAviso({ tipo, publicacion }: DatosNotificacion) {
+    if (tipo === 'compartida') {
+      return `/perfil?solapa=compartidos&publicacion=${publicacion.id}`;
+    }
+    return `/publicaciones/${publicacion.id}${tipo === 'comentario' ? '#comentarios' : ''}`;
   }
 
   async listar(
@@ -186,7 +198,7 @@ export class NotificacionesService {
       actor: datos.actor.id,
       nombreActor: datos.actor.nombreUsuario,
     };
-    if (datos.tipo === 'comentario') {
+    if (datos.tipo !== 'me_gusta') {
       await this.notificacionModel.create({ ...contenido, fecha });
       return true;
     }

@@ -3,6 +3,10 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { Location } from '@angular/common';
+import { By } from '@angular/platform-browser';
+import { Historial } from '../../servicios/historial/historial';
+import { ModalCompartir } from '../../componentes/modal-compartir/modal-compartir';
 import { Publicacion } from '../../interfaces/publicacion';
 import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
@@ -133,6 +137,125 @@ describe('DetallePublicacion', () => {
     expect(navegar).toHaveBeenCalledWith(['/publicaciones']);
   });
 
+  describe('al cerrar', () => {
+    const conHistorial = (puedeVolver: boolean) => {
+      vi.spyOn(TestBed.inject(Historial), 'puedeVolver').mockReturnValue(puedeVolver);
+      return {
+        atras: vi.spyOn(TestBed.inject(Location), 'back').mockImplementation(() => undefined),
+        navegar: vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true),
+      };
+    };
+    const cerrarConLaX = () =>
+      (fixture.nativeElement.querySelector('a.cerrar-detalle') as HTMLAnchorElement).click();
+
+    it('[O] si se llegó desde otra pantalla de la app, la X vuelve a esa pantalla (un paso atrás)', async () => {
+      const { atras, navegar } = conHistorial(true);
+      await abrir(publicacionDePrueba(1));
+
+      cerrarConLaX();
+
+      expect(atras).toHaveBeenCalledTimes(1);
+      expect(navegar).not.toHaveBeenCalled();
+    });
+
+    it('[O] la tecla Escape también vuelve un paso atrás', async () => {
+      const { atras } = conHistorial(true);
+      await abrir(publicacionDePrueba(1));
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+      expect(atras).toHaveBeenCalledTimes(1);
+    });
+
+    it('[O] el enlace Volver del aviso de error también vuelve un paso atrás', async () => {
+      const { atras } = conHistorial(true);
+      http
+        .expectOne({ method: 'GET', url: `${URL}/id1` })
+        .flush({ codigo: 'PUBLICACION_NO_ENCONTRADA' }, { status: 404, statusText: 'Not Found' });
+      await actualizar();
+
+      (fixture.nativeElement.querySelector('.pagina a.enlace') as HTMLAnchorElement).click();
+
+      expect(atras).toHaveBeenCalledTimes(1);
+    });
+
+    it('[S] si se entró directo (enlace, aviso del celular), la X lleva al muro de publicaciones', async () => {
+      const { atras, navegar } = conHistorial(false);
+      await abrir(publicacionDePrueba(1));
+
+      cerrarConLaX();
+
+      expect(atras).not.toHaveBeenCalled();
+      expect(navegar).toHaveBeenCalledWith(['/publicaciones']);
+    });
+
+    it('[I] el enlace conserva el destino por defecto, por si se abre en otra pestaña', async () => {
+      conHistorial(false);
+      await abrir(publicacionDePrueba(1));
+
+      const cerrar = fixture.nativeElement.querySelector('a.cerrar-detalle') as HTMLAnchorElement;
+
+      expect(cerrar.getAttribute('href')).toBe('/publicaciones');
+    });
+  });
+
+  describe('compartir', () => {
+    it('[O] con sesión: a la izquierda guardar y compartir; a la derecha me gusta y los comentarios', async () => {
+      await abrir(publicacionDePrueba(1));
+
+      const botones = Array.from(
+        fixture.nativeElement.querySelectorAll('.metricas-detalle button'),
+      ).map((boton) => (boton as HTMLElement).getAttribute('aria-label'));
+
+      expect(botones).toEqual(['Guardar', 'Compartir', expect.stringContaining('me gusta')]);
+      const hijos = Array.from(fixture.nativeElement.querySelectorAll('.metricas-detalle > *'));
+      expect(hijos.at(-2)).toBe(fixture.nativeElement.querySelector('app-boton-me-gusta'));
+      expect(fixture.nativeElement.querySelector('app-boton-me-gusta').classList).toContain(
+        'pin-derecha',
+      );
+    });
+
+    it('[S] al compartir muestra con cuántas personas y al abrir de nuevo lo borra', async () => {
+      await abrir(publicacionDePrueba(1));
+      const boton = fixture.nativeElement.querySelector('app-boton-compartir') as HTMLElement;
+      (boton.querySelector('button') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      fixture.debugElement.query(By.directive(ModalCompartir)).componentInstance.compartida.emit(2);
+      await actualizar();
+
+      expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain(
+        'Compartida con 2',
+      );
+
+      (boton.querySelector('button') as HTMLButtonElement).click();
+      await actualizar();
+      expect(fixture.nativeElement.querySelector('[role="status"]')).toBeNull();
+    });
+
+    it('[I] en la vista pública (sin sesión) no hay botón Compartir', async () => {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [DetallePublicacion],
+        providers: [
+          proveerIdiomaDePrueba(),
+          provideRouter([]),
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          proveerRutaConId('id1', { soloLectura: true }),
+        ],
+      }).compileComponents();
+      http = TestBed.inject(HttpTestingController);
+      fixture = TestBed.createComponent(DetallePublicacion);
+      await fixture.whenStable();
+      http
+        .expectOne({ method: 'GET', url: `${environment.API_URL}/publico/publicaciones/id1` })
+        .flush(publicacionDePrueba(1));
+      await actualizar();
+
+      expect(fixture.nativeElement.querySelector('app-boton-compartir')).toBeNull();
+    });
+  });
+
   it('[I] es una página con enlace para volver, sin ventana flotante', async () => {
     await abrir(publicacionDePrueba(1));
 
@@ -200,7 +323,7 @@ describe('DetallePublicacion', () => {
     const detalle = fixture.nativeElement as HTMLElement;
     expect(detalle.textContent).toContain('Título 1');
     expect(detalle.textContent).toContain('Mensaje 1');
-    expect(detalle.querySelectorAll('.metrica')).toHaveLength(3);
+    expect(detalle.querySelectorAll('.metrica')).toHaveLength(4);
     expect(detalle.textContent).toContain('Laura Carelli');
   });
 
@@ -568,7 +691,10 @@ describe('DetallePublicacion', () => {
           {
             provide: ActivatedRoute,
             useValue: {
-              snapshot: { paramMap: convertToParamMap({ id: 'id1' }), fragment: fragmento },
+              snapshot: {
+                paramMap: convertToParamMap({ id: 'id1' }),
+                fragment: fragmento,
+              },
             },
           },
         ],

@@ -62,19 +62,11 @@
         [attr.title]="'barra.mi_perfil' | translate"
         [class.activo]="enPerfil()"
       >
-        <svg
-          class="icono"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.6"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <circle cx="12" cy="8" r="3.5" />
-          <path d="M5 20a7 7 0 0 1 14 0" />
-        </svg>
+        <img
+          class="avatar-nav"
+          [src]="urlImagen(usuario.imagenPerfil)"
+          [alt]="'comun.foto_de' | translate: { nombre: usuario.nombreUsuario }"
+        />
         <span class="etiqueta-nav">{{ 'barra.mi_perfil' | translate }}</span>
       </a>
       @if (usuario.perfil === 'administrador') {

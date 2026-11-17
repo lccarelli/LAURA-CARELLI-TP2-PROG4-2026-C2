@@ -81,6 +81,19 @@ export interface LetrasGuardadas {
   total: number;
 }
 
+export interface PublicacionCompartida extends Publicacion {
+  compartidaPor: Pick<Usuario, '_id' | 'nombre' | 'apellido' | 'nombreUsuario' | 'imagenPerfil'>;
+  fechaCompartida: string;
+  vista: boolean;
+}
+
+export interface PaginaCompartidas {
+  datos: PublicacionCompartida[];
+  offset: number;
+  limit: number;
+  hayMas: boolean;
+}
+
 export interface PaginaPublicaciones {
   datos: Publicacion[];
   offset: number;

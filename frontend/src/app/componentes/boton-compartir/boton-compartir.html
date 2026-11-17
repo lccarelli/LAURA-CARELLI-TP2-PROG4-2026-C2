@@ -1,0 +1,17 @@
+<button
+  type="button"
+  class="metrica boton-metrica"
+  [attr.aria-label]="'compartir.boton' | translate"
+  [attr.title]="'compartir.boton' | translate"
+  (click)="abrir()"
+>
+  <app-icono nombre="compartir" [chico]="true" />
+</button>
+
+@if (eligiendo()) {
+  <app-modal-compartir
+    [publicacionId]="publicacionId()"
+    (compartida)="alCompartir($event)"
+    (cancelado)="eligiendo.set(false)"
+  />
+}

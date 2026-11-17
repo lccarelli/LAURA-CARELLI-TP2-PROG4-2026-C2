@@ -63,7 +63,10 @@ describe('Campanita', () => {
       imports: [Campanita],
       providers: [
         proveerIdiomaDePrueba(),
-        provideRouter([{ path: 'publicaciones/:id', children: [] }]),
+        provideRouter([
+          { path: 'publicaciones/:id', children: [] },
+          { path: 'perfil', children: [] },
+        ]),
         provideHttpClient(),
         provideHttpClientTesting(),
       ],
@@ -163,6 +166,18 @@ describe('Campanita', () => {
       await actualizar();
 
       expect(router.url).toBe('/publicaciones/p2');
+    });
+
+    it('[O] un aviso de publicación compartida lo dice y lleva a la solapa Compartidos contigo del perfil', async () => {
+      await iniciarSesion(1);
+      await abrirPanel([notificacion(3, { tipo: 'compartida' })]);
+      const router = TestBed.inject(Router);
+
+      expect(texto()).toContain('te compartió');
+      (el('.notificacion') as HTMLAnchorElement).click();
+      await actualizar();
+
+      expect(router.url).toBe('/perfil?solapa=compartidos&publicacion=p3');
     });
 
     it('[Z] sin avisos dice que todavía no hay', async () => {

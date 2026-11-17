@@ -14,6 +14,7 @@ describe('mensajeParaSolicitud', () => {
     ['DELETE', '/publicaciones/abc', 'carga.eliminando'],
     ['POST', '/publicaciones/abc/comentarios', 'carga.comentando'],
     ['PUT', '/publicaciones/abc/comentarios/def', 'carga.guardando_comentario'],
+    ['POST', '/publicaciones/abc/compartir', 'carga.compartiendo'],
     ['PUT', '/usuarios/yo', 'carga.guardando_perfil'],
     ['POST', '/usuarios', 'carga.creando_usuario'],
     ['DELETE', '/usuarios/abc', 'carga.deshabilitando'],

@@ -21,6 +21,7 @@ import {
 } from '../../interfaces/publicacion';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { ListadoPaginado } from '../../utilidades/listado-paginado';
+import { recordarPosicion } from '../../utilidades/recordar-posicion';
 import { Aviso } from '../aviso/aviso';
 import { TarjetaPublicacion } from '../tarjeta-publicacion/tarjeta-publicacion';
 import { VerMas } from '../ver-mas/ver-mas';
@@ -80,6 +81,7 @@ export class MuroPublicaciones implements OnInit, OnDestroy {
   private alCambiarElAncho = () => this.columnas.set(this.cantidadDeColumnas());
 
   constructor() {
+    recordarPosicion(this.listado);
     effect(() => {
       const tipo = this.tipoElegido();
       const orden = this.ordenElegido();

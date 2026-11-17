@@ -37,7 +37,7 @@
 @if (soloLectura()) {
   <div class="pin-acciones">
     <span
-      class="metrica"
+      class="metrica pin-derecha"
       [attr.aria-label]="
         'publicaciones.me_gusta_total' | translate: { n: publicacion().cantidadMeGusta }
       "
@@ -46,7 +46,7 @@
       <span aria-hidden="true">{{ publicacion().cantidadMeGusta }}</span>
     </span>
     <span
-      class="metrica"
+      class="metrica metrica-comentarios"
       [attr.aria-label]="
         'publicaciones.comentarios' | translate: { n: publicacion().cantidadComentarios }
       "
@@ -54,59 +54,9 @@
       <app-icono nombre="comentario" [chico]="true" />
       <span aria-hidden="true">{{ publicacion().cantidadComentarios }}</span>
     </span>
-  </div>
-} @else if (confirmando()) {
-  <div
-    class="pin-confirmar"
-    role="group"
-    [attr.aria-labelledby]="'confirmar-' + publicacion()._id"
-    [attr.title]="'publicaciones.eliminar_aviso' | translate"
-  >
-    <span class="pin-confirmar-texto" [id]="'confirmar-' + publicacion()._id">
-      {{ 'publicaciones.eliminar_pregunta' | translate }}
-    </span>
-    <button
-      type="button"
-      class="boton-mini boton-mini-peligro"
-      [disabled]="enviando()"
-      [attr.aria-label]="
-        (enviando() ? 'publicaciones.eliminando' : 'publicaciones.eliminar_si_aria') | translate
-      "
-      (click)="eliminar()"
-    >
-      {{
-        (enviando() ? 'publicaciones.eliminando_corto' : 'publicaciones.eliminar_si') | translate
-      }}
-    </button>
-    <button
-      type="button"
-      class="boton-mini"
-      [disabled]="enviando()"
-      [attr.aria-label]="'publicaciones.eliminar_no_aria' | translate"
-      (click)="cancelar()"
-    >
-      {{ 'publicaciones.eliminar_no' | translate }}
-    </button>
   </div>
 } @else {
   <div class="pin-acciones">
-    <app-boton-me-gusta
-      [publicacionId]="publicacion()._id"
-      [meGustaDado]="publicacion().meGusta ?? false"
-      [cantidadMeGusta]="publicacion().cantidadMeGusta"
-      (fallo)="mensajeError.set($event)"
-    />
-
-    <span
-      class="metrica"
-      [attr.aria-label]="
-        'publicaciones.comentarios' | translate: { n: publicacion().cantidadComentarios }
-      "
-    >
-      <app-icono nombre="comentario" [chico]="true" />
-      <span aria-hidden="true">{{ publicacion().cantidadComentarios }}</span>
-    </span>
-
     <app-boton-guardar
       [publicacionId]="publicacion()._id"
       [guardada]="publicacion().guardada ?? false"
@@ -114,30 +64,38 @@
       (cambio)="!$event && desguardada.emit(publicacion()._id)"
     />
 
-    @if (puedeEliminar() && !confirmando()) {
-      <button
-        type="button"
-        class="boton-metrica boton-eliminar"
-        [attr.aria-label]="'publicaciones.eliminar' | translate"
-        (click)="pedirConfirmacion()"
-      >
-        <svg
-          class="icono-chico"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3" />
-        </svg>
-      </button>
-    }
+    <app-boton-compartir
+      [publicacionId]="publicacion()._id"
+      (abierto)="compartidaCon.set(null)"
+      (compartida)="compartidaCon.set($event)"
+    />
+
+    <app-boton-me-gusta
+      class="pin-derecha"
+      [publicacionId]="publicacion()._id"
+      [meGustaDado]="publicacion().meGusta ?? false"
+      [cantidadMeGusta]="publicacion().cantidadMeGusta"
+      (fallo)="mensajeError.set($event)"
+    />
+
+    <span
+      class="metrica metrica-comentarios"
+      [attr.aria-label]="
+        'publicaciones.comentarios' | translate: { n: publicacion().cantidadComentarios }
+      "
+    >
+      <app-icono nombre="comentario" [chico]="true" />
+      <span aria-hidden="true">{{ publicacion().cantidadComentarios }}</span>
+    </span>
   </div>
 }
 
 @if (mensajeError(); as mensaje) {
   <p class="mensaje-error pin-error" role="alert">{{ mensaje | translate }}</p>
+}
+
+@if (compartidaCon(); as cantidad) {
+  <p class="meta pin-error" role="status">
+    {{ 'compartir.compartida' | translate: { n: cantidad } }}
+  </p>
 }

@@ -1,0 +1,35 @@
+@if (listado.mensajeError(); as mensaje) {
+  <app-aviso titulo="publicaciones.error_cargar" (cerrar)="listado.mensajeError.set(null)">{{
+    mensaje | translate
+  }}</app-aviso>
+}
+
+<div class="compartidas">
+  @for (item of listado.items(); track clave(item)) {
+    <article class="compartida" [class.compartida-destacada]="clave(item) === resaltada()">
+      <p class="compartida-por">
+        @if (!item.vista) {
+          <span class="etiqueta-nueva">{{ 'compartidas.nueva' | translate }}</span>
+        }
+        <a class="enlace" [routerLink]="['/perfil', item.compartidaPor._id]"
+          >&#64;{{ item.compartidaPor.nombreUsuario }}</a
+        >
+        {{ 'compartidas.te_compartio' | translate }}
+        <span class="meta">{{ item.fechaCompartida | fechaRelativa }}</span>
+      </p>
+      <app-ultima-publicacion [publicacion]="item" />
+    </article>
+  }
+</div>
+
+@if (listado.items().length === 0 && !listado.cargando() && !listado.fallaLaCarga()) {
+  <p class="tarjeta estado-vacio">{{ 'compartidas.vacio' | translate }}</p>
+}
+
+@if (listado.hayMas() && !listado.cargando()) {
+  <app-ver-mas
+    texto="publicaciones.ver_mas"
+    [automatico]="!listado.fallaLaCarga()"
+    (cargar)="listado.cargarMas()"
+  />
+}

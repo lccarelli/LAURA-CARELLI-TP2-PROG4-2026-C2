@@ -222,3 +222,54 @@ describe('indicador de espera', () => {
     }
   });
 });
+
+describe('ventana de compartir', () => {
+  const regla = (selector: string) => {
+    const inicio = hojaDeEstilos.indexOf(`\n  ${selector} {`);
+    return hojaDeEstilos.slice(inicio, hojaDeEstilos.indexOf('}', inicio));
+  };
+  const fondoDeLaVentana = regla('.modal').match(/\bbg-([\w-]+)/)![1];
+
+  it.each(['.buscador-personas-caja', '.personas'])(
+    '[I] %s se distingue del fondo de la ventana: tiene borde y otro color de fondo',
+    (selector) => {
+      const estilo = regla(selector);
+
+      expect(estilo).toMatch(/\bborder-2\b/);
+      expect(estilo).toMatch(/\bborder-linea-fuerte\b/);
+      expect(estilo).not.toContain(`bg-${fondoDeLaVentana} `);
+    },
+  );
+
+  it('[I] las personas elegidas llevan borde y un fondo propio, no el de la ventana', () => {
+    const estilo = regla('.destinatario');
+
+    expect(estilo).toContain('border-barra');
+    expect(estilo).toContain('bg-secundario');
+  });
+});
+
+describe('íconos de la tarjeta resumida', () => {
+  const regla = (selector: string) => {
+    const inicio = hojaDeEstilos.indexOf(`\n  ${selector} {`);
+    return hojaDeEstilos.slice(inicio, hojaDeEstilos.indexOf('}', inicio));
+  };
+
+  it('[I] los íconos van pegados: separación mínima entre botones, no repartidos por el ancho', () => {
+    const acciones = regla('.pin-acciones');
+
+    expect(acciones).toMatch(/\bgap-0\.5\b/);
+    expect(acciones).not.toMatch(/justify-(between|around|evenly)/);
+  });
+
+  it('[I] el corazón y el contador de comentarios van juntos a la derecha, separados de guardar y compartir', () => {
+    expect(hojaDeEstilos).toMatch(/\.pin-acciones \.pin-derecha,[^{]*\{[^}]*ml-auto/);
+    expect(regla('.pin-acciones .metrica-comentarios')).not.toContain('ml-auto');
+    expect(hojaDeEstilos).toMatch(/\.metricas-detalle \.pin-derecha\s*\{[^}]*ml-auto/);
+  });
+
+  it('[I] ningún botón de la fila se empuja hacia el borde (ml-auto)', () => {
+    expect(regla('.boton-metrica')).not.toContain('ml-auto');
+    expect(hojaDeEstilos).not.toContain('.boton-eliminar');
+  });
+});

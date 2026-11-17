@@ -9,9 +9,11 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Aviso } from '../../componentes/aviso/aviso';
+import { BotonCompartir } from '../../componentes/boton-compartir/boton-compartir';
 import { BotonGuardar } from '../../componentes/boton-guardar/boton-guardar';
 import { BotonMeGusta } from '../../componentes/boton-me-gusta/boton-me-gusta';
 import { ItemComentario } from '../../componentes/item-comentario/item-comentario';
@@ -26,6 +28,7 @@ import {
 } from '../../interfaces/publicacion';
 import { FechaRelativa } from '../../pipes/fecha-relativa';
 import { Auth } from '../../servicios/auth/auth';
+import { Historial } from '../../servicios/historial/historial';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
@@ -54,12 +57,13 @@ const esIngrediente = (valor: unknown): valor is Ingrediente => {
 
 @Component({
   imports: [
+    BotonCompartir,
     BotonGuardar,
     BotonMeGusta,
     EliminarPublicacion,
     DatePipe,
-    FechaRelativa,
     RouterLink,
+    FechaRelativa,
     Aviso,
     Comentarios,
     ItemComentario,
@@ -76,6 +80,8 @@ export class DetallePublicacion implements OnInit {
   private router = inject(Router);
   private auth = inject(Auth);
   private injector = inject(Injector);
+  private historial = inject(Historial);
+  private ubicacion = inject(Location);
 
   readonly soloLectura = this.ruta.snapshot.data?.['soloLectura'] === true;
   protected readonly salida = this.soloLectura ? '/' : '/publicaciones';
@@ -86,6 +92,7 @@ export class DetallePublicacion implements OnInit {
   readonly cargando = signal(true);
   readonly mensajeError = signal<string | null>(null);
   protected readonly errorDeAccion = signal<string | null>(null);
+  protected readonly compartidaCon = signal<number | null>(null);
 
   protected readonly puedeEliminar = computed(() => {
     const publicacion = this.publicacion();
@@ -146,7 +153,12 @@ export class DetallePublicacion implements OnInit {
     );
   }
 
-  protected cerrar() {
+  protected cerrar(evento?: Event) {
+    evento?.preventDefault();
+    if (this.historial.puedeVolver()) {
+      this.ubicacion.back();
+      return;
+    }
     this.router.navigate([this.salida]);
   }
 

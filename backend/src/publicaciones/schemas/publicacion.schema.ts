@@ -94,6 +94,9 @@ export class Publicacion {
   @Prop({ default: 0 })
   cantidadGuardados: number;
 
+  @Prop({ default: 0 })
+  cantidadCompartidas: number;
+
   @Prop({ default: Date.now })
   fecha: Date;
 }

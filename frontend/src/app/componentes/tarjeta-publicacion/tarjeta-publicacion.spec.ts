@@ -8,6 +8,7 @@ import { Auth } from '../../servicios/auth/auth';
 import { Publicacion } from '../../interfaces/publicacion';
 import { By } from '@angular/platform-browser';
 import { BotonMeGusta } from '../boton-me-gusta/boton-me-gusta';
+import { ModalCompartir } from '../modal-compartir/modal-compartir';
 import { TarjetaPublicacion } from './tarjeta-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 
@@ -44,7 +45,6 @@ const persona = (id: string, perfil: Usuario['perfil'] = 'usuario'): Usuario => 
 describe('TarjetaPublicacion', () => {
   let fixture: ComponentFixture<TarjetaPublicacion>;
   let http: HttpTestingController;
-  let eliminadas: string[];
 
   async function crear(publicacion: Publicacion) {
     await TestBed.configureTestingModule({
@@ -58,8 +58,6 @@ describe('TarjetaPublicacion', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(TarjetaPublicacion);
     http = TestBed.inject(HttpTestingController);
-    eliminadas = [];
-    fixture.componentInstance.eliminada.subscribe((id) => eliminadas.push(id));
     fixture.componentRef.setInput('publicacion', publicacion);
     await fixture.whenStable();
     return fixture.nativeElement as HTMLElement;
@@ -115,7 +113,48 @@ describe('TarjetaPublicacion', () => {
       m.getAttribute('aria-label'),
     );
 
-    expect(etiquetas).toEqual(['Dar me gusta (7)', '2 comentarios', 'Guardar']);
+    expect(etiquetas).toEqual(['Guardar', 'Compartir', 'Dar me gusta (7)', '2 comentarios']);
+  });
+
+  it('[O] el botón Compartir abre la ventana para elegir personas', async () => {
+    const elemento = await crear(base);
+
+    expect(elemento.querySelector('app-modal-compartir')).toBeNull();
+    (elemento.querySelector('[aria-label="Compartir"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(elemento.querySelector('app-modal-compartir [role="dialog"]')).not.toBeNull();
+  });
+
+  it('[S] al compartir cierra la ventana y avisa con cuántas personas se compartió', async () => {
+    const elemento = await crear(base);
+    (elemento.querySelector('[aria-label="Compartir"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    const modal = fixture.debugElement.query(By.directive(ModalCompartir))
+      .componentInstance as ModalCompartir;
+
+    modal.compartida.emit(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(elemento.querySelector('app-modal-compartir')).toBeNull();
+    expect(elemento.querySelector('[role="status"]')!.textContent).toContain('Compartida con 2');
+  });
+
+  it('[S] cancelar la ventana la cierra sin avisar nada', async () => {
+    const elemento = await crear(base);
+    (elemento.querySelector('[aria-label="Compartir"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    const modal = fixture.debugElement.query(By.directive(ModalCompartir))
+      .componentInstance as ModalCompartir;
+
+    modal.cancelado.emit();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(elemento.querySelector('app-modal-compartir')).toBeNull();
+    expect(elemento.querySelector('[role="status"]')).toBeNull();
   });
 
   it('[Z] sin imagen en la publicación muestra el mensaje en un recuadro', async () => {
@@ -177,7 +216,7 @@ describe('TarjetaPublicacion', () => {
 
   describe('me gusta', () => {
     const botonMeGusta = () =>
-      fixture.nativeElement.querySelector('.boton-metrica.metrica') as HTMLButtonElement;
+      fixture.nativeElement.querySelector('app-boton-me-gusta button') as HTMLButtonElement;
     const actualizar = async () => {
       fixture.detectChanges();
       await fixture.whenStable();
@@ -446,136 +485,59 @@ describe('TarjetaPublicacion', () => {
     });
   });
 
-  describe('eliminar', () => {
-    const botonEliminar = () =>
-      fixture.nativeElement.querySelector('.boton-eliminar') as HTMLButtonElement | null;
-    const botonDeConfirmacion = (texto: string) =>
-      Array.from(
-        fixture.nativeElement.querySelectorAll(
-          '.pin-confirmar button',
-        ) as NodeListOf<HTMLButtonElement>,
-      ).find((boton) => boton.getAttribute('aria-label')!.includes(texto))!;
-    const actualizar = async () => {
-      fixture.detectChanges();
-      await fixture.whenStable();
-    };
+  describe('acciones de la vista resumida', () => {
     const iniciarSesion = (usuario: Usuario | null) => TestBed.inject(Auth).usuario.set(usuario);
 
-    it('[O] quien publicó ve el botón de eliminar', async () => {
-      await crear(base);
-      iniciarSesion(persona('u1'));
-      await actualizar();
+    it.each([
+      ['quien publicó', persona('u1')],
+      ['un administrador', persona('otra', 'administrador')],
+      ['otra persona', persona('otra')],
+    ])(
+      '[I] para %s no hay botón de eliminar: eso se hace desde el detalle',
+      async (_quien, sesion) => {
+        const elemento = await crear(base);
+        iniciarSesion(sesion);
+        fixture.detectChanges();
+        await fixture.whenStable();
 
-      expect(botonEliminar()).not.toBeNull();
-      expect(botonEliminar()!.getAttribute('aria-label')).toBe('Eliminar publicación');
-    });
+        expect(elemento.querySelector('.boton-eliminar')).toBeNull();
+        expect(elemento.querySelector('.pin-confirmar')).toBeNull();
+        expect(elemento.querySelector('[aria-label="Eliminar publicación"]')).toBeNull();
+      },
+    );
 
-    it('[O] una persona con perfil administrador ve el botón en publicaciones ajenas', async () => {
-      await crear(base);
-      iniciarSesion(persona('otra', 'administrador'));
-      await actualizar();
+    it('[I] a la izquierda guardar y compartir; a la derecha, juntos, el corazón y la cantidad de comentarios', async () => {
+      const elemento = await crear(base);
 
-      expect(botonEliminar()).not.toBeNull();
-    });
-
-    it('[E] una persona común no lo ve en publicaciones ajenas', async () => {
-      await crear(base);
-      iniciarSesion(persona('otra'));
-      await actualizar();
-
-      expect(botonEliminar()).toBeNull();
-    });
-
-    it('[E] sin sesión tampoco', async () => {
-      await crear(base);
-      iniciarSesion(null);
-      await actualizar();
-
-      expect(botonEliminar()).toBeNull();
-    });
-
-    it('[O] tocar eliminar pide confirmación dentro de la tarjeta y todavía no manda nada', async () => {
-      await crear(base);
-      iniciarSesion(persona('u1'));
-      await actualizar();
-
-      botonEliminar()!.click();
-      await actualizar();
-
-      const confirmar = fixture.nativeElement.querySelector('.pin-confirmar') as HTMLElement;
-      expect(confirmar.textContent).toContain('¿Eliminar?');
-      expect(confirmar.getAttribute('title')).toBe('No se puede deshacer');
-      expect(confirmar.getAttribute('role')).toBe('group');
-      expect(fixture.nativeElement.querySelector('[role="dialog"], [aria-modal]')).toBeNull();
-      http.verify();
-    });
-
-    it('[I] la confirmación ocupa el lugar de las acciones, en una sola fila, y al cancelar vuelven', async () => {
-      await crear(base);
-      iniciarSesion(persona('u1'));
-      await actualizar();
-
-      botonEliminar()!.click();
-      await actualizar();
-      expect(fixture.nativeElement.querySelector('.pin-acciones')).toBeNull();
-      expect(fixture.nativeElement.querySelectorAll('.pin-confirmar > *')).toHaveLength(3);
-
-      botonDeConfirmacion('cancelar').click();
-      await actualizar();
-      expect(fixture.nativeElement.querySelector('.pin-acciones')).not.toBeNull();
-    });
-
-    it('[O] cancelar cierra la confirmación sin pedir nada', async () => {
-      await crear(base);
-      iniciarSesion(persona('u1'));
-      await actualizar();
-      botonEliminar()!.click();
-      await actualizar();
-
-      botonDeConfirmacion('cancelar').click();
-      await actualizar();
-
-      expect(fixture.nativeElement.querySelector('.pin-confirmar')).toBeNull();
-      expect(botonEliminar()).not.toBeNull();
-      http.verify();
-    });
-
-    it('[O] confirmar pide DELETE, se bloquea y al terminar avisa cuál se eliminó', async () => {
-      await crear(base);
-      iniciarSesion(persona('u1'));
-      await actualizar();
-      botonEliminar()!.click();
-      await actualizar();
-
-      botonDeConfirmacion('Sí, eliminar').click();
-      await actualizar();
-      const pedido = http.expectOne({ method: 'DELETE', url: `${URL}/1` });
-      expect(botonDeConfirmacion('Eliminando').disabled).toBe(true);
-      expect(eliminadas).toEqual([]);
-
-      pedido.flush(null, { status: 204, statusText: 'No Content' });
-
-      expect(eliminadas).toEqual(['1']);
-    });
-
-    it('[E] si no te deja (403), cierra la confirmación, muestra el motivo y no avisa que se eliminó', async () => {
-      await crear(base);
-      iniciarSesion(persona('u1'));
-      await actualizar();
-      botonEliminar()!.click();
-      await actualizar();
-
-      botonDeConfirmacion('Sí, eliminar').click();
-      http
-        .expectOne({ method: 'DELETE', url: `${URL}/1` })
-        .flush({ codigo: 'PUBLICACION_AJENA' }, { status: 403, statusText: 'Forbidden' });
-      await actualizar();
-
-      expect(fixture.nativeElement.querySelector('.pin-confirmar')).toBeNull();
-      expect(fixture.nativeElement.querySelector('.pin-error')!.textContent).toContain(
-        'Sólo podés eliminar tus propias publicaciones',
+      const orden = Array.from(elemento.querySelectorAll('.pin-acciones .metrica')).map((m) =>
+        m.getAttribute('aria-label'),
       );
-      expect(eliminadas).toEqual([]);
+
+      expect(orden).toEqual(['Guardar', 'Compartir', 'Dar me gusta (7)', '2 comentarios']);
+    });
+
+    it('[I] el corazón abre el grupo de la derecha y los comentarios lo cierran, sin nada en el medio', async () => {
+      const elemento = await crear(base);
+
+      const hijos = Array.from(elemento.querySelectorAll('.pin-acciones > *'));
+      const corazon = elemento.querySelector('.pin-acciones > app-boton-me-gusta')!;
+
+      expect(corazon.classList).toContain('pin-derecha');
+      expect(hijos.at(-2)).toBe(corazon);
+      expect(hijos.at(-1)!.classList).toContain('metrica-comentarios');
+    });
+
+    it('[I] los únicos botones son me gusta, guardar y compartir, en ese orden y juntos', async () => {
+      const elemento = await crear(base);
+
+      const botones = Array.from(elemento.querySelectorAll('.pin-acciones button')).map((boton) =>
+        boton.getAttribute('aria-label'),
+      );
+
+      expect(botones).toEqual(['Guardar', 'Compartir', 'Dar me gusta (7)']);
+      expect(
+        elemento.querySelectorAll('.pin-acciones > *, .pin-acciones app-boton-guardar > *'),
+      ).not.toHaveLength(0);
     });
   });
 });

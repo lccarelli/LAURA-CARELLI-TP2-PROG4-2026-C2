@@ -30,7 +30,8 @@
     "trayendo_mas": "Trayendo más publicaciones…",
     "buscando": "Buscando…",
     "tarda": "Esto está tardando un poco más de lo normal. No cierres la pantalla.",
-    "despertando": "El servidor se está despertando. Puede tardar hasta un minuto."
+    "despertando": "El servidor se está despertando. Puede tardar hasta un minuto.",
+    "compartiendo": "Compartiendo…"
   },
   "formatos": {
     "fecha": "dd/MM/yyyy",
@@ -263,7 +264,9 @@
     "ver_comentarios": "Ver todos los comentarios ({{n}})",
     "error_ajeno": "No pudimos cargar este perfil",
     "ultimas_de_otra": "Últimas publicaciones",
-    "sin_publicaciones_de_otra": "Todavía no publicó nada."
+    "sin_publicaciones_de_otra": "Todavía no publicó nada.",
+    "solapas": "Secciones del perfil",
+    "compartidos_contigo": "Compartidos contigo"
   },
   "usuarios": {
     "titulo": "Usuarios",
@@ -359,7 +362,9 @@
     "USUARIO_NO_ENCONTRADO": "El usuario no existe.",
     "RANGO_INVALIDO": "La fecha desde no puede ser posterior a la fecha hasta.",
     "RANGO_DEMASIADO_LARGO": "El rango no puede superar 366 días.",
-    "ACCESO_DOCENTE_NO_DISPONIBLE": "El acceso docente no está disponible."
+    "ACCESO_DOCENTE_NO_DISPONIBLE": "El acceso docente no está disponible.",
+    "COMPARTIR_CON_UNO_MISMO": "No podés compartir una publicación con vos mismo.",
+    "VISITA_PROPIA": "No se registran las visitas a tu propio perfil."
   },
   "tipos": {
     "receta": "Receta",
@@ -455,7 +460,8 @@
     "borrar_historial_titulo": "¿Borrar todo el historial?",
     "borrar_historial_texto": "Se van a borrar todas tus notificaciones, leídas y sin leer. No se puede deshacer.",
     "borrar_historial_si": "Borrar todo",
-    "borrando": "Borrando…"
+    "borrando": "Borrando…",
+    "compartida": "{{actor}} te compartió «{{titulo}}»"
   },
   "avisos": {
     "titulo": "Avisos en este dispositivo",
@@ -510,5 +516,26 @@
     "paso_agregar": "Elegí «Agregar a inicio».",
     "paso_abrir": "Abrila desde el ícono nuevo.",
     "no_preguntar": "No volver a preguntar"
+  },
+  "compartir": {
+    "boton": "Compartir",
+    "titulo": "Compartir con…",
+    "buscar": "Buscar personas",
+    "buscar_ayuda": "Nombre, apellido o usuario",
+    "elegidas": "Elegidas",
+    "quitar": "Quitar a @{{usuario}}",
+    "maximo": "Podés elegir hasta {{n}} personas por vez.",
+    "sin_resultados": "No encontramos a nadie con ese nombre.",
+    "enviar": "Compartir ({{n}})",
+    "compartida": "Compartida con {{n}} persona(s).",
+    "error_titulo": "No se pudo compartir",
+    "resultados": "Resultados",
+    "agregar": "Agregar"
+  },
+  "compartidas": {
+    "titulo": "Compartidas conmigo",
+    "te_compartio": "te compartió esto",
+    "vacio": "Todavía nadie te compartió una publicación.",
+    "nueva": "Nueva"
   }
 }

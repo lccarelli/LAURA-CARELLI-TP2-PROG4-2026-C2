@@ -1,7 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema, Types } from 'mongoose';
 
-export const TIPOS_NOTIFICACION = ['comentario', 'me_gusta'] as const;
+export const TIPOS_NOTIFICACION = [
+  'comentario',
+  'me_gusta',
+  'compartida',
+] as const;
 export const DIAS_DE_VIDA_NOTIFICACION = 90;
 
 @Schema({ collection: 'notificaciones', versionKey: false })

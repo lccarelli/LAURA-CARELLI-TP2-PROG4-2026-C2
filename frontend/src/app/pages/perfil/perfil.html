@@ -42,67 +42,58 @@
       </div>
     </dl>
 
-    @if (ultimas().length) {
-      <h2 class="pestana">{{ 'perfil.ultimas_publicaciones' | translate }}</h2>
-
-      <div class="ultimas">
-        @for (publicacion of ultimas(); track publicacion._id) {
-          <article class="ultima">
-            <a class="ultima-cabecera" [routerLink]="['/publicaciones', publicacion._id]">
-              @if (publicacion.imagen; as imagen) {
-                <img class="ultima-imagen" [src]="imagen" alt="" />
-              }
-              <span class="ultima-texto">
-                <span class="pin-tipo">{{ 'tipos.' + publicacion.tipo | translate }}</span>
-                <span class="ultima-titulo">{{ publicacion.titulo }}</span>
-                <span class="meta">{{ publicacion.fecha | fechaRelativa }}</span>
-                <span class="metricas">
-                  <span
-                    class="metrica"
-                    [attr.aria-label]="
-                      'publicaciones.me_gusta_total' | translate: { n: publicacion.cantidadMeGusta }
-                    "
-                  >
-                    <app-icono nombre="corazon" [chico]="true" />
-                    <span aria-hidden="true">{{ publicacion.cantidadMeGusta }}</span>
-                  </span>
-                  <span
-                    class="metrica"
-                    [attr.aria-label]="
-                      'publicaciones.comentarios'
-                        | translate: { n: publicacion.cantidadComentarios }
-                    "
-                  >
-                    <app-icono nombre="comentario" [chico]="true" />
-                    <span aria-hidden="true">{{ publicacion.cantidadComentarios }}</span>
-                  </span>
-                </span>
-              </span>
-            </a>
-            <app-ultimos-comentarios
-              [publicacionId]="publicacion._id"
-              [cantidad]="publicacion.cantidadComentarios"
-            />
-          </article>
+    <nav class="solapas" [attr.aria-label]="'perfil.solapas' | translate">
+      <a
+        class="solapa"
+        routerLink="/perfil"
+        [class.activa]="!enCompartidos()"
+        [attr.aria-current]="!enCompartidos() ? 'page' : null"
+      >
+        {{ 'perfil.mi_actividad' | translate }}
+      </a>
+      <a
+        class="solapa"
+        routerLink="/perfil"
+        [queryParams]="{ solapa: 'compartidos' }"
+        [class.activa]="enCompartidos()"
+        [attr.aria-current]="enCompartidos() ? 'page' : null"
+      >
+        {{ 'perfil.compartidos_contigo' | translate }}
+        @if (sinVer() > 0) {
+          <span class="solapa-cantidad">({{ sinVer() }})</span>
         }
-      </div>
-    }
+      </a>
+    </nav>
 
-    <h2 class="pestana">{{ 'perfil.mi_actividad' | translate }}</h2>
+    <div class="plantilla">
+      @if (enCompartidos()) {
+        <app-lista-compartidas [destacada]="destacada()" (vistas)="sinVer.set(0)" />
+      } @else {
+        @if (ultimas().length) {
+          <h2 class="pestana">{{ 'perfil.ultimas_publicaciones' | translate }}</h2>
 
-    <div class="tableros">
-      <app-tablero
-        enlace="/perfil/publicaciones"
-        titulo="perfil.mis_publicaciones"
-        detalle="perfil.ver_publicaciones"
-        [portadas]="portadas()"
-      />
-      <app-tablero
-        enlace="/perfil/guardadas"
-        titulo="guardadas.tablero"
-        detalle="guardadas.ver"
-        [portadas]="portadasGuardadas()"
-      />
+          <div class="ultimas">
+            @for (publicacion of ultimas(); track publicacion._id) {
+              <app-ultima-publicacion [publicacion]="publicacion" />
+            }
+          </div>
+        }
+
+        <div class="tableros">
+          <app-tablero
+            enlace="/perfil/publicaciones"
+            titulo="perfil.mis_publicaciones"
+            detalle="perfil.ver_publicaciones"
+            [portadas]="portadas()"
+          />
+          <app-tablero
+            enlace="/perfil/guardadas"
+            titulo="guardadas.tablero"
+            detalle="guardadas.ver"
+            [portadas]="portadasGuardadas()"
+          />
+        </div>
+      }
     </div>
   }
 </section>
