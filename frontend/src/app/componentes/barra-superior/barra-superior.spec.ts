@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { usuarioDePrueba } from '../../../testing/usuario';
+import { Idioma } from '../../servicios/idioma/idioma';
 import { Auth } from '../../servicios/auth/auth';
 import { BarraSuperior } from './barra-superior';
 
@@ -37,6 +38,7 @@ describe('BarraSuperior', () => {
         provideRouter([
           { path: 'publicaciones', children: [] },
           { path: 'perfil', children: [] },
+          { path: 'perfil/publicaciones', children: [] },
         ]),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -69,6 +71,52 @@ describe('BarraSuperior', () => {
     await actualizar();
 
     expect(router.url).toBe('/publicaciones?q=tarta');
+  });
+
+  it('[S] en Mis publicaciones la búsqueda se queda ahí y no vuelve al listado general', async () => {
+    await iniciarSesion();
+    await router.navigateByUrl('/perfil/publicaciones');
+
+    buscarEscribiendo('tarta');
+    await actualizar();
+
+    expect(router.url).toBe('/perfil/publicaciones?q=tarta');
+  });
+
+  it('[S] en Mis publicaciones el campo trae la búsqueda de la dirección y se puede borrar', async () => {
+    await iniciarSesion();
+    await router.navigateByUrl('/perfil/publicaciones?q=tarta');
+    await actualizar();
+    expect(campo().value).toBe('tarta');
+
+    (el('.buscador-limpiar') as HTMLButtonElement).click();
+    await actualizar();
+
+    expect(router.url).toBe('/perfil/publicaciones');
+  });
+
+  it.each([
+    ['/publicaciones', 'Buscar publicaciones'],
+    ['/perfil', 'Buscar publicaciones'],
+    ['/perfil/publicaciones', 'Buscar en mis publicaciones'],
+  ])('[I] en %s el campo dice «%s»', async (ruta, texto) => {
+    await iniciarSesion();
+
+    await router.navigateByUrl(ruta);
+    await actualizar();
+
+    expect(campo().getAttribute('placeholder')).toBe(texto);
+    expect(campo().getAttribute('aria-label')).toBe(texto);
+  });
+
+  it('[S] en inglés el campo de Mis publicaciones se traduce', async () => {
+    TestBed.inject(Idioma).cambiar('en');
+    await iniciarSesion();
+
+    await router.navigateByUrl('/perfil/publicaciones');
+    await actualizar();
+
+    expect(campo().getAttribute('placeholder')).toBe('Search my posts');
   });
 
   it('[S] borrar la búsqueda quita q de la dirección', async () => {

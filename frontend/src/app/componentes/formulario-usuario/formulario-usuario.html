@@ -1,20 +1,5 @@
 <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
-  <div class="fila-campos">
-    <label class="caja">
-      <span class="etiqueta">{{ 'registro.nombre' | translate }}</span>
-      <input appAutoFoco class="campo" formControlName="nombre" autocomplete="given-name" />
-      @if (mensajeDeError('nombre'); as mensaje) {
-        <span class="mensaje-error">{{ mensaje }}</span>
-      }
-    </label>
-    <label class="caja">
-      <span class="etiqueta">{{ 'registro.apellido' | translate }}</span>
-      <input class="campo" formControlName="apellido" autocomplete="family-name" />
-      @if (mensajeDeError('apellido'); as mensaje) {
-        <span class="mensaje-error">{{ mensaje }}</span>
-      }
-    </label>
-  </div>
+  <app-campos-personales [grupo]="formulario" />
 
   <label class="caja">
     <span class="etiqueta">{{ 'registro.correo' | translate }}</span>

@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { SacarEspacios } from '../../common/sacar-espacios.decorator.js';
 
-export class RegistroDto {
+export class DatosPersonalesDto {
   @SacarEspacios()
   @IsString()
   @MinLength(2)
@@ -22,6 +22,14 @@ export class RegistroDto {
   @MaxLength(30)
   apellido: string;
 
+  @SacarEspacios()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  descripcion: string;
+}
+
+export class RegistroDto extends DatosPersonalesDto {
   @SacarEspacios()
   @IsEmail()
   @MaxLength(30)
@@ -41,10 +49,4 @@ export class RegistroDto {
 
   @IsDateString({ strict: true })
   fechaNacimiento: string;
-
-  @SacarEspacios()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(200)
-  descripcion: string;
 }

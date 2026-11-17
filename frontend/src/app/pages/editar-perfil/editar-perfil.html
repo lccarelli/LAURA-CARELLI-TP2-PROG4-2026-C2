@@ -1,0 +1,63 @@
+<section class="pagina max-w-2xl">
+  <a class="enlace" routerLink="/perfil">{{ 'comun.volver' | translate }}</a>
+  <h1 class="titulo">{{ 'perfil.editar_titulo' | translate }}</h1>
+
+  @if (mensajeError(); as mensaje) {
+    <app-aviso titulo="perfil.error_guardar" (cerrar)="mensajeError.set(null)">{{
+      mensaje | translate
+    }}</app-aviso>
+  }
+
+  <form class="formulario" [formGroup]="formulario" (ngSubmit)="guardar()" novalidate>
+    <div class="caja">
+      <span class="etiqueta">{{ 'perfil.foto' | translate }}</span>
+      <div class="flex flex-wrap items-center gap-4">
+        <img
+          class="avatar-grande"
+          [src]="urlImagen(fotoActual() ?? undefined)"
+          [alt]="'perfil.foto' | translate"
+        />
+        <div class="acciones">
+          <label class="boton-secundario">
+            {{ (fotoActual() ? 'perfil.foto_cambiar' : 'perfil.foto_elegir') | translate }}
+            <input
+              class="archivo-oculto"
+              type="file"
+              accept="image/*"
+              [attr.aria-label]="'perfil.foto_cambiar' | translate"
+              (change)="elegirImagen($event)"
+            />
+          </label>
+          @if (fotoActual()) {
+            <button type="button" class="boton-secundario" (click)="quitarFoto()">
+              {{ 'perfil.foto_quitar' | translate }}
+            </button>
+          }
+        </div>
+      </div>
+      @if (preparandoImagen()) {
+        <span class="meta" role="status">{{ 'imagen.preparando' | translate }}</span>
+      }
+      @if (errorImagen(); as mensaje) {
+        <span class="mensaje-error">{{ mensaje | translate }}</span>
+      }
+    </div>
+
+    <app-campos-personales [grupo]="formulario" />
+
+    <label class="caja">
+      <span class="etiqueta">{{ 'registro.descripcion' | translate }}</span>
+      <textarea class="campo" rows="3" formControlName="descripcion"></textarea>
+      @if (mensajeDeDescripcion(); as mensaje) {
+        <span class="mensaje-error">{{ mensaje }}</span>
+      }
+    </label>
+
+    <div class="acciones">
+      <button type="submit" class="boton-principal" [disabled]="enviando() || preparandoImagen()">
+        {{ (enviando() ? 'perfil.guardando' : 'perfil.guardar') | translate }}
+      </button>
+      <a class="boton-secundario" routerLink="/perfil">{{ 'perfil.cancelar' | translate }}</a>
+    </div>
+  </form>
+</section>

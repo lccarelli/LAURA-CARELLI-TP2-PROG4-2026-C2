@@ -221,14 +221,23 @@
     "correo": "Correo",
     "fecha_nacimiento": "Fecha de nacimiento",
     "descripcion": "Descripción",
-    "ultimas_publicaciones": "Mis últimas publicaciones",
     "error_publicaciones": "No pudimos cargar tus publicaciones",
     "sin_publicaciones": "Todavía no publicaste nada.",
     "publicar_primera": "Crear mi primera publicación",
-    "ultimos_comentarios": "Últimos comentarios",
-    "sin_comentarios": "Todavía no tiene comentarios.",
-    "error_comentarios": "No se pudieron cargar los comentarios",
-    "ver_comentarios": "Ver todos los comentarios ({{n}})"
+    "mis_publicaciones": "Mis publicaciones",
+    "editar": "Editar mi perfil",
+    "editar_titulo": "Editar mi perfil",
+    "guardar": "Guardar cambios",
+    "guardando": "Guardando…",
+    "error_guardar": "No pudimos guardar tu perfil",
+    "foto": "Foto de perfil",
+    "foto_cambiar": "Cambiar foto",
+    "foto_quitar": "Quitar foto",
+    "foto_elegir": "Elegir foto",
+    "cancelar": "Cancelar",
+    "mi_actividad": "Mi actividad",
+    "ver_publicaciones": "Ver todas, buscar y filtrar",
+    "titulo": "Mi perfil"
   },
   "usuarios": {
     "titulo": "Usuarios",
@@ -399,9 +408,9 @@
     "descripcion_tipos": "Gráfico de torta con el reparto de las publicaciones activas del rango elegido entre receta, tip culinario y experiencia"
   },
   "buscador": {
-    "etiqueta": "Buscar publicaciones",
     "placeholder": "Buscar publicaciones",
-    "limpiar": "Borrar la búsqueda"
+    "limpiar": "Borrar la búsqueda",
+    "placeholder_mias": "Buscar en mis publicaciones"
   },
   "notificaciones": {
     "titulo": "Notificaciones",

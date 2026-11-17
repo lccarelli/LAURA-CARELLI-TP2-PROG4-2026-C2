@@ -27,6 +27,7 @@ export const EVENTOS_DE_LOG = {
   SESION_VENCIDA: 'sesion_vencida',
   USUARIO_CREADO: 'usuario_creado',
   USUARIO_DESHABILITADO: 'usuario_deshabilitado',
+  USUARIO_EDITADO: 'usuario_editado',
   USUARIO_HABILITADO: 'usuario_habilitado',
   USUARIO_NO_AUTORIZADO: 'usuario_no_autorizado',
   USUARIO_REGISTRADO: 'usuario_registrado',

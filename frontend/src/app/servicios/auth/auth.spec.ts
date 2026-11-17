@@ -178,6 +178,37 @@ describe('Auth', () => {
     });
   });
 
+  describe('editarPerfil', () => {
+    it('[O] envía el formulario por PUT, guarda el usuario devuelto y conserva el token', () => {
+      const { auth, http } = crearAuth();
+      auth.token.set('vigente');
+      auth.usuario.set(sesion.usuario);
+      const datos = new FormData();
+
+      auth.editarPerfil(datos).subscribe();
+      const pedido = http.expectOne(`${environment.API_URL}/usuarios/yo`);
+      pedido.flush({ ...sesion.usuario, nombre: 'Ana' });
+
+      expect(pedido.request.method).toBe('PUT');
+      expect(pedido.request.body).toBe(datos);
+      expect(auth.usuario()?.nombre).toBe('Ana');
+      expect(JSON.parse(localStorage.getItem('usuario') ?? '{}').nombre).toBe('Ana');
+      expect(auth.token()).toBe('vigente');
+    });
+
+    it('[E] si falla (400) no cambia el usuario guardado', () => {
+      const { auth, http } = crearAuth();
+      auth.usuario.set(sesion.usuario);
+
+      auth.editarPerfil(new FormData()).subscribe({ error: () => undefined });
+      http
+        .expectOne(`${environment.API_URL}/usuarios/yo`)
+        .flush({ codigo: 'X' }, { status: 400, statusText: 'Bad Request' });
+
+      expect(auth.usuario()?.nombre).toBe('Laura');
+    });
+  });
+
   describe('despertarServidor', () => {
     it('[I] hace un GET a la ruta de salud', () => {
       const { auth, http } = crearAuth();

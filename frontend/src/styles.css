@@ -1138,8 +1138,60 @@ body {
     @apply line-clamp-3 text-sm break-words whitespace-pre-line text-tinta;
   }
 
-  .publicacion-perfil {
-    @apply grid items-start gap-4 md:grid-cols-[16rem_1fr];
+  .perfil-cabecera {
+    @apply flex flex-wrap items-center justify-between gap-x-8 gap-y-4 pt-4;
+  }
+
+  .titulo-perfil {
+    @apply font-sans text-4xl font-semibold text-tinta sm:text-5xl;
+  }
+
+  .perfil-resumen {
+    @apply flex flex-wrap items-center gap-4;
+  }
+
+  .avatar-perfil {
+    @apply size-16 shrink-0 rounded-full object-cover;
+  }
+
+  .perfil-nombre {
+    @apply text-lg font-semibold text-tinta;
+  }
+
+  .perfil-datos {
+    @apply mt-6 grid gap-4 sm:grid-cols-3;
+  }
+
+  .pestana {
+    @apply mt-8 mb-6 inline-block border-b-2 border-tinta pb-1 text-lg font-medium text-tinta;
+  }
+
+  .tableros {
+    @apply grid grid-cols-2 gap-x-5 gap-y-8 md:grid-cols-3 xl:grid-cols-5;
+  }
+
+  .tablero {
+    @apply flex flex-col gap-1 rounded-3xl anillo-foco;
+  }
+
+  .tablero-collage {
+    @apply grid aspect-[3/2] grid-cols-[2fr_1fr] grid-rows-2 gap-0.5 overflow-hidden rounded-3xl bg-secundario transition-opacity;
+  }
+
+  .tablero:hover .tablero-collage {
+    @apply opacity-90;
+  }
+
+  .tablero-collage > :first-child {
+    @apply row-span-2;
+  }
+
+  .tablero-portada {
+    @apply size-full object-cover;
+  }
+
+  .tablero-titulo {
+    @apply mt-2 text-xl font-semibold text-tinta;
   }
 
   .titulo-seccion {

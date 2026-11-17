@@ -41,6 +41,12 @@ export class Auth {
       .pipe(tap(({ usuario }) => this.guardarUsuario(usuario)));
   }
 
+  editarPerfil(datos: FormData) {
+    return this.http
+      .put<Usuario>(`${environment.API_URL}/usuarios/yo`, datos)
+      .pipe(tap((usuario) => this.guardarUsuario(usuario)));
+  }
+
   despertarServidor() {
     return this.http.get(`${environment.API_URL}/health`);
   }

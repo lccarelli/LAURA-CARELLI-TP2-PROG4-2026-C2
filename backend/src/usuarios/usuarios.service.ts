@@ -18,6 +18,7 @@ import {
   LoggerFactory,
   ContextLogger,
 } from '../logs/logs.factory.js';
+import { EditarPerfilDto } from './dto/editar-perfil.dto.js';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto.js';
 import { Usuario } from './schemas/usuario.schema.js';
 
@@ -129,6 +130,43 @@ export class UsuariosService {
       limit,
       hayMas: usuarios.length > limit,
     };
+  }
+
+  async editarPerfil(
+    id: string,
+    dto: EditarPerfilDto,
+    imagen?: Express.Multer.File,
+  ) {
+    const imagenPerfil = imagen
+      ? (await this.imagenesService.guardar(imagen, Destino.PERFILES, id)).url
+      : undefined;
+    const usuario = await this.usuarioModel
+      .findByIdAndUpdate(
+        id,
+        {
+          $set: {
+            nombre: dto.nombre,
+            apellido: dto.apellido,
+            descripcion: dto.descripcion,
+            ...(imagenPerfil && { imagenPerfil }),
+          },
+          ...(dto.quitarImagen &&
+            !imagenPerfil && { $unset: { imagenPerfil: '' } }),
+        },
+        { new: true },
+      )
+      .lean();
+    if (!usuario) {
+      throw new NotFoundException({
+        message: 'El usuario no existe',
+        codigo: 'USUARIO_NO_ENCONTRADO',
+      });
+    }
+    this.logger.info(EVENTOS_DE_LOG.USUARIO_EDITADO, 'Perfil editado', {
+      id_usuario: id,
+      nombre_usuario: usuario.nombreUsuario,
+    });
+    return usuario;
   }
 
   async cambiarHabilitado(

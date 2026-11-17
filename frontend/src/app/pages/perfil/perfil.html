@@ -1,74 +1,59 @@
 <section class="pagina-ancha">
   @if (auth.usuario(); as usuario) {
-    <div class="tarjeta mx-auto w-full max-w-2xl">
-      <div class="flex items-center gap-5">
+    <header class="perfil-cabecera">
+      <h1 class="titulo-perfil">{{ 'perfil.titulo' | translate }}</h1>
+
+      <div class="perfil-resumen">
         <img
-          class="avatar-grande"
+          class="avatar-perfil"
           [src]="urlImagen(usuario.imagenPerfil)"
           [alt]="'comun.foto_de' | translate: { nombre: usuario.nombreUsuario }"
         />
         <div class="min-w-0">
-          <h1 class="titulo">{{ usuario.nombre }} {{ usuario.apellido }}</h1>
+          <p class="perfil-nombre">{{ usuario.nombre }} {{ usuario.apellido }}</p>
           <p class="texto-suave">&#64;{{ usuario.nombreUsuario }}</p>
-          <span class="chip mt-2">{{ 'roles.' + usuario.perfil | translate }}</span>
         </div>
-      </div>
-
-      <dl class="mt-6">
-        <div class="dato">
-          <dt class="etiqueta-seccion">{{ 'perfil.correo' | translate }}</dt>
-          <dd class="mt-1 break-words">{{ usuario.correo }}</dd>
-        </div>
-        <div class="dato">
-          <dt class="etiqueta-seccion">{{ 'perfil.fecha_nacimiento' | translate }}</dt>
-          <dd class="mt-1">
-            {{ usuario.fechaNacimiento | date: ('formatos.fecha' | translate) : 'UTC' }}
-            <span class="texto-suave">({{ usuario.fechaNacimiento | edad }})</span>
-          </dd>
-        </div>
-        <div class="dato">
-          <dt class="etiqueta-seccion">{{ 'perfil.descripcion' | translate }}</dt>
-          <dd class="nota mt-1 whitespace-pre-line">{{ usuario.descripcion }}</dd>
-        </div>
-      </dl>
-    </div>
-
-    <h2 class="titulo-seccion">{{ 'perfil.ultimas_publicaciones' | translate }}</h2>
-
-    @if (mensajeError(); as mensaje) {
-      <app-aviso titulo="perfil.error_publicaciones" (cerrar)="mensajeError.set(null)">
-        {{ mensaje | translate }}
-        <span class="acciones mt-2">
-          <button type="button" class="boton-secundario" (click)="cargar()">
-            {{ 'comun.reintentar' | translate }}
-          </button>
-        </span>
-      </app-aviso>
-    }
-
-    @if (cargando()) {
-      <app-cubreplato-loading />
-    }
-
-    <div class="flex flex-col gap-6">
-      @for (publicacion of publicaciones(); track publicacion._id) {
-        <article class="publicacion-perfil">
-          <app-tarjeta-publicacion [publicacion]="publicacion" (eliminada)="cargar()" />
-          <app-ultimos-comentarios
-            [publicacionId]="publicacion._id"
-            [cantidad]="publicacion.cantidadComentarios"
-          />
-        </article>
-      }
-    </div>
-
-    @if (cargaCompleta() && !cargando() && publicaciones().length === 0) {
-      <div class="tarjeta estado-vacio mx-auto w-full max-w-2xl">
-        <p>{{ 'perfil.sin_publicaciones' | translate }}</p>
-        <a class="boton-principal mt-3" routerLink="/publicaciones/nueva">
-          {{ 'perfil.publicar_primera' | translate }}
+        <a
+          class="boton-icono boton-icono-editar"
+          routerLink="/perfil/editar"
+          [attr.title]="'perfil.editar' | translate"
+        >
+          <app-icono nombre="lapiz" />
+          <span class="texto-oculto">{{ 'perfil.editar' | translate }}</span>
         </a>
       </div>
-    }
+    </header>
+
+    <dl class="perfil-datos">
+      <div>
+        <dt class="etiqueta-seccion">{{ 'perfil.correo' | translate }}</dt>
+        <dd class="mt-1 break-words">{{ usuario.correo }}</dd>
+      </div>
+      <div>
+        <dt class="etiqueta-seccion">{{ 'perfil.fecha_nacimiento' | translate }}</dt>
+        <dd class="mt-1">
+          {{ usuario.fechaNacimiento | date: ('formatos.fecha' | translate) : 'UTC' }}
+          <span class="texto-suave">({{ usuario.fechaNacimiento | edad }})</span>
+        </dd>
+      </div>
+      <div>
+        <dt class="etiqueta-seccion">{{ 'perfil.descripcion' | translate }}</dt>
+        <dd class="nota mt-1 whitespace-pre-line">{{ usuario.descripcion }}</dd>
+      </div>
+    </dl>
+
+    <h2 class="pestana">{{ 'perfil.mi_actividad' | translate }}</h2>
+
+    <div class="tableros">
+      <a class="tablero" routerLink="/perfil/publicaciones">
+        <span class="tablero-collage" aria-hidden="true">
+          @for (portada of portadas(); track portada) {
+            <img class="tablero-portada" [src]="portada" alt="" />
+          }
+        </span>
+        <span class="tablero-titulo">{{ 'perfil.mis_publicaciones' | translate }}</span>
+        <span class="meta">{{ 'perfil.ver_publicaciones' | translate }}</span>
+      </a>
+    </div>
   }
 </section>

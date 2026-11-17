@@ -5,6 +5,8 @@ import { environment } from '../../../environments/environment';
 import { PaginaPublicaciones } from '../../interfaces/publicacion';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { Auth } from '../../servicios/auth/auth';
+import { By } from '@angular/platform-browser';
+import { MuroPublicaciones } from '../../componentes/muro-publicaciones/muro-publicaciones';
 import { Publicaciones } from './publicaciones';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { pruebasDeCargaAutomatica } from '../../../testing/carga-automatica';
@@ -34,6 +36,9 @@ describe('Publicaciones', () => {
         solicitud.params.get('tipo') === tipo,
     );
 
+  const muro = () =>
+    fixture.debugElement.query(By.directive(MuroPublicaciones))
+      .componentInstance as MuroPublicaciones;
   const texto = () => fixture.nativeElement.textContent as string;
   const titulos = () =>
     Array.from(
@@ -157,8 +162,8 @@ describe('Publicaciones', () => {
     pedir(0).flush(pagina(1, 10, true));
     await actualizar();
 
-    fixture.componentInstance.listado.cargarMas();
-    fixture.componentInstance.listado.cargarMas();
+    muro().listado.cargarMas();
+    muro().listado.cargarMas();
 
     const solicitud = pedir(10);
     expect(solicitud.request.params.get('offset')).toBe('10');
@@ -167,7 +172,7 @@ describe('Publicaciones', () => {
 
   it('[I] reparte las tarjetas por filas: la segunda va a la derecha de la primera, no debajo', async () => {
     pedir(0).flush(pagina(1, 6, false));
-    fixture.componentInstance.columnas.set(2);
+    muro().columnas.set(2);
     await actualizar();
     const columnas = Array.from(
       fixture.nativeElement.querySelectorAll('.muro-columna') as NodeListOf<HTMLElement>,
@@ -203,10 +208,11 @@ describe('Publicaciones', () => {
     });
 
     it('[I] arriba del listado van el orden y el filtro, en un mismo bloque', () => {
-      const titulo = fixture.nativeElement.querySelector('h1') as HTMLElement;
-      const controles = titulo.nextElementSibling as HTMLElement;
+      const controles = fixture.nativeElement.querySelector(
+        'app-muro-publicaciones > .controles-listado',
+      ) as HTMLElement;
 
-      expect(controles.classList).toContain('controles-listado');
+      expect(controles).not.toBeNull();
       expect(controles.querySelector('.orden')).not.toBeNull();
       expect(controles.querySelector('.filtro-tipo')).not.toBeNull();
     });
@@ -316,7 +322,7 @@ describe('Publicaciones', () => {
       });
       await actualizar();
 
-      expect(fixture.componentInstance.busqueda()).toBe('pizza');
+      expect(muro().busqueda()).toBe('pizza');
     });
   });
 
@@ -335,7 +341,7 @@ describe('Publicaciones', () => {
     });
 
     it('[O] al buscar pide desde el principio con q y muestra sólo los resultados', async () => {
-      fixture.componentInstance.buscar('tarta');
+      muro().buscar('tarta');
       const solicitud = pedirBusqueda('tarta');
       solicitud.flush(pagina(50, 2, false));
       await actualizar();
@@ -345,11 +351,11 @@ describe('Publicaciones', () => {
     });
 
     it('[S] conserva el orden y el tipo elegidos', async () => {
-      fixture.componentInstance.cambiarTipo('tip');
+      muro().cambiarTipo('tip');
       pedir(0, 'fecha', 'tip').flush(pagina(1, 1, false));
       await actualizar();
 
-      fixture.componentInstance.buscar('tarta');
+      muro().buscar('tarta');
       const solicitud = pedirBusqueda('tarta');
 
       expect(solicitud.request.params.get('tipo')).toBe('tip');
@@ -358,11 +364,11 @@ describe('Publicaciones', () => {
     });
 
     it('[S] ver más sigue pidiendo páginas con la misma búsqueda', async () => {
-      fixture.componentInstance.buscar('tarta');
+      muro().buscar('tarta');
       pedirBusqueda('tarta').flush(pagina(50, 10, true));
       await actualizar();
 
-      fixture.componentInstance.listado.cargarMas();
+      muro().listado.cargarMas();
 
       const siguiente = pedirBusqueda('tarta', 10);
       siguiente.flush(pagina(60, 1, false));
@@ -371,16 +377,16 @@ describe('Publicaciones', () => {
     });
 
     it('[S] la búsqueda anterior que seguía en vuelo se cancela', async () => {
-      fixture.componentInstance.buscar('tarta');
+      muro().buscar('tarta');
       const primera = pedirBusqueda('tarta');
-      fixture.componentInstance.buscar('torta');
+      muro().buscar('torta');
 
       expect(primera.cancelled).toBe(true);
       pedirBusqueda('torta').flush(pagina(1, 0, false));
     });
 
     it('[O] sin resultados dice qué se buscó', async () => {
-      fixture.componentInstance.buscar('pizza');
+      muro().buscar('pizza');
       pedirBusqueda('pizza').flush(pagina(1, 0, false));
       await actualizar();
 
@@ -388,11 +394,11 @@ describe('Publicaciones', () => {
     });
 
     it('[S] al borrar la búsqueda vuelve el listado completo', async () => {
-      fixture.componentInstance.buscar('tarta');
+      muro().buscar('tarta');
       pedirBusqueda('tarta').flush(pagina(50, 1, false));
       await actualizar();
 
-      fixture.componentInstance.buscar('');
+      muro().buscar('');
       pedir(0).flush(pagina(1, 10, true));
       await actualizar();
 
@@ -400,11 +406,11 @@ describe('Publicaciones', () => {
     });
 
     it('[B] buscar lo mismo dos veces no vuelve a pedir', async () => {
-      fixture.componentInstance.buscar('tarta');
+      muro().buscar('tarta');
       pedirBusqueda('tarta').flush(pagina(50, 1, false));
       await actualizar();
 
-      fixture.componentInstance.buscar('tarta');
+      muro().buscar('tarta');
 
       expect(http.match(URL)).toEqual([]);
     });
