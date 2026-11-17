@@ -183,7 +183,12 @@
     "paso_foto_primera_aria": "Add a photo to step {{n}}",
     "paso_foto_otra": "Add another photo",
     "sin_resultados": "No posts found for “{{texto}}”",
-    "resultados_de": "Results for “{{texto}}”"
+    "resultados_de": "Results for “{{texto}}”",
+    "editar_titulo": "Edit post",
+    "guardando": "Saving…",
+    "guardar_cambios": "Save changes",
+    "editar": "Edit",
+    "editada": "Edited"
   },
   "comentarios": {
     "titulo": "Comments",

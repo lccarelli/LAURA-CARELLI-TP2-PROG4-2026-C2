@@ -11,10 +11,19 @@ import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
 import { FechaRelativa } from '../../pipes/fecha-relativa';
 import { ContadorTexto } from '../contador-texto/contador-texto';
+import { Icono } from '../icono/icono';
 import { Aviso } from '../aviso/aviso';
 
 @Component({
-  imports: [DatePipe, FechaRelativa, ReactiveFormsModule, Aviso, ContadorTexto, TranslatePipe],
+  imports: [
+    DatePipe,
+    Icono,
+    FechaRelativa,
+    ReactiveFormsModule,
+    Aviso,
+    ContadorTexto,
+    TranslatePipe,
+  ],
   selector: 'app-item-comentario',
   templateUrl: './item-comentario.html',
 })

@@ -3,6 +3,9 @@ import { Component, input } from '@angular/core';
 const TRAZOS = {
   lupa: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-4.3-4.3',
   campana: 'M6 16v-5a6 6 0 1 1 12 0v5l1.5 2h-15L6 16zM10 21h4',
+  lapiz: 'M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4',
+  tacho: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
+  chevron: 'M6 9l6 6 6-6',
   cerrar: 'M6 6l12 12M18 6L6 18',
   corazon: 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z',
   comentario: 'M4 5h16v11H9l-5 4V5z',

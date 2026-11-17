@@ -1,6 +1,10 @@
 <section class="pagina max-w-3xl">
-  <a class="enlace" routerLink="/publicaciones">{{ 'comun.volver' | translate }}</a>
-  <h1 class="titulo">{{ 'publicaciones.ventana_titulo' | translate }}</h1>
+  <a class="enlace" [routerLink]="idEdicion ? '/publicaciones/' + idEdicion : '/publicaciones'">{{
+    'comun.volver' | translate
+  }}</a>
+  <h1 class="titulo">
+    {{ (editando ? 'publicaciones.editar_titulo' : 'publicaciones.ventana_titulo') | translate }}
+  </h1>
 
   @if (avisoSesion(); as mensaje) {
     <app-aviso titulo="publicaciones.sesion_titulo" (cerrar)="avisoSesion.set(null)">
@@ -42,399 +46,135 @@
     }}</app-aviso>
   }
 
-  <form class="formulario" [formGroup]="formulario" (ngSubmit)="publicar()" novalidate>
-    <div>
-      <p class="etiqueta">{{ 'publicaciones.tipo_pregunta' | translate }}</p>
-      <div
-        class="solapas"
-        role="group"
-        [attr.aria-label]="'publicaciones.tipo_pregunta' | translate"
-      >
-        @for (opcion of tipos; track opcion) {
-          <button
-            type="button"
-            class="solapa"
-            [class.activa]="tipo() === opcion"
-            [attr.aria-pressed]="tipo() === opcion"
-            (click)="tipo.set(opcion)"
+  @if (!formularioListo() && !mensajeError()) {
+    <app-cubreplato-loading />
+  }
+
+  @if (formularioListo()) {
+    <form class="formulario" [formGroup]="formulario" (ngSubmit)="publicar()" novalidate>
+      <div>
+        @if (!editando) {
+          <p class="etiqueta">{{ 'publicaciones.tipo_pregunta' | translate }}</p>
+          <div
+            class="solapas"
+            role="group"
+            [attr.aria-label]="'publicaciones.tipo_pregunta' | translate"
           >
-            {{ 'tipos.' + opcion | translate }}
-          </button>
+            @for (opcion of tipos; track opcion) {
+              <button
+                type="button"
+                class="solapa"
+                [class.activa]="tipo() === opcion"
+                [attr.aria-pressed]="tipo() === opcion"
+                (click)="tipo.set(opcion)"
+              >
+                {{ 'tipos.' + opcion | translate }}
+              </button>
+            }
+          </div>
         }
-      </div>
-      <div class="plantilla">
-        <div class="portada">
-          <span class="etiqueta">{{ 'publicaciones.portada_titulo' | translate }}</span>
-          @if (vistaPortada(); as vista) {
-            <img
-              class="portada-vista"
-              [src]="vista"
-              [alt]="'publicaciones.portada_vista' | translate"
-            />
-            <div class="acciones">
-              <label class="paso-foto-boton">
-                {{ 'publicaciones.portada_cambiar' | translate }}
+        <div class="plantilla">
+          <div class="portada">
+            <span class="etiqueta">{{ 'publicaciones.portada_titulo' | translate }}</span>
+            @if (vistaPortada(); as vista) {
+              <img
+                class="portada-vista"
+                [src]="vista"
+                [alt]="'publicaciones.portada_vista' | translate"
+              />
+              <div class="acciones">
+                <label class="paso-foto-boton">
+                  {{ 'publicaciones.portada_cambiar' | translate }}
+                  <input
+                    class="archivo-oculto"
+                    type="file"
+                    accept="image/*"
+                    [attr.aria-label]="'publicaciones.portada_cambiar' | translate"
+                    (change)="elegirImagen($event)"
+                  />
+                </label>
+                <button type="button" class="boton-secundario" (click)="quitarImagen()">
+                  {{ 'publicaciones.portada_quitar' | translate }}
+                </button>
+              </div>
+            } @else {
+              <label class="portada-vacia">
+                <svg
+                  class="icono-grande"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+                  <circle cx="12" cy="13" r="3.5" />
+                </svg>
+                <span class="portada-texto">{{ 'publicaciones.portada_agregar' | translate }}</span>
+                <span class="meta">{{ 'publicaciones.portada_ayuda' | translate }}</span>
                 <input
                   class="archivo-oculto"
                   type="file"
                   accept="image/*"
-                  [attr.aria-label]="'publicaciones.portada_cambiar' | translate"
+                  [attr.aria-label]="'publicaciones.portada_agregar' | translate"
                   (change)="elegirImagen($event)"
                 />
               </label>
-              <button type="button" class="boton-secundario" (click)="quitarImagen()">
-                {{ 'publicaciones.portada_quitar' | translate }}
-              </button>
-            </div>
-          } @else {
-            <label class="portada-vacia">
-              <svg
-                class="icono-grande"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-                <circle cx="12" cy="13" r="3.5" />
-              </svg>
-              <span class="portada-texto">{{ 'publicaciones.portada_agregar' | translate }}</span>
-              <span class="meta">{{ 'publicaciones.portada_ayuda' | translate }}</span>
-              <input
-                class="archivo-oculto"
-                type="file"
-                accept="image/*"
-                [attr.aria-label]="'publicaciones.portada_agregar' | translate"
-                (change)="elegirImagen($event)"
-              />
-            </label>
-          }
-          @if (errorImagen(); as mensaje) {
-            <span class="mensaje-error">{{ mensaje | translate }}</span>
-          }
-        </div>
+            }
+            @if (errorImagen(); as mensaje) {
+              <span class="mensaje-error">{{ mensaje | translate }}</span>
+            }
+          </div>
 
-        <label class="caja">
-          <span class="etiqueta">{{ 'publicaciones.campo_titulo' | translate }}</span>
-          <input class="campo" formControlName="titulo" />
-          @if (mensajeDeError('titulo'); as mensaje) {
-            <span class="mensaje-error">{{ mensaje }}</span>
-          }
-        </label>
+          <label class="caja">
+            <span class="etiqueta">{{ 'publicaciones.campo_titulo' | translate }}</span>
+            <input class="campo" formControlName="titulo" />
+            @if (mensajeDeError('titulo'); as mensaje) {
+              <span class="mensaje-error">{{ mensaje }}</span>
+            }
+          </label>
 
-        <label class="caja">
-          <span class="etiqueta">{{ 'publicaciones.mensaje_' + tipo() | translate }}</span>
-          <textarea class="campo" rows="3" formControlName="mensaje"></textarea>
-          @if (mensajeDeError('mensaje'); as mensaje) {
-            <span class="mensaje-error">{{ mensaje }}</span>
-          }
-        </label>
+          <label class="caja">
+            <span class="etiqueta">{{ 'publicaciones.mensaje_' + tipo() | translate }}</span>
+            <textarea class="campo" rows="3" formControlName="mensaje"></textarea>
+            @if (mensajeDeError('mensaje'); as mensaje) {
+              <span class="mensaje-error">{{ mensaje }}</span>
+            }
+          </label>
 
-        @if (llevaLista()) {
-          <fieldset>
-            <legend class="etiqueta">{{ 'publicaciones.ficha' | translate }}</legend>
-            <div class="ficha-campos">
-              <div class="caja">
-                <div
-                  class="tipos"
-                  role="group"
-                  [attr.aria-label]="'publicaciones.rinde_pregunta' | translate"
-                >
-                  @for (opcion of tiposRinde; track opcion) {
-                    <button
-                      type="button"
-                      class="rinde-opcion"
-                      [class.activa]="tipoRinde() === opcion"
-                      [attr.aria-pressed]="tipoRinde() === opcion"
-                      (click)="elegirTipoRinde(opcion)"
-                    >
-                      {{ 'publicaciones.rinde_' + opcion | translate }}
-                    </button>
-                  }
-                </div>
-                <div class="contador">
-                  <button
-                    type="button"
-                    class="boton-contador"
-                    [attr.aria-label]="
-                      'publicaciones.ficha_menos'
-                        | translate: { campo: 'publicaciones.rinde_' + tipoRinde() | translate }
-                    "
-                    (click)="ajustar('porciones', -1)"
-                  >
-                    <svg
-                      class="icono-chico"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                      stroke-linecap="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M5 12h14" />
-                    </svg>
-                  </button>
-                  <input
-                    class="campo"
-                    id="ficha-porciones"
-                    inputmode="numeric"
-                    maxlength="6"
-                    [attr.aria-label]="'publicaciones.rinde_' + tipoRinde() | translate"
-                    [placeholder]="
-                      'publicaciones.solo_numeros' | translate: { n: ejemplosFicha.porciones }
-                    "
-                    formControlName="porciones"
-                    (input)="soloDigitos('porciones')"
-                  />
-                  <button
-                    type="button"
-                    class="boton-contador"
-                    [attr.aria-label]="
-                      'publicaciones.ficha_mas'
-                        | translate: { campo: 'publicaciones.rinde_' + tipoRinde() | translate }
-                    "
-                    (click)="ajustar('porciones', 1)"
-                  >
-                    <svg
-                      class="icono-chico"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                      stroke-linecap="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M12 5v14M5 12h14" />
-                    </svg>
-                  </button>
-                </div>
-                @if (mensajeDeError('porciones'); as mensaje) {
-                  <span class="mensaje-error">{{ mensaje }}</span>
-                }
-              </div>
-
-              <div class="caja">
-                <label class="etiqueta" for="ficha-calorias">{{
-                  'publicaciones.campo_calorias_' + tipoRinde() | translate
-                }}</label>
-                <div class="contador">
-                  <button
-                    type="button"
-                    class="boton-contador"
-                    [attr.aria-label]="
-                      'publicaciones.ficha_menos'
-                        | translate
-                          : { campo: 'publicaciones.campo_calorias_' + tipoRinde() | translate }
-                    "
-                    (click)="ajustar('calorias', -1)"
-                  >
-                    <svg
-                      class="icono-chico"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                      stroke-linecap="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M5 12h14" />
-                    </svg>
-                  </button>
-                  <input
-                    class="campo"
-                    id="ficha-calorias"
-                    inputmode="numeric"
-                    maxlength="6"
-                    [placeholder]="
-                      'publicaciones.solo_numeros' | translate: { n: ejemplosFicha.calorias }
-                    "
-                    formControlName="calorias"
-                    (input)="soloDigitos('calorias')"
-                  />
-                  <span class="contador-unidad">{{ 'publicaciones.kcal' | translate }}</span>
-                  <button
-                    type="button"
-                    class="boton-contador"
-                    [attr.aria-label]="
-                      'publicaciones.ficha_mas'
-                        | translate
-                          : { campo: 'publicaciones.campo_calorias_' + tipoRinde() | translate }
-                    "
-                    (click)="ajustar('calorias', 1)"
-                  >
-                    <svg
-                      class="icono-chico"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                      stroke-linecap="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M12 5v14M5 12h14" />
-                    </svg>
-                  </button>
-                </div>
-                @if (mensajeDeError('calorias'); as mensaje) {
-                  <span class="mensaje-error">{{ mensaje }}</span>
-                }
-              </div>
-
-              <div class="caja">
-                <label class="etiqueta" for="ficha-tiempoMinutos">{{
-                  'publicaciones.campo_tiempoMinutos' | translate
-                }}</label>
-                <div class="contador">
-                  <button
-                    type="button"
-                    class="boton-contador"
-                    [attr.aria-label]="
-                      'publicaciones.ficha_menos'
-                        | translate: { campo: 'publicaciones.campo_tiempoMinutos' | translate }
-                    "
-                    (click)="ajustar('tiempoMinutos', -1)"
-                  >
-                    <svg
-                      class="icono-chico"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                      stroke-linecap="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M5 12h14" />
-                    </svg>
-                  </button>
-                  <input
-                    class="campo"
-                    id="ficha-tiempoMinutos"
-                    inputmode="numeric"
-                    maxlength="6"
-                    [placeholder]="
-                      'publicaciones.solo_numeros' | translate: { n: ejemplosFicha.tiempoMinutos }
-                    "
-                    formControlName="tiempoMinutos"
-                    (input)="soloDigitos('tiempoMinutos')"
-                  />
-                  <span class="contador-unidad">{{
-                    'publicaciones.minutos_unidad' | translate
-                  }}</span>
-                  <button
-                    type="button"
-                    class="boton-contador"
-                    [attr.aria-label]="
-                      'publicaciones.ficha_mas'
-                        | translate: { campo: 'publicaciones.campo_tiempoMinutos' | translate }
-                    "
-                    (click)="ajustar('tiempoMinutos', 1)"
-                  >
-                    <svg
-                      class="icono-chico"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                      stroke-linecap="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M12 5v14M5 12h14" />
-                    </svg>
-                  </button>
-                </div>
-                @if (tiempoLegible(); as legible) {
-                  <span class="meta">{{
-                    'publicaciones.tiempo_total' | translate: { t: legible }
-                  }}</span>
-                }
-                <div
-                  class="tipos mt-2"
-                  role="group"
-                  [attr.aria-label]="'publicaciones.tiempo_rapido' | translate"
-                >
-                  @for (minutos of tiemposRapidos; track minutos) {
-                    <button
-                      type="button"
-                      class="tipo-opcion"
-                      [class.activo]="tiempoElegido(minutos)"
-                      [attr.aria-pressed]="tiempoElegido(minutos)"
-                      (click)="elegirTiempo(minutos)"
-                    >
-                      {{ etiquetaTiempo(minutos) }}
-                    </button>
-                  }
-                </div>
-                @if (mensajeDeError('tiempoMinutos'); as mensaje) {
-                  <span class="mensaje-error">{{ mensaje }}</span>
-                }
-              </div>
-
-              <div class="caja">
-                <span class="etiqueta">{{ 'publicaciones.campo_costo' | translate }}</span>
-                <div class="costos" role="group">
-                  @for (nivel of costos; track nivel) {
-                    <button
-                      type="button"
-                      class="costo-signo"
-                      [class.activo]="nivel <= (costo() ?? 0)"
-                      [attr.aria-pressed]="costo() === nivel"
-                      [attr.aria-label]="'publicaciones.costo_opcion' | translate: { n: nivel }"
-                      (click)="elegirCosto(nivel)"
-                    >
-                      $
-                    </button>
-                  }
-                  @if (costo(); as nivel) {
-                    <span class="meta">{{ 'publicaciones.costo_nivel_' + nivel | translate }}</span>
-                  }
-                </div>
-              </div>
-            </div>
-          </fieldset>
-
-          <fieldset formArrayName="ingredientes">
-            <legend class="etiqueta">{{ 'publicaciones.campo_ingredientes' | translate }}</legend>
-            <div class="ingredientes">
-              @for (fila of ingredientes.controls; track fila; let i = $index) {
-                <div class="ingrediente-fila" [formGroupName]="i">
-                  <span class="numero-paso" aria-hidden="true">{{ i + 1 }}</span>
-                  <input
-                    class="campo ingrediente-nombre"
-                    formControlName="nombre"
-                    [placeholder]="'publicaciones.ingrediente_nombre' | translate"
-                    [attr.aria-label]="'publicaciones.ingrediente_nombre' | translate"
-                  />
+          @if (llevaLista()) {
+            <fieldset>
+              <legend class="etiqueta">{{ 'publicaciones.ficha' | translate }}</legend>
+              <div class="ficha-campos">
+                <div class="caja">
                   <div
-                    class="medidas"
+                    class="tipos"
                     role="group"
-                    [attr.aria-label]="'publicaciones.ingrediente_medida' | translate"
+                    [attr.aria-label]="'publicaciones.rinde_pregunta' | translate"
                   >
-                    @for (grupo of gruposDeMedidas; track $index) {
-                      <div class="medidas-grupo">
-                        @for (medida of grupo; track medida) {
-                          <button
-                            type="button"
-                            class="medida-opcion"
-                            [class.activa]="fila.controls.unidad.value === medida"
-                            [attr.aria-pressed]="fila.controls.unidad.value === medida"
-                            (click)="elegirMedida(fila, medida)"
-                          >
-                            {{ 'medidas.' + medida | translate }}
-                          </button>
-                        }
-                      </div>
+                    @for (opcion of tiposRinde; track opcion) {
+                      <button
+                        type="button"
+                        class="rinde-opcion"
+                        [class.activa]="tipoRinde() === opcion"
+                        [attr.aria-pressed]="tipoRinde() === opcion"
+                        (click)="elegirTipoRinde(opcion)"
+                      >
+                        {{ 'publicaciones.rinde_' + opcion | translate }}
+                      </button>
                     }
                   </div>
-                  <div class="cantidad-paso">
+                  <div class="contador">
                     <button
                       type="button"
                       class="boton-contador"
-                      [disabled]="fila.controls.cantidad.disabled"
-                      [attr.aria-label]="'publicaciones.cantidad_menos' | translate"
-                      (click)="ajustarCantidad(fila, -1)"
+                      [attr.aria-label]="
+                        'publicaciones.ficha_menos'
+                          | translate: { campo: 'publicaciones.rinde_' + tipoRinde() | translate }
+                      "
+                      (click)="ajustar('porciones', -1)"
                     >
                       <svg
                         class="icono-chico"
@@ -450,20 +190,24 @@
                     </button>
                     <input
                       class="campo"
-                      type="number"
-                      inputmode="decimal"
-                      min="0"
-                      step="any"
-                      formControlName="cantidad"
-                      [placeholder]="'publicaciones.ingrediente_cantidad' | translate"
-                      [attr.aria-label]="'publicaciones.ingrediente_cantidad' | translate"
+                      id="ficha-porciones"
+                      inputmode="numeric"
+                      maxlength="6"
+                      [attr.aria-label]="'publicaciones.rinde_' + tipoRinde() | translate"
+                      [placeholder]="
+                        'publicaciones.solo_numeros' | translate: { n: ejemplosFicha.porciones }
+                      "
+                      formControlName="porciones"
+                      (input)="soloDigitos('porciones')"
                     />
                     <button
                       type="button"
                       class="boton-contador"
-                      [disabled]="fila.controls.cantidad.disabled"
-                      [attr.aria-label]="'publicaciones.cantidad_mas' | translate"
-                      (click)="ajustarCantidad(fila, 1)"
+                      [attr.aria-label]="
+                        'publicaciones.ficha_mas'
+                          | translate: { campo: 'publicaciones.rinde_' + tipoRinde() | translate }
+                      "
+                      (click)="ajustar('porciones', 1)"
                     >
                       <svg
                         class="icono-chico"
@@ -478,249 +222,528 @@
                       </svg>
                     </button>
                   </div>
-                  @if (usaFracciones(fila)) {
-                    <div
-                      class="fracciones"
-                      role="group"
-                      [attr.aria-label]="'publicaciones.fracciones' | translate"
-                    >
-                      @for (fraccion of fracciones; track fraccion.valor) {
-                        <button
-                          type="button"
-                          class="fraccion"
-                          [class.activo]="tieneFraccion(fila, fraccion.valor)"
-                          [attr.aria-pressed]="tieneFraccion(fila, fraccion.valor)"
-                          (click)="sumarFraccion(fila, fraccion.valor)"
-                        >
-                          {{ fraccion.texto }}
-                        </button>
-                      }
-                    </div>
-                  }
-                  <button
-                    type="button"
-                    class="boton-icono"
-                    [attr.aria-label]="'publicaciones.ingrediente_quitar' | translate"
-                    (click)="quitarIngrediente(i)"
-                  >
-                    <svg
-                      class="icono-chico"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                      stroke-linecap="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M5 12h14" />
-                    </svg>
-                  </button>
-                  @if (mensajeDeIngrediente(fila); as mensaje) {
-                    <span class="mensaje-error ingrediente-error">{{ mensaje }}</span>
+                  @if (mensajeDeError('porciones'); as mensaje) {
+                    <span class="mensaje-error">{{ mensaje }}</span>
                   }
                 </div>
-              }
-            </div>
-            <button
-              type="button"
-              class="boton-agregar"
-              [disabled]="ingredientes.length >= maximoIngredientes"
-              (click)="agregarIngrediente()"
-            >
-              <svg
-                class="icono-chico"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                aria-hidden="true"
-              >
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-              {{ 'publicaciones.ingrediente_agregar' | translate }}
-            </button>
-          </fieldset>
 
-          <fieldset formArrayName="pasos">
-            <legend class="etiqueta">{{ 'publicaciones.campo_pasos' | translate }}</legend>
-            <div class="ingredientes" cdkDropList (cdkDropListDropped)="soltarPaso($event)">
-              @for (paso of pasos.controls; track paso; let i = $index) {
-                <div class="paso-fila" cdkDrag cdkDragPreviewContainer="parent" [formGroup]="paso">
-                  <button
-                    type="button"
-                    class="manija"
-                    cdkDragHandle
-                    [attr.aria-label]="'publicaciones.paso_mover' | translate: { n: i + 1 }"
-                    (keydown.arrowup)="moverPaso(i, i - 1); $event.preventDefault()"
-                    (keydown.arrowdown)="moverPaso(i, i + 1); $event.preventDefault()"
-                  >
-                    <svg
-                      class="icono-chico"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      aria-hidden="true"
+                <div class="caja">
+                  <label class="etiqueta" for="ficha-calorias">{{
+                    'publicaciones.campo_calorias_' + tipoRinde() | translate
+                  }}</label>
+                  <div class="contador">
+                    <button
+                      type="button"
+                      class="boton-contador"
+                      [attr.aria-label]="
+                        'publicaciones.ficha_menos'
+                          | translate
+                            : { campo: 'publicaciones.campo_calorias_' + tipoRinde() | translate }
+                      "
+                      (click)="ajustar('calorias', -1)"
                     >
-                      <circle cx="9" cy="6" r="1.6" />
-                      <circle cx="15" cy="6" r="1.6" />
-                      <circle cx="9" cy="12" r="1.6" />
-                      <circle cx="15" cy="12" r="1.6" />
-                      <circle cx="9" cy="18" r="1.6" />
-                      <circle cx="15" cy="18" r="1.6" />
-                    </svg>
-                  </button>
-                  <span class="numero-paso" aria-hidden="true">{{ i + 1 }}</span>
-                  <div class="paso-cuerpo">
+                      <svg
+                        class="icono-chico"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M5 12h14" />
+                      </svg>
+                    </button>
                     <input
-                      class="campo paso-titulo"
-                      formControlName="titulo"
-                      [placeholder]="'publicaciones.paso_titulo' | translate"
-                      [attr.aria-label]="'publicaciones.paso_titulo' | translate"
-                    />
-                    <textarea
                       class="campo"
-                      rows="5"
-                      formControlName="texto"
-                      [placeholder]="'publicaciones.paso_descripcion' | translate"
-                      [attr.aria-label]="'publicaciones.paso_numero' | translate: { n: i + 1 }"
-                    ></textarea>
-                    <div class="paso-foto">
-                      @for (foto of fotosDe(paso); track foto.url; let f = $index) {
-                        <span class="paso-foto-item">
-                          <img
-                            class="paso-foto-vista"
-                            [src]="foto.url"
-                            [alt]="
-                              'publicaciones.paso_foto_vista' | translate: { n: i + 1, f: f + 1 }
-                            "
-                          />
+                      id="ficha-calorias"
+                      inputmode="numeric"
+                      maxlength="6"
+                      [placeholder]="
+                        'publicaciones.solo_numeros' | translate: { n: ejemplosFicha.calorias }
+                      "
+                      formControlName="calorias"
+                      (input)="soloDigitos('calorias')"
+                    />
+                    <span class="contador-unidad">{{ 'publicaciones.kcal' | translate }}</span>
+                    <button
+                      type="button"
+                      class="boton-contador"
+                      [attr.aria-label]="
+                        'publicaciones.ficha_mas'
+                          | translate
+                            : { campo: 'publicaciones.campo_calorias_' + tipoRinde() | translate }
+                      "
+                      (click)="ajustar('calorias', 1)"
+                    >
+                      <svg
+                        class="icono-chico"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </button>
+                  </div>
+                  @if (mensajeDeError('calorias'); as mensaje) {
+                    <span class="mensaje-error">{{ mensaje }}</span>
+                  }
+                </div>
+
+                <div class="caja">
+                  <label class="etiqueta" for="ficha-tiempoMinutos">{{
+                    'publicaciones.campo_tiempoMinutos' | translate
+                  }}</label>
+                  <div class="contador">
+                    <button
+                      type="button"
+                      class="boton-contador"
+                      [attr.aria-label]="
+                        'publicaciones.ficha_menos'
+                          | translate: { campo: 'publicaciones.campo_tiempoMinutos' | translate }
+                      "
+                      (click)="ajustar('tiempoMinutos', -1)"
+                    >
+                      <svg
+                        class="icono-chico"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M5 12h14" />
+                      </svg>
+                    </button>
+                    <input
+                      class="campo"
+                      id="ficha-tiempoMinutos"
+                      inputmode="numeric"
+                      maxlength="6"
+                      [placeholder]="
+                        'publicaciones.solo_numeros' | translate: { n: ejemplosFicha.tiempoMinutos }
+                      "
+                      formControlName="tiempoMinutos"
+                      (input)="soloDigitos('tiempoMinutos')"
+                    />
+                    <span class="contador-unidad">{{
+                      'publicaciones.minutos_unidad' | translate
+                    }}</span>
+                    <button
+                      type="button"
+                      class="boton-contador"
+                      [attr.aria-label]="
+                        'publicaciones.ficha_mas'
+                          | translate: { campo: 'publicaciones.campo_tiempoMinutos' | translate }
+                      "
+                      (click)="ajustar('tiempoMinutos', 1)"
+                    >
+                      <svg
+                        class="icono-chico"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </button>
+                  </div>
+                  @if (tiempoLegible(); as legible) {
+                    <span class="meta">{{
+                      'publicaciones.tiempo_total' | translate: { t: legible }
+                    }}</span>
+                  }
+                  <div
+                    class="tipos mt-2"
+                    role="group"
+                    [attr.aria-label]="'publicaciones.tiempo_rapido' | translate"
+                  >
+                    @for (minutos of tiemposRapidos; track minutos) {
+                      <button
+                        type="button"
+                        class="tipo-opcion"
+                        [class.activo]="tiempoElegido(minutos)"
+                        [attr.aria-pressed]="tiempoElegido(minutos)"
+                        (click)="elegirTiempo(minutos)"
+                      >
+                        {{ etiquetaTiempo(minutos) }}
+                      </button>
+                    }
+                  </div>
+                  @if (mensajeDeError('tiempoMinutos'); as mensaje) {
+                    <span class="mensaje-error">{{ mensaje }}</span>
+                  }
+                </div>
+
+                <div class="caja">
+                  <span class="etiqueta">{{ 'publicaciones.campo_costo' | translate }}</span>
+                  <div class="costos" role="group">
+                    @for (nivel of costos; track nivel) {
+                      <button
+                        type="button"
+                        class="costo-signo"
+                        [class.activo]="nivel <= (costo() ?? 0)"
+                        [attr.aria-pressed]="costo() === nivel"
+                        [attr.aria-label]="'publicaciones.costo_opcion' | translate: { n: nivel }"
+                        (click)="elegirCosto(nivel)"
+                      >
+                        $
+                      </button>
+                    }
+                    @if (costo(); as nivel) {
+                      <span class="meta">{{
+                        'publicaciones.costo_nivel_' + nivel | translate
+                      }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset formArrayName="ingredientes">
+              <legend class="etiqueta">{{ 'publicaciones.campo_ingredientes' | translate }}</legend>
+              <div class="ingredientes">
+                @for (fila of ingredientes.controls; track fila; let i = $index) {
+                  <div class="ingrediente-fila" [formGroupName]="i">
+                    <span class="numero-paso" aria-hidden="true">{{ i + 1 }}</span>
+                    <input
+                      class="campo ingrediente-nombre"
+                      formControlName="nombre"
+                      [placeholder]="'publicaciones.ingrediente_nombre' | translate"
+                      [attr.aria-label]="'publicaciones.ingrediente_nombre' | translate"
+                    />
+                    <div
+                      class="medidas"
+                      role="group"
+                      [attr.aria-label]="'publicaciones.ingrediente_medida' | translate"
+                    >
+                      @for (grupo of gruposDeMedidas; track $index) {
+                        <div class="medidas-grupo">
+                          @for (medida of grupo; track medida) {
+                            <button
+                              type="button"
+                              class="medida-opcion"
+                              [class.activa]="fila.controls.unidad.value === medida"
+                              [attr.aria-pressed]="fila.controls.unidad.value === medida"
+                              (click)="elegirMedida(fila, medida)"
+                            >
+                              {{ 'medidas.' + medida | translate }}
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
+                    <div class="cantidad-paso">
+                      <button
+                        type="button"
+                        class="boton-contador"
+                        [disabled]="fila.controls.cantidad.disabled"
+                        [attr.aria-label]="'publicaciones.cantidad_menos' | translate"
+                        (click)="ajustarCantidad(fila, -1)"
+                      >
+                        <svg
+                          class="icono-chico"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.2"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M5 12h14" />
+                        </svg>
+                      </button>
+                      <input
+                        class="campo"
+                        type="number"
+                        inputmode="decimal"
+                        min="0"
+                        step="any"
+                        formControlName="cantidad"
+                        [placeholder]="'publicaciones.ingrediente_cantidad' | translate"
+                        [attr.aria-label]="'publicaciones.ingrediente_cantidad' | translate"
+                      />
+                      <button
+                        type="button"
+                        class="boton-contador"
+                        [disabled]="fila.controls.cantidad.disabled"
+                        [attr.aria-label]="'publicaciones.cantidad_mas' | translate"
+                        (click)="ajustarCantidad(fila, 1)"
+                      >
+                        <svg
+                          class="icono-chico"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.2"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                      </button>
+                    </div>
+                    @if (usaFracciones(fila)) {
+                      <div
+                        class="fracciones"
+                        role="group"
+                        [attr.aria-label]="'publicaciones.fracciones' | translate"
+                      >
+                        @for (fraccion of fracciones; track fraccion.valor) {
                           <button
                             type="button"
-                            class="paso-foto-quitar"
-                            [attr.aria-label]="
-                              'publicaciones.paso_foto_quitar' | translate: { n: i + 1, f: f + 1 }
-                            "
-                            (click)="quitarFotoPaso(paso, f)"
+                            class="fraccion"
+                            [class.activo]="tieneFraccion(fila, fraccion.valor)"
+                            [attr.aria-pressed]="tieneFraccion(fila, fraccion.valor)"
+                            (click)="sumarFraccion(fila, fraccion.valor)"
+                          >
+                            {{ fraccion.texto }}
+                          </button>
+                        }
+                      </div>
+                    }
+                    <button
+                      type="button"
+                      class="boton-icono"
+                      [attr.aria-label]="'publicaciones.ingrediente_quitar' | translate"
+                      (click)="quitarIngrediente(i)"
+                    >
+                      <svg
+                        class="icono-chico"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M5 12h14" />
+                      </svg>
+                    </button>
+                    @if (mensajeDeIngrediente(fila); as mensaje) {
+                      <span class="mensaje-error ingrediente-error">{{ mensaje }}</span>
+                    }
+                  </div>
+                }
+              </div>
+              <button
+                type="button"
+                class="boton-agregar"
+                [disabled]="ingredientes.length >= maximoIngredientes"
+                (click)="agregarIngrediente()"
+              >
+                <svg
+                  class="icono-chico"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                {{ 'publicaciones.ingrediente_agregar' | translate }}
+              </button>
+            </fieldset>
+
+            <fieldset formArrayName="pasos">
+              <legend class="etiqueta">{{ 'publicaciones.campo_pasos' | translate }}</legend>
+              <div class="ingredientes" cdkDropList (cdkDropListDropped)="soltarPaso($event)">
+                @for (paso of pasos.controls; track paso; let i = $index) {
+                  <div
+                    class="paso-fila"
+                    cdkDrag
+                    cdkDragPreviewContainer="parent"
+                    [formGroup]="paso"
+                  >
+                    <button
+                      type="button"
+                      class="manija"
+                      cdkDragHandle
+                      [attr.aria-label]="'publicaciones.paso_mover' | translate: { n: i + 1 }"
+                      (keydown.arrowup)="moverPaso(i, i - 1); $event.preventDefault()"
+                      (keydown.arrowdown)="moverPaso(i, i + 1); $event.preventDefault()"
+                    >
+                      <svg
+                        class="icono-chico"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <circle cx="9" cy="6" r="1.6" />
+                        <circle cx="15" cy="6" r="1.6" />
+                        <circle cx="9" cy="12" r="1.6" />
+                        <circle cx="15" cy="12" r="1.6" />
+                        <circle cx="9" cy="18" r="1.6" />
+                        <circle cx="15" cy="18" r="1.6" />
+                      </svg>
+                    </button>
+                    <span class="numero-paso" aria-hidden="true">{{ i + 1 }}</span>
+                    <div class="paso-cuerpo">
+                      <input
+                        class="campo paso-titulo"
+                        formControlName="titulo"
+                        [placeholder]="'publicaciones.paso_titulo' | translate"
+                        [attr.aria-label]="'publicaciones.paso_titulo' | translate"
+                      />
+                      <textarea
+                        class="campo"
+                        rows="5"
+                        formControlName="texto"
+                        [placeholder]="'publicaciones.paso_descripcion' | translate"
+                        [attr.aria-label]="'publicaciones.paso_numero' | translate: { n: i + 1 }"
+                      ></textarea>
+                      <div class="paso-foto">
+                        @for (foto of fotosDe(paso); track foto.url; let f = $index) {
+                          <span class="paso-foto-item">
+                            <img
+                              class="paso-foto-vista"
+                              [src]="foto.url"
+                              [alt]="
+                                'publicaciones.paso_foto_vista' | translate: { n: i + 1, f: f + 1 }
+                              "
+                            />
+                            <button
+                              type="button"
+                              class="paso-foto-quitar"
+                              [attr.aria-label]="
+                                'publicaciones.paso_foto_quitar' | translate: { n: i + 1, f: f + 1 }
+                              "
+                              (click)="quitarFotoPaso(paso, f)"
+                            >
+                              <svg
+                                class="icono-chico"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.4"
+                                stroke-linecap="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M6 6l12 12M18 6L6 18" />
+                              </svg>
+                            </button>
+                          </span>
+                        }
+                        @if (puedeAgregarFoto(paso)) {
+                          <label
+                            class="boton-foto"
+                            [class.boton-icono]="fotosDe(paso).length > 0"
+                            [class.paso-foto-boton]="fotosDe(paso).length === 0"
+                            [attr.title]="'publicaciones.paso_foto_otra' | translate"
                           >
                             <svg
                               class="icono-chico"
                               viewBox="0 0 24 24"
                               fill="none"
                               stroke="currentColor"
-                              stroke-width="2.4"
+                              stroke-width="1.9"
                               stroke-linecap="round"
+                              stroke-linejoin="round"
                               aria-hidden="true"
                             >
-                              <path d="M6 6l12 12M18 6L6 18" />
+                              <path d="M3 9.5h3l1.5-2h5l1.5 2h2.5V19H3z" />
+                              <circle cx="10" cy="14" r="3" />
+                              <path d="M20 3v6M17 6h6" />
                             </svg>
-                          </button>
-                        </span>
+                            @if (fotosDe(paso).length === 0) {
+                              {{ 'publicaciones.paso_foto_primera' | translate }}
+                            }
+                            <input
+                              class="archivo-oculto"
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              [attr.aria-label]="
+                                (fotosDe(paso).length === 0
+                                  ? 'publicaciones.paso_foto_primera_aria'
+                                  : 'publicaciones.paso_foto_agregar'
+                                ) | translate: { n: i + 1 }
+                              "
+                              (change)="agregarFotosPaso(paso, $event)"
+                            />
+                          </label>
+                        }
+                      </div>
+                      @if (errorFotoDe(paso); as clave) {
+                        <span class="mensaje-error">{{
+                          clave
+                            | translate
+                              : {
+                                  n: clave.endsWith('_paso')
+                                    ? maximoFotosPorPaso
+                                    : maximoFotosPasos,
+                                }
+                        }}</span>
                       }
-                      @if (puedeAgregarFoto(paso)) {
-                        <label
-                          class="boton-foto"
-                          [class.boton-icono]="fotosDe(paso).length > 0"
-                          [class.paso-foto-boton]="fotosDe(paso).length === 0"
-                          [attr.title]="'publicaciones.paso_foto_otra' | translate"
-                        >
-                          <svg
-                            class="icono-chico"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.9"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            aria-hidden="true"
-                          >
-                            <path d="M3 9.5h3l1.5-2h5l1.5 2h2.5V19H3z" />
-                            <circle cx="10" cy="14" r="3" />
-                            <path d="M20 3v6M17 6h6" />
-                          </svg>
-                          @if (fotosDe(paso).length === 0) {
-                            {{ 'publicaciones.paso_foto_primera' | translate }}
-                          }
-                          <input
-                            class="archivo-oculto"
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            [attr.aria-label]="
-                              (fotosDe(paso).length === 0
-                                ? 'publicaciones.paso_foto_primera_aria'
-                                : 'publicaciones.paso_foto_agregar'
-                              ) | translate: { n: i + 1 }
-                            "
-                            (change)="agregarFotosPaso(paso, $event)"
-                          />
-                        </label>
+                      @if (mensajeDePaso(paso); as mensaje) {
+                        <span class="mensaje-error">{{ mensaje }}</span>
                       }
                     </div>
-                    @if (errorFotoDe(paso); as clave) {
-                      <span class="mensaje-error">{{
-                        clave
-                          | translate
-                            : { n: clave.endsWith('_paso') ? maximoFotosPorPaso : maximoFotosPasos }
-                      }}</span>
-                    }
-                    @if (mensajeDePaso(paso); as mensaje) {
-                      <span class="mensaje-error">{{ mensaje }}</span>
-                    }
-                  </div>
-                  <button
-                    type="button"
-                    class="boton-icono"
-                    [attr.aria-label]="'publicaciones.paso_quitar' | translate: { n: i + 1 }"
-                    (click)="quitarPaso(i)"
-                  >
-                    <svg
-                      class="icono-chico"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                      stroke-linecap="round"
-                      aria-hidden="true"
+                    <button
+                      type="button"
+                      class="boton-icono"
+                      [attr.aria-label]="'publicaciones.paso_quitar' | translate: { n: i + 1 }"
+                      (click)="quitarPaso(i)"
                     >
-                      <path d="M5 12h14" />
-                    </svg>
-                  </button>
-                </div>
-              }
-            </div>
-            <button
-              type="button"
-              class="boton-agregar"
-              [disabled]="pasos.length >= maximoPasos"
-              (click)="agregarPaso()"
-            >
-              <svg
-                class="icono-chico"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                aria-hidden="true"
+                      <svg
+                        class="icono-chico"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M5 12h14" />
+                      </svg>
+                    </button>
+                  </div>
+                }
+              </div>
+              <button
+                type="button"
+                class="boton-agregar"
+                [disabled]="pasos.length >= maximoPasos"
+                (click)="agregarPaso()"
               >
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-              {{ 'publicaciones.paso_agregar' | translate }}
-            </button>
-          </fieldset>
-        }
+                <svg
+                  class="icono-chico"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                {{ 'publicaciones.paso_agregar' | translate }}
+              </button>
+            </fieldset>
+          }
 
-        @if (preparandoImagen()) {
-          <p class="meta" role="status">{{ 'imagen.preparando' | translate }}</p>
-        }
-        <button
-          type="submit"
-          class="boton-principal w-full"
-          [disabled]="publicando() || preparandoImagen()"
-        >
-          {{ (publicando() ? 'publicaciones.publicando' : 'publicaciones.publicar') | translate }}
-        </button>
+          @if (preparandoImagen()) {
+            <p class="meta" role="status">{{ 'imagen.preparando' | translate }}</p>
+          }
+          <button
+            type="submit"
+            class="boton-principal w-full"
+            [disabled]="publicando() || preparandoImagen()"
+          >
+            {{ clavesDelBoton() | translate }}
+          </button>
+        </div>
       </div>
-    </div>
-  </form>
+    </form>
+  }
 </section>

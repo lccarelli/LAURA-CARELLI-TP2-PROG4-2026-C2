@@ -2,7 +2,7 @@
   <button
     #vista="enVista"
     type="button"
-    class="boton-secundario boton-ver-mas"
+    class="boton-ver-mas"
     [class.esperando]="vista.esperando()"
     appEnVista
     [activa]="automatico()"
@@ -10,6 +10,9 @@
     (click)="cargar.emit()"
   >
     <span class="boton-ver-mas-relleno" aria-hidden="true"></span>
-    <span class="boton-ver-mas-texto">{{ texto() | translate }}</span>
+    <span class="boton-ver-mas-texto">
+      {{ texto() | translate }}
+      <app-icono nombre="chevron" [chico]="true" />
+    </span>
   </button>
 </div>

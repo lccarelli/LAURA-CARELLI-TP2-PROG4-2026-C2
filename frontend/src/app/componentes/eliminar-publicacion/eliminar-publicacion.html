@@ -26,7 +26,13 @@
     </button>
   </div>
 } @else {
-  <button type="button" class="boton-peligro" (click)="pedirConfirmacion()">
-    {{ 'publicaciones.eliminar' | translate }}
+  <button
+    type="button"
+    class="boton-icono boton-icono-peligro"
+    [attr.title]="'publicaciones.eliminar' | translate"
+    (click)="pedirConfirmacion()"
+  >
+    <app-icono nombre="tacho" />
+    <span class="texto-oculto">{{ 'publicaciones.eliminar' | translate }}</span>
   </button>
 }

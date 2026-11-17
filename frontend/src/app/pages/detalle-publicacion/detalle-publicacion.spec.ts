@@ -9,6 +9,7 @@ import { Auth } from '../../servicios/auth/auth';
 import { usuarioDePrueba } from '../../../testing/usuario';
 import { DetallePublicacion } from './detalle-publicacion';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
+import { proveerRutaConId } from '../../../testing/ruta';
 import { publicacionDePrueba } from '../../../testing/publicacion';
 
 const URL = `${environment.API_URL}/publicaciones`;
@@ -35,10 +36,7 @@ describe('DetallePublicacion', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        {
-          provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: convertToParamMap({ id: 'id1' }) } },
-        },
+        proveerRutaConId('id1'),
       ],
     }).compileComponents();
 
@@ -422,6 +420,39 @@ describe('DetallePublicacion', () => {
           'app-eliminar-publicacion button',
         ) as NodeListOf<HTMLButtonElement>,
       );
+
+    const enlaceEditar = () =>
+      fixture.nativeElement.querySelector(
+        'a[href="/publicaciones/id1/editar"]',
+      ) as HTMLElement | null;
+
+    it.each([
+      ['[Z] sin sesión no ofrece editar', null, false],
+      ['[O] quien publicó ve el botón para editar', usuarioDePrueba, true],
+      [
+        '[E] una persona con perfil administrador no edita publicaciones de otra',
+        administrador,
+        false,
+      ],
+      ['[E] una persona común no edita publicaciones de otra', otraPersona, false],
+    ])('%s', async (_nombre, quien, debeVerlo) => {
+      entrar(quien);
+      await abrirYMostrar();
+
+      expect(enlaceEditar() !== null).toBe(debeVerlo);
+    });
+
+    it('[I] una publicación editada lo indica y una que no, no', async () => {
+      entrar(usuarioDePrueba);
+      await abrir(publicacionDePrueba(1, { fechaEdicion: '2026-10-23T10:00:00' }));
+      expect(fixture.nativeElement.textContent).toContain('Editada');
+    });
+
+    it('[Z] una publicación sin ediciones no muestra Editada', async () => {
+      entrar(usuarioDePrueba);
+      await abrir(publicacionDePrueba(1));
+      expect(fixture.nativeElement.textContent).not.toContain('Editada');
+    });
 
     it('[Z] sin sesión no ofrece eliminar', async () => {
       entrar(null);

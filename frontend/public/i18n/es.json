@@ -183,7 +183,12 @@
     "paso_foto_primera_aria": "Agregar una foto al paso {{n}}",
     "paso_foto_otra": "Agregar otra foto",
     "sin_resultados": "No encontramos publicaciones para «{{texto}}»",
-    "resultados_de": "Resultados de «{{texto}}»"
+    "resultados_de": "Resultados de «{{texto}}»",
+    "editar_titulo": "Editar publicación",
+    "guardando": "Guardando…",
+    "guardar_cambios": "Guardar cambios",
+    "editar": "Editar",
+    "editada": "Editada"
   },
   "comentarios": {
     "titulo": "Comentarios",

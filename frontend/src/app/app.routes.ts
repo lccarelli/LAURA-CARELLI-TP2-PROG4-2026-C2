@@ -32,6 +32,12 @@ export const routes: Routes = [
       import('./pages/nueva-publicacion/nueva-publicacion').then((m) => m.NuevaPublicacion),
   },
   {
+    path: 'publicaciones/:id/editar',
+    canActivate: [sesionGuard],
+    loadComponent: () =>
+      import('./pages/nueva-publicacion/nueva-publicacion').then((m) => m.NuevaPublicacion),
+  },
+  {
     path: 'publicaciones/:id',
     canActivate: [sesionGuard],
     loadComponent: () =>

@@ -1,12 +1,14 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, input, output, signal } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
+import { Icono } from '../icono/icono';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
 
 @Component({
-  imports: [TranslatePipe],
+  imports: [Icono, TranslatePipe],
   selector: 'app-eliminar-publicacion',
+  host: { class: 'contents' },
   templateUrl: './eliminar-publicacion.html',
 })
 export class EliminarPublicacion {

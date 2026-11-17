@@ -29,7 +29,28 @@
       }
       <div class="detalle-cuerpo">
         <span class="pin-tipo">{{ 'tipos.' + publicacion.tipo | translate }}</span>
-        <h2 class="titulo">{{ publicacion.titulo }}</h2>
+        <div class="titulo-detalle">
+          <h2 class="titulo">{{ publicacion.titulo }}</h2>
+          <div class="acciones-detalle">
+            @if (puedeEditar()) {
+              <a
+                class="boton-icono boton-icono-editar"
+                [routerLink]="['/publicaciones', publicacion._id, 'editar']"
+                [attr.title]="'publicaciones.editar' | translate"
+              >
+                <app-icono nombre="lapiz" />
+                <span class="texto-oculto">{{ 'publicaciones.editar' | translate }}</span>
+              </a>
+            }
+            @if (puedeEliminar()) {
+              <app-eliminar-publicacion
+                [publicacionId]="publicacion._id"
+                (publicacionEliminada)="cerrar()"
+                (publicacionFallada)="errorDeAccion.set($event)"
+              />
+            }
+          </div>
+        </div>
         <header class="flex items-center gap-3">
           <img
             class="avatar"
@@ -46,6 +67,12 @@
               [attr.title]="publicacion.fecha | date: ('formatos.fecha_hora' | translate)"
             >
               {{ publicacion.fecha | fechaRelativa }}
+              @if (publicacion.fechaEdicion; as edicion) {
+                ·
+                <span [attr.title]="edicion | date: ('formatos.fecha_hora' | translate)">{{
+                  'publicaciones.editada' | translate
+                }}</span>
+              }
             </p>
           </div>
         </header>
@@ -66,13 +93,6 @@
             <span aria-hidden="true">{{ publicacion.cantidadComentarios }}</span>
           </span>
         </span>
-        @if (puedeEliminar()) {
-          <app-eliminar-publicacion
-            [publicacionId]="publicacion._id"
-            (publicacionEliminada)="cerrar()"
-            (publicacionFallada)="errorDeAccion.set($event)"
-          />
-        }
         @if (errorDeAccion(); as mensaje) {
           <p class="mensaje-error" role="alert">{{ mensaje | translate }}</p>
         }

@@ -20,12 +20,14 @@ import {
   Validators,
 } from '@angular/forms';
 import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { debounceTime, interval, merge, skip } from 'rxjs';
 import { Aviso } from '../../componentes/aviso/aviso';
+import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
 import {
   Ingrediente,
+  Publicacion,
   Tipo,
   TipoRinde,
   TIPOS,
@@ -38,7 +40,7 @@ import { FotosBorrador } from '../../servicios/fotos-borrador/fotos-borrador';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
 import { mensajeDeApi } from '../../utilidades/errores';
 import { Imagenes } from '../../servicios/imagenes/imagenes';
-import { validarImagen } from '../../utilidades/imagen';
+import { urlImagen, validarImagen } from '../../utilidades/imagen';
 
 const MAXIMO_INGREDIENTES = 40;
 const MAXIMO_PASOS = 40;
@@ -90,8 +92,15 @@ const FRACCIONES = [
 const redondear = (numero: number) => Math.round(numero * 100) / 100;
 
 interface FotoElegida {
-  archivo: File;
+  archivo: File | null;
   url: string;
+}
+
+interface PasoEnviado {
+  titulo?: string;
+  texto?: string;
+  fotos?: number[];
+  imagenes?: string[];
 }
 
 type PasoForm = FormGroup<{
@@ -127,6 +136,7 @@ function ingredienteCompleto(control: AbstractControl): ValidationErrors | null 
     CdkDrag,
     CdkDragHandle,
     Aviso,
+    CubreplatoLoading,
     TranslatePipe,
   ],
   selector: 'app-nueva-publicacion',
@@ -149,8 +159,12 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
   private traductor = inject(TranslateService);
   private imagenes = inject(Imagenes);
   private tareas = inject(PendingTasks);
+  protected readonly idEdicion = inject(ActivatedRoute).snapshot.paramMap.get('id');
+  private teniaPortada = false;
   private imagenesEnProceso = signal(0);
 
+  readonly editando = this.idEdicion !== null;
+  readonly formularioListo = signal(!this.editando);
   readonly publicando = signal(false);
   readonly tipos = TIPOS;
   readonly gruposDeMedidas = GRUPOS_DE_MEDIDAS;
@@ -192,7 +206,10 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
   });
 
   constructor() {
-    const guardado = this.borrador.leer();
+    const guardado = this.editando ? null : this.borrador.leer();
+    if (this.idEdicion) {
+      this.cargarParaEditar(this.idEdicion);
+    }
     if (guardado) {
       this.restaurar(guardado);
       this.borradorRecuperado.set(guardado.guardadoEn);
@@ -239,6 +256,68 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
 
   puedeAgregarFoto(paso: AbstractControl) {
     return this.fotosDe(paso).length < MAXIMO_FOTOS_POR_PASO;
+  }
+
+  clavesDelBoton() {
+    if (this.editando) {
+      return this.publicando() ? 'publicaciones.guardando' : 'publicaciones.guardar_cambios';
+    }
+    return this.publicando() ? 'publicaciones.publicando' : 'publicaciones.publicar';
+  }
+
+  private cargarParaEditar(id: string) {
+    this.api.obtener(id).subscribe({
+      next: (publicacion) => {
+        if (publicacion.usuario._id !== this.auth.usuario()?._id) {
+          this.router.navigate(['/publicaciones', id]);
+          return;
+        }
+        this.rellenar(publicacion);
+        this.formularioListo.set(true);
+      },
+      error: (error: HttpErrorResponse) => this.mensajeError.set(mensajeDeApi(error)),
+    });
+  }
+
+  private rellenar(publicacion: Publicacion) {
+    this.tipo.set(publicacion.tipo);
+    this.tipoRinde.set(publicacion.tipoRinde ?? 'porciones');
+    this.costo.set(publicacion.costo ?? null);
+    this.formulario.patchValue({
+      titulo: publicacion.titulo,
+      mensaje: publicacion.mensaje,
+      porciones: String(publicacion.porciones ?? ''),
+      tiempoMinutos: String(publicacion.tiempoMinutos ?? ''),
+      calorias: String(publicacion.calorias ?? ''),
+    });
+
+    this.ingredientes.clear();
+    for (const { nombre, unidad, cantidad } of publicacion.ingredientes ?? []) {
+      const grupo = this.nuevoIngrediente();
+      grupo.patchValue({ nombre, unidad, cantidad: cantidad ?? null });
+      this.alCambiarUnidad(grupo);
+      this.ingredientes.push(grupo);
+    }
+    if (!this.ingredientes.length) {
+      this.agregarIngrediente();
+    }
+
+    this.pasos.clear();
+    for (const { titulo, texto, imagenes } of publicacion.pasos ?? []) {
+      const grupo = this.nuevoPaso();
+      grupo.setValue({ titulo: titulo ?? '', texto: texto ?? '' });
+      this.pasos.push(grupo);
+      if (imagenes?.length) {
+        const conservadas = imagenes.map((url) => ({ archivo: null, url }));
+        this.fotosPasos.update((fotos) => new Map(fotos).set(grupo, conservadas));
+      }
+    }
+    if (!this.pasos.length) {
+      this.agregarPaso();
+    }
+
+    this.teniaPortada = Boolean(publicacion.imagen);
+    this.vistaPortada.set(publicacion.imagen ? urlImagen(publicacion.imagen) : null);
   }
 
   private totalFotosDePasos() {
@@ -646,7 +725,7 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
   }
 
   guardarBorrador() {
-    if (this.publicado) {
+    if (this.publicado || this.editando) {
       return;
     }
     const { titulo, mensaje, porciones, tiempoMinutos, calorias } = this.formulario.getRawValue();
@@ -668,7 +747,9 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
     );
     void this.fotosBorrador.guardar({
       portada: this.imagen(),
-      pasos: this.pasos.controls.map((paso) => this.fotosDe(paso).map(({ archivo }) => archivo)),
+      pasos: this.pasos.controls.map((paso) =>
+        this.fotosDe(paso).flatMap(({ archivo }) => (archivo ? [archivo] : [])),
+      ),
     });
   }
 
@@ -761,7 +842,9 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
     const datos = new FormData();
     const pasos = this.armarPasos(datos);
     const ingredientes = this.ingredientesCargados();
-    datos.append('tipo', this.tipo());
+    if (!this.editando) {
+      datos.append('tipo', this.tipo());
+    }
     datos.append('titulo', titulo.trim());
     datos.append('mensaje', mensaje.trim());
     if (this.llevaLista() && ingredientes.length) {
@@ -776,12 +859,19 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
     const imagen = this.imagen();
     if (imagen) {
       datos.append('imagen', imagen);
+    } else if (this.teniaPortada && !this.vistaPortada()) {
+      datos.append('quitarImagen', 'true');
     }
 
     this.publicando.set(true);
-    this.api.crear(datos).subscribe({
+    const envio = this.idEdicion ? this.api.editar(this.idEdicion, datos) : this.api.crear(datos);
+    envio.subscribe({
       next: () => {
         this.publicado = true;
+        if (this.idEdicion) {
+          this.router.navigate(['/publicaciones', this.idEdicion]);
+          return;
+        }
         this.borrador.borrar();
         void this.fotosBorrador.borrar();
         this.router.navigate(['/publicaciones']);
@@ -794,7 +884,7 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
   }
 
   private armarPasos(datos: FormData) {
-    const pasos: { titulo?: string; texto?: string; fotos?: number[] }[] = [];
+    const pasos: PasoEnviado[] = [];
     let fotosEnviadas = 0;
     for (const control of this.pasos.controls) {
       const { titulo, texto } = control.getRawValue();
@@ -802,15 +892,20 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
       if (!titulo.trim() && !texto.trim() && !fotos.length) {
         continue;
       }
-      const paso: { titulo?: string; texto?: string; fotos?: number[] } = {};
+      const paso: PasoEnviado = {};
       if (titulo.trim()) {
         paso.titulo = titulo.trim();
       }
       if (texto.trim()) {
         paso.texto = texto.trim();
       }
-      if (fotos.length) {
-        paso.fotos = fotos.map(({ archivo }) => {
+      const conservadas = fotos.flatMap(({ archivo, url }) => (archivo ? [] : [url]));
+      if (conservadas.length) {
+        paso.imagenes = conservadas;
+      }
+      const nuevas = fotos.flatMap(({ archivo }) => (archivo ? [archivo] : []));
+      if (nuevas.length) {
+        paso.fotos = nuevas.map((archivo) => {
           datos.append('imagenesPasos', archivo);
           return fotosEnviadas++;
         });
