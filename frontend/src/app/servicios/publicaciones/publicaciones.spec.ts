@@ -114,6 +114,19 @@ describe('PublicacionesApi', () => {
     solicitud.flush({ datos: [], offset: 0, limit: 10, hayMas: false });
   });
 
+  it.each(['guardadas', 'compartidas'] as const)(
+    '[O] listar por %s pide orden=%s junto con el offset y el límite',
+    (orden) => {
+      api.listar(20, 10, orden).subscribe();
+
+      const solicitud = http.expectOne((s) => s.url === `${environment.API_URL}/publicaciones`);
+
+      expect(solicitud.request.params.get('orden')).toBe(orden);
+      expect(solicitud.request.params.get('offset')).toBe('20');
+      solicitud.flush({});
+    },
+  );
+
   it('[O] listar por me gusta pide orden=megusta junto con el offset y el límite', () => {
     api.listar(10, 10, 'megusta').subscribe();
 

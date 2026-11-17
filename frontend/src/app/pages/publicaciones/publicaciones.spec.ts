@@ -297,6 +297,8 @@ describe('Publicaciones', () => {
     it.each([
       ['?tipo=receta', 'tipo', 'receta'],
       ['?orden=megusta', 'orden', 'megusta'],
+      ['?orden=guardadas', 'orden', 'guardadas'],
+      ['?orden=compartidas', 'orden', 'compartidas'],
       ['?tipo=tip&orden=megusta', 'tipo', 'tip'],
     ])('[O] con %s la primera carga ya pide %s=%s', async (consulta, parametro, valor) => {
       const { solicitud } = await abrirCon(consulta);
@@ -520,7 +522,7 @@ describe('Publicaciones', () => {
         fixture.nativeElement.querySelectorAll('.orden button') as NodeListOf<HTMLButtonElement>,
       ).find((boton) => boton.textContent!.includes(nombre))!;
 
-    it('[O] ofrece ordenar por más recientes o más me gusta, y por defecto va por fecha', async () => {
+    it('[O] ofrece ordenar por más recientes, más me gusta, más guardadas o más compartidas, y por defecto va por fecha', async () => {
       pedir(0).flush(pagina(1, 1, false));
       await actualizar();
 
@@ -528,7 +530,7 @@ describe('Publicaciones', () => {
         Array.from(
           fixture.nativeElement.querySelectorAll('.orden button') as NodeListOf<HTMLElement>,
         ).map((boton) => boton.textContent!.trim()),
-      ).toEqual(['Más recientes', 'Más me gusta']);
+      ).toEqual(['Más recientes', 'Más me gusta', 'Más guardadas', 'Más compartidas']);
       expect(opcion('Más recientes').getAttribute('aria-pressed')).toBe('true');
       expect(opcion('Más me gusta').getAttribute('aria-pressed')).toBe('false');
     });
@@ -548,6 +550,44 @@ describe('Publicaciones', () => {
       expect(titulos()).toEqual(['Título 3', 'Título 2', 'Título 1']);
       expect(opcion('Más me gusta').getAttribute('aria-pressed')).toBe('true');
       expect(opcion('Más recientes').getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it.each([
+      ['Más guardadas', 'guardadas'],
+      ['Más compartidas', 'compartidas'],
+    ])('[O] elegir «%s» reinicia la lista y pide con orden=%s', async (nombre, orden) => {
+      pedir(0).flush(pagina(1, 3, true));
+      await actualizar();
+
+      opcion(nombre).click();
+      await actualizar();
+      pedir(0, orden).flush(pagina(1, 2, false));
+      await actualizar();
+
+      expect(titulos()).toEqual(['Título 1', 'Título 2']);
+      expect(opcion(nombre).getAttribute('aria-pressed')).toBe('true');
+      expect(opcion('Más recientes').getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it('[S] se puede combinar «Más compartidas» con el filtro por tipo', async () => {
+      pedir(0).flush(pagina(1, 3, true));
+      await actualizar();
+      opcion('Más compartidas').click();
+      pedir(0, 'compartidas').flush(pagina(1, 3, true));
+      await actualizar();
+
+      Array.from(
+        fixture.nativeElement.querySelectorAll(
+          '.filtro-tipo button',
+        ) as NodeListOf<HTMLButtonElement>,
+      )
+        .find((boton) => boton.textContent!.includes('Recetas'))!
+        .click();
+      const solicitud = pedir(0, 'compartidas', 'receta');
+      solicitud.flush(pagina(1, 1, false));
+
+      expect(solicitud.request.params.get('orden')).toBe('compartidas');
+      expect(solicitud.request.params.get('tipo')).toBe('receta');
     });
 
     it('[M] Ver más conserva el orden elegido y sigue desde donde estaba', async () => {

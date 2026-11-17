@@ -207,7 +207,9 @@
     "editada": "Editada",
     "guardada_dar": "Guardar",
     "guardada_quitar": "Quitar de guardadas",
-    "me_gusta_total": "{{n}} me gusta"
+    "me_gusta_total": "{{n}} me gusta",
+    "orden_guardadas": "Más guardadas",
+    "orden_compartidas": "Más compartidas"
   },
   "comentarios": {
     "titulo": "Comentarios",
