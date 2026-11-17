@@ -1,0 +1,12 @@
+<section class="pagina-ancha">
+  <a class="enlace" routerLink="/perfil">{{ 'comun.volver' | translate }}</a>
+  <h1 class="titulo">{{ 'perfil.mis_publicaciones' | translate }}</h1>
+
+  @if (auth.usuario(); as usuario) {
+    <app-muro-publicaciones
+      [usuario]="usuario._id"
+      [consulta]="busqueda()"
+      mensajeVacio="perfil.sin_publicaciones"
+    />
+  }
+</section>

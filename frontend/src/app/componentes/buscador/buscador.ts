@@ -17,6 +17,7 @@ const normalizar = (texto: string) =>
 })
 export class Buscador implements OnDestroy {
   readonly valor = input('');
+  readonly descripcion = input('buscador.placeholder');
   readonly buscar = output<string>();
 
   protected readonly texto = signal('');

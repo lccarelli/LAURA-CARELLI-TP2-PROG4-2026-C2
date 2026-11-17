@@ -283,7 +283,12 @@ Además de la campanita, la app puede mandar **avisos del sistema** al teléfono
 
 ### Mi perfil
 
-Las **últimas 3 publicaciones** de la persona, y debajo de cada una sus **3 comentarios más recientes** con un enlace "Ver todos los comentarios (N)" a la publicación. Cada una carga sus comentarios por separado: si falla una, las otras siguen viéndose.
+Arriba, la ficha de la persona (foto, nombre, usuario, correo, fecha de nacimiento con la edad y descripción) con un lápiz para **editar el perfil**. Debajo, **Mi actividad**, con una tarjeta tipo "tablero" de Pinterest: un collage con las portadas de las últimas publicaciones que tienen foto y el título **Mis publicaciones**. Al tocarla se abre otra pantalla, `/perfil/publicaciones`, con el mismo muro del inicio pero sólo con las publicaciones de la persona: **búsqueda** (por título o mensaje) con el buscador de la barra de arriba, que en esta pantalla busca sólo entre las propias (`/perfil/publicaciones?q=`) y no te lleva al listado general, **orden** (más recientes o más me gusta) y **filtro por tipo** (receta, tip, experiencia). Es el mismo componente (`app-muro-publicaciones`) que usa el inicio, que recibe el usuario por el que filtrar (`?usuario=`). Así la ficha del perfil queda limpia y el listado, que puede ser largo, vive en su propia pantalla.
+
+**Editar el perfil** (`/perfil/editar`): se cambian el **nombre**, el **apellido**, la **descripción** y la **foto** (elegir otra o quitarla; una foto pesada se reduce sola, como en el registro). El correo, el nombre de usuario, el perfil y la fecha de nacimiento no se pueden cambiar. Al guardar vuelve al perfil y la barra ya muestra el nombre nuevo.
+
+- **API:** `PUT /usuarios/yo` (`multipart/form-data`, con el token de cualquier persona: edita siempre su propio perfil, nunca el de otra). Recibe `nombre`, `apellido` y `descripcion` (mismas reglas que el registro), `imagen` opcional y `quitarImagen=true` para borrar la foto (si llega una foto nueva, gana). Responde 200 con el usuario actualizado, sin la clave; 400 con datos inválidos o campos no permitidos (`correo`, `nombreUsuario`, `perfil`, `clave`); 401 sin token. Deja un log `usuario_editado`.
+- Las publicaciones y los comentarios ya hechos muestran el nombre y la foto nuevos, porque guardan una referencia a la persona y no una copia.
 
 ### Administración de usuarios
 

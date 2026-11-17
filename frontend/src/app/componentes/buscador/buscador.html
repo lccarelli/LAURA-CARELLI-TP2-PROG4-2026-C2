@@ -8,8 +8,8 @@
     enterkeyhint="search"
     [maxLength]="largoMaximo"
     [value]="texto()"
-    [attr.aria-label]="'buscador.etiqueta' | translate"
-    [placeholder]="'buscador.placeholder' | translate"
+    [attr.aria-label]="descripcion() | translate"
+    [placeholder]="descripcion() | translate"
     (input)="alEscribir($any($event.target).value)"
   />
   @if (texto()) {

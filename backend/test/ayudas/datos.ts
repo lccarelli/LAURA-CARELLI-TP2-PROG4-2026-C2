@@ -28,9 +28,9 @@ export function usuarioValido(cambios: Record<string, string> = {}) {
   };
 }
 
-type Archivo = { contenido: Buffer; nombre: string; tipo: string };
+export type Archivo = { contenido: Buffer; nombre: string; tipo: string };
 
-function enviarFormulario(
+export function enviarFormulario(
   solicitud: request.Test,
   datos: Record<string, string>,
   archivo?: Archivo,

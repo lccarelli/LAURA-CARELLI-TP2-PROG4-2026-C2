@@ -1,7 +1,6 @@
 import { Component, computed, inject, input, output, PendingTasks, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
 import { PERFILES } from '../../interfaces/usuario';
 import { Imagenes } from '../../servicios/imagenes/imagenes';
 import { validarImagen } from '../../utilidades/imagen';
@@ -10,11 +9,13 @@ import {
   PATRON_NOMBRE_USUARIO,
   clavesIguales,
   fechaPasada,
+  mensajeDeLargo,
 } from '../../utilidades/validadores';
 import { CampoClave } from '../campo-clave/campo-clave';
+import { CamposPersonales } from '../campos-personales/campos-personales';
 
 @Component({
-  imports: [AutoFoco, ReactiveFormsModule, TranslatePipe, CampoClave],
+  imports: [CamposPersonales, ReactiveFormsModule, TranslatePipe, CampoClave],
   selector: 'app-formulario-usuario',
   templateUrl: './formulario-usuario.html',
 })
@@ -58,20 +59,11 @@ export class FormularioUsuario {
       return null;
     }
 
+    const largo = mensajeDeLargo(control, this.traductor);
+    if (largo) {
+      return largo;
+    }
     const errores = control.errors;
-    if (errores?.['required']) {
-      return this.traductor.instant('comun.obligatorio');
-    }
-    if (errores?.['minlength']) {
-      return this.traductor.instant('validacion.minimo', {
-        n: errores['minlength'].requiredLength,
-      });
-    }
-    if (errores?.['maxlength']) {
-      return this.traductor.instant('validacion.maximo', {
-        n: errores['maxlength'].requiredLength,
-      });
-    }
     if (errores?.['email']) {
       return this.traductor.instant('validacion.correo');
     }

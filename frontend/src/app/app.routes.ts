@@ -49,6 +49,17 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/perfil/perfil').then((m) => m.Perfil),
   },
   {
+    path: 'perfil/publicaciones',
+    canActivate: [sesionGuard],
+    loadComponent: () =>
+      import('./pages/mis-publicaciones/mis-publicaciones').then((m) => m.MisPublicaciones),
+  },
+  {
+    path: 'perfil/editar',
+    canActivate: [sesionGuard],
+    loadComponent: () => import('./pages/editar-perfil/editar-perfil').then((m) => m.EditarPerfil),
+  },
+  {
     path: 'dashboard/usuarios',
     canActivate: [sesionGuard, adminGuard],
     loadComponent: () =>

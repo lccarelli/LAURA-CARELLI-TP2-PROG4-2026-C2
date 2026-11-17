@@ -6,6 +6,7 @@ import { Destino } from '../src/imagenes/destinos.js';
 import { Publicacion } from '../src/publicaciones/schemas/publicacion.schema.js';
 import { crearApp, cloudinaryFalso, limpiarBase } from './ayudas/app.js';
 import {
+  enviarFormulario,
   PNG,
   URL_IMAGEN_SUBIDA,
   pngDeTamano,
@@ -28,19 +29,11 @@ describe('POST /publicaciones', () => {
     if (tokenUsado) {
       solicitud.set('Authorization', `Bearer ${tokenUsado}`);
     }
-    for (const [campo, valor] of Object.entries({
-      tipo: 'experiencia',
-      ...campos,
-    })) {
-      solicitud.field(campo, valor);
-    }
-    if (archivo) {
-      solicitud.attach('imagen', archivo.contenido, {
-        filename: archivo.nombre,
-        contentType: archivo.tipo,
-      });
-    }
-    return solicitud;
+    return enviarFormulario(
+      solicitud,
+      { tipo: 'experiencia', ...campos },
+      archivo,
+    );
   };
 
   beforeAll(async () => {

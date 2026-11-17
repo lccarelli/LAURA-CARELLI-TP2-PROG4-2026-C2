@@ -1,75 +1,46 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
-import { CubreplatoLoading } from '../../componentes/cubreplato-loading/cubreplato-loading';
-import { Aviso } from '../../componentes/aviso/aviso';
-import { TarjetaPublicacion } from '../../componentes/tarjeta-publicacion/tarjeta-publicacion';
-import { UltimosComentarios } from '../../componentes/ultimos-comentarios/ultimos-comentarios';
-import { Publicacion } from '../../interfaces/publicacion';
+import { Icono } from '../../componentes/icono/icono';
 import { Edad } from '../../pipes/edad';
 import { Auth } from '../../servicios/auth/auth';
 import { PublicacionesApi } from '../../servicios/publicaciones/publicaciones';
-import { mensajeDeApi } from '../../utilidades/errores';
 import { urlImagen } from '../../utilidades/imagen';
 
-const CANTIDAD_DE_ULTIMAS = 3;
+const PORTADAS_DEL_COLLAGE = 3;
+const PUBLICACIONES_A_REVISAR = 12;
 
 @Component({
-  imports: [
-    CubreplatoLoading,
-    DatePipe,
-    Edad,
-    RouterLink,
-    TranslatePipe,
-    Aviso,
-    TarjetaPublicacion,
-    UltimosComentarios,
-  ],
+  imports: [DatePipe, Edad, Icono, RouterLink, TranslatePipe],
   selector: 'app-perfil',
   templateUrl: './perfil.html',
 })
-export class Perfil implements OnInit, OnDestroy {
+export class Perfil {
   private api = inject(PublicacionesApi);
-  private pedido?: Subscription;
 
   protected auth = inject(Auth);
   protected urlImagen = urlImagen;
 
-  readonly publicaciones = signal<Publicacion[]>([]);
-  readonly cargando = signal(false);
-  readonly cargaCompleta = signal(false);
-  readonly mensajeError = signal<string | null>(null);
+  private readonly recientes = signal<string[]>([]);
+  readonly portadas = computed(() => this.recientes().slice(0, PORTADAS_DEL_COLLAGE));
 
-  ngOnInit() {
-    this.cargar();
+  private readonly idDeUsuario = computed(() => this.auth.usuario()?._id);
+
+  constructor() {
+    effect(() => {
+      const id = this.idDeUsuario();
+      if (id) {
+        untracked(() => this.cargarPortadas(id));
+      }
+    });
   }
 
-  ngOnDestroy() {
-    this.pedido?.unsubscribe();
-  }
-
-  cargar() {
-    const usuario = this.auth.usuario();
-    if (!usuario) {
-      return;
-    }
-
-    this.pedido?.unsubscribe();
-    this.cargando.set(true);
-    this.mensajeError.set(null);
-    this.pedido = this.api.listar(0, CANTIDAD_DE_ULTIMAS, 'fecha', usuario._id).subscribe({
-      next: (pagina) => {
-        this.publicaciones.set(pagina.datos);
-        this.cargaCompleta.set(true);
-        this.cargando.set(false);
-      },
-      error: (error: HttpErrorResponse) => {
-        this.cargando.set(false);
-        this.mensajeError.set(mensajeDeApi(error));
-      },
+  private cargarPortadas(id: string) {
+    this.api.listar(0, PUBLICACIONES_A_REVISAR, 'fecha', id).subscribe({
+      next: ({ datos }) =>
+        this.recientes.set(datos.flatMap(({ imagen }) => (imagen ? [imagen] : []))),
+      error: () => this.recientes.set([]),
     });
   }
 }

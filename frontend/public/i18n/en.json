@@ -221,14 +221,23 @@
     "correo": "Email",
     "fecha_nacimiento": "Date of birth",
     "descripcion": "Bio",
-    "ultimas_publicaciones": "My latest posts",
     "error_publicaciones": "We could not load your posts",
     "sin_publicaciones": "You have not posted anything yet.",
     "publicar_primera": "Create my first post",
-    "ultimos_comentarios": "Latest comments",
-    "sin_comentarios": "No comments yet.",
-    "error_comentarios": "Could not load the comments",
-    "ver_comentarios": "See all comments ({{n}})"
+    "mis_publicaciones": "My posts",
+    "editar": "Edit my profile",
+    "editar_titulo": "Edit my profile",
+    "guardar": "Save changes",
+    "guardando": "Saving…",
+    "error_guardar": "We couldn't save your profile",
+    "foto": "Profile photo",
+    "foto_cambiar": "Change photo",
+    "foto_quitar": "Remove photo",
+    "foto_elegir": "Choose photo",
+    "cancelar": "Cancel",
+    "mi_actividad": "My activity",
+    "ver_publicaciones": "See all, search and filter",
+    "titulo": "My profile"
   },
   "usuarios": {
     "titulo": "Users",
@@ -399,9 +408,9 @@
     "descripcion_tipos": "Pie chart with how the active posts in the selected range are split between recipe, culinary tip and experience"
   },
   "buscador": {
-    "etiqueta": "Search posts",
     "placeholder": "Search posts",
-    "limpiar": "Clear search"
+    "limpiar": "Clear search",
+    "placeholder_mias": "Search my posts"
   },
   "notificaciones": {
     "titulo": "Notifications",

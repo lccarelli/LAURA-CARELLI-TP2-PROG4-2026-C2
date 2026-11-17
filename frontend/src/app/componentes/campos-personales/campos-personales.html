@@ -1,0 +1,16 @@
+<div class="fila-campos" [formGroup]="grupo()">
+  <label class="caja">
+    <span class="etiqueta">{{ 'registro.nombre' | translate }}</span>
+    <input appAutoFoco class="campo" formControlName="nombre" autocomplete="given-name" />
+    @if (mensaje('nombre'); as texto) {
+      <span class="mensaje-error">{{ texto }}</span>
+    }
+  </label>
+  <label class="caja">
+    <span class="etiqueta">{{ 'registro.apellido' | translate }}</span>
+    <input class="campo" formControlName="apellido" autocomplete="family-name" />
+    @if (mensaje('apellido'); as texto) {
+      <span class="mensaje-error">{{ texto }}</span>
+    }
+  </label>
+</div>

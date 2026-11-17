@@ -7,9 +7,7 @@ import { PaginaPublicaciones, Publicacion } from '../../interfaces/publicacion';
 import { Usuario } from '../../interfaces/usuario';
 import { Auth } from '../../servicios/auth/auth';
 import { Idioma } from '../../servicios/idioma/idioma';
-import { COMENTARIOS_EN_EL_PERFIL } from '../../componentes/ultimos-comentarios/ultimos-comentarios';
 import { Perfil } from './perfil';
-import { comentarioDePrueba } from '../../../testing/comentario';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 
 const usuario: Usuario = {
@@ -35,13 +33,6 @@ const publicacion = (numero: number): Publicacion => ({
   titulo: `Título ${numero}`,
   mensaje: `Mensaje ${numero}`,
   fecha: '2026-10-22T15:30:00',
-});
-
-const pagina = (cantidad: number): PaginaPublicaciones => ({
-  datos: Array.from({ length: cantidad }, (_, i) => publicacion(i + 1)),
-  offset: 0,
-  limit: 3,
-  hayMas: false,
 });
 
 describe('Perfil', () => {
@@ -85,7 +76,7 @@ describe('Perfil', () => {
     expect(texto).toContain('@laura_c');
     expect(texto).toContain('laura@correo.com');
     expect(texto).toContain('Estudiante de programación');
-    expect(texto).toContain('usuario');
+    expect(fixture.nativeElement.querySelector('.chip')).toBeNull();
   });
 
   it('[B] sin foto muestra la imagen por defecto', async () => {
@@ -151,13 +142,13 @@ describe('Perfil', () => {
     expect(texto).not.toContain('contraseña');
   });
 
-  describe('mis últimas publicaciones', () => {
+  describe('mis publicaciones', () => {
     const pedido = () =>
       http.expectOne(
         (solicitud) =>
           solicitud.url === URL &&
           solicitud.params.get('usuario') === '1' &&
-          solicitud.params.get('limit') === '3' &&
+          solicitud.params.get('limit') === '12' &&
           solicitud.params.get('offset') === '0' &&
           solicitud.params.get('orden') === 'fecha',
       );
@@ -165,180 +156,94 @@ describe('Perfil', () => {
       fixture.detectChanges();
       await fixture.whenStable();
     };
-    const tarjetas = () => fixture.nativeElement.querySelectorAll('app-tarjeta-publicacion');
-    const texto = () => fixture.nativeElement.textContent as string;
-
-    it('[O] pide sólo las 3 más recientes de la persona de la sesión', async () => {
-      await mostrar(usuario);
-
-      const solicitud = pedido();
-
-      expect(solicitud.request.method).toBe('GET');
-      solicitud.flush(pagina(3));
+    const portadas = () =>
+      Array.from(
+        fixture.nativeElement.querySelectorAll('.tablero-portada') as NodeListOf<HTMLImageElement>,
+      ).map((imagen) => imagen.getAttribute('src'));
+    const conImagen = (numero: number) => ({
+      ...publicacion(numero),
+      imagen: `https://cdn.test/${numero}.jpg`,
+    });
+    const pagina = (datos: Publicacion[]): PaginaPublicaciones => ({
+      datos,
+      offset: 0,
+      limit: 12,
+      hayMas: false,
     });
 
-    it('[O] las muestra con la misma tarjeta, con sus me gusta y su cantidad de comentarios', async () => {
-      await mostrar(usuario);
-      pedido().flush(pagina(3));
+    it('[O] ya no lista las publicaciones ahí: ofrece una tarjeta que lleva a otra pantalla', async () => {
+      const raiz = await mostrar(usuario);
+      pedido().flush(pagina([publicacion(1)]));
       await actualizar();
 
-      expect(tarjetas()).toHaveLength(3);
-      expect(texto()).toContain('Mis últimas publicaciones');
-      expect(texto()).toContain('Título 1');
-      const etiquetas = Array.from(
-        tarjetas()[0].querySelectorAll('.metrica') as NodeListOf<HTMLElement>,
-      ).map((metrica) => metrica.getAttribute('aria-label'));
-      expect(etiquetas).toEqual(['Dar me gusta (4)', '6 comentarios']);
+      const tarjeta = raiz.querySelector('a.tablero') as HTMLAnchorElement;
+
+      expect(tarjeta.getAttribute('href')).toBe('/perfil/publicaciones');
+      expect(tarjeta.textContent).toContain('Mis publicaciones');
+      expect(raiz.querySelector('app-tarjeta-publicacion')).toBeNull();
+      expect(raiz.querySelector('[role="search"]')).toBeNull();
     });
 
-    it('[Z] mientras carga muestra Cargando y no el aviso de vacío', async () => {
+    it('[O] el collage usa las portadas de las 3 más recientes que tienen imagen', async () => {
       await mostrar(usuario);
+      pedido().flush(
+        pagina([conImagen(1), publicacion(2), conImagen(3), conImagen(4), conImagen(5)]),
+      );
+      await actualizar();
 
-      expect(texto()).toContain('Cargando');
-      expect(texto()).not.toContain('Todavía no publicaste nada');
-      pedido().flush(pagina(0));
+      expect(portadas()).toEqual([
+        'https://cdn.test/1.jpg',
+        'https://cdn.test/3.jpg',
+        'https://cdn.test/4.jpg',
+      ]);
     });
 
-    it('[Z] sin publicaciones lo dice y ofrece crear la primera', async () => {
-      await mostrar(usuario);
-      pedido().flush(pagina(0));
+    it('[Z] sin publicaciones con imagen el collage queda vacío y la tarjeta sigue ahí', async () => {
+      const raiz = await mostrar(usuario);
+      pedido().flush(pagina([publicacion(1)]));
       await actualizar();
 
-      expect(texto()).toContain('Todavía no publicaste nada');
-      const enlace = fixture.nativeElement.querySelector(
-        'a[href="/publicaciones/nueva"]',
-      ) as HTMLAnchorElement;
-      expect(enlace.textContent).toContain('Crear mi primera publicación');
+      expect(portadas()).toEqual([]);
+      expect(raiz.querySelector('a.tablero')).not.toBeNull();
     });
 
-    it('[B] con una o dos publicaciones muestra sólo esas', async () => {
+    it('[B] con una sola imagen el collage muestra esa', async () => {
       await mostrar(usuario);
-      pedido().flush(pagina(2));
+      pedido().flush(pagina([conImagen(1)]));
       await actualizar();
 
-      expect(tarjetas()).toHaveLength(2);
-      expect(texto()).not.toContain('Todavía no publicaste nada');
+      expect(portadas()).toEqual(['https://cdn.test/1.jpg']);
     });
 
-    it('[E] si falla la carga avisa, no dice que no hay publicaciones y se puede reintentar', async () => {
-      await mostrar(usuario);
-      pedido().flush({ codigo: 'TOKEN_INVALIDO' }, { status: 401, statusText: 'Unauthorized' });
+    it('[E] si falla la carga de las portadas la tarjeta se ve igual', async () => {
+      const raiz = await mostrar(usuario);
+      pedido().flush({ message: 'x', codigo: 'ERROR' }, { status: 500, statusText: 'x' });
       await actualizar();
 
-      expect(fixture.nativeElement.querySelector('app-aviso')).not.toBeNull();
-      expect(texto()).not.toContain('Todavía no publicaste nada');
-
-      (
-        fixture.nativeElement.querySelector('app-aviso .boton-secundario') as HTMLButtonElement
-      ).click();
-      pedido().flush(pagina(1));
-      await actualizar();
-
-      expect(fixture.nativeElement.querySelector('app-aviso')).toBeNull();
-      expect(tarjetas()).toHaveLength(1);
-    });
-
-    it('[E] un corte de red muestra el aviso de conexión', async () => {
-      await mostrar(usuario);
-      pedido().error(new ProgressEvent('error'));
-      await actualizar();
-
-      expect(fixture.nativeElement.querySelector('app-aviso')).not.toBeNull();
+      expect(portadas()).toEqual([]);
+      expect(raiz.querySelector('a.tablero')).not.toBeNull();
     });
 
     it('[Z] sin sesión no pide nada', async () => {
       await mostrar(null);
 
-      expect(http.match((solicitud) => solicitud.url === URL)).toHaveLength(0);
+      expect(http.match(URL)).toHaveLength(0);
+    });
+  });
+
+  describe('editar el perfil', () => {
+    it('[O] el lápiz lleva a la pantalla de edición', async () => {
+      const pagina = await mostrar(usuario);
+
+      const enlace = pagina.querySelector('a[href="/perfil/editar"]') as HTMLElement;
+
+      expect(enlace.textContent).toContain('Editar mi perfil');
     });
 
-    it('[S] al eliminar una de las tres, vuelve a pedir para traer la siguiente más reciente', async () => {
-      await mostrar(usuario);
-      pedido().flush(pagina(3));
-      await actualizar();
+    it('[Z] sin sesión no hay enlace de edición', async () => {
+      const pagina = await mostrar(null);
 
-      (tarjetas()[0].querySelector('.boton-eliminar') as HTMLButtonElement).click();
-      await actualizar();
-      (
-        tarjetas()[0].querySelector('.pin-confirmar .boton-mini-peligro') as HTMLButtonElement
-      ).click();
-      http
-        .expectOne({ method: 'DELETE', url: `${URL}/id1` })
-        .flush(null, { status: 204, statusText: 'No Content' });
-      const otra = pagina(3);
-      otra.datos = [publicacion(2), publicacion(3), publicacion(4)];
-      pedido().flush(otra);
-      await actualizar();
-
-      expect(texto()).not.toContain('Título 1');
-      expect(texto()).toContain('Título 4');
-      expect(tarjetas()).toHaveLength(3);
-    });
-
-    it('[O] debajo de cada publicación pide y muestra sus últimos comentarios', async () => {
-      await mostrar(usuario);
-      pedido().flush(pagina(2));
-      await actualizar();
-
-      const comentarios = http.match(
-        (solicitud) =>
-          /\/publicaciones\/id\d\/comentarios$/.test(solicitud.url) &&
-          solicitud.params.get('limit') === String(COMENTARIOS_EN_EL_PERFIL),
-      );
-      expect(comentarios.map((solicitud) => solicitud.request.url.split('/')[4])).toEqual([
-        'id1',
-        'id2',
-      ]);
-      comentarios[0].flush({
-        datos: [comentarioDePrueba({ mensaje: 'Qué buena receta' })],
-        offset: 0,
-        limit: COMENTARIOS_EN_EL_PERFIL,
-        hayMas: false,
-      });
-      await actualizar();
-
-      expect(fixture.nativeElement.querySelectorAll('app-ultimos-comentarios')).toHaveLength(2);
-      expect(texto()).toContain('Qué buena receta');
-    });
-
-    it('[B] una publicación sin comentarios no hace ningún pedido de comentarios', async () => {
-      await mostrar(usuario);
-      const sinComentarios = { ...pagina(1) };
-      sinComentarios.datos = [{ ...publicacion(1), cantidadComentarios: 0 }];
-      pedido().flush(sinComentarios);
-      await actualizar();
-
-      expect(http.match((solicitud) => solicitud.url.endsWith('/comentarios'))).toHaveLength(0);
-      expect(texto()).toContain('Todavía no tiene comentarios');
-    });
-
-    it('[E] si fallan los comentarios de una publicación, las demás se siguen viendo', async () => {
-      await mostrar(usuario);
-      pedido().flush(pagina(2));
-      await actualizar();
-      const [primera, segunda] = http.match((solicitud) => solicitud.url.endsWith('/comentarios'));
-
-      primera.flush({ codigo: 'X' }, { status: 500, statusText: 'Error' });
-      segunda.flush({
-        datos: [comentarioDePrueba()],
-        offset: 0,
-        limit: COMENTARIOS_EN_EL_PERFIL,
-        hayMas: false,
-      });
-      await actualizar();
-
-      expect(tarjetas()).toHaveLength(2);
-      expect(fixture.nativeElement.querySelectorAll('app-aviso')).toHaveLength(1);
-      expect(texto()).toContain('Me salió riquísimo');
-    });
-
-    it('[S] al salir de la pantalla cancela el pedido pendiente', async () => {
-      await mostrar(usuario);
-      const pendiente = pedido();
-
-      fixture.destroy();
-
-      expect(pendiente.cancelled).toBe(true);
+      expect(pagina.querySelector('a[href="/perfil/editar"]')).toBeNull();
     });
   });
 });
