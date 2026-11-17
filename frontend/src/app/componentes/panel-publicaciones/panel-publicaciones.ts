@@ -51,6 +51,7 @@ export class PanelPublicaciones {
             this.conPublicaciones.set(true);
           }
         },
+        error: () => this.conPublicaciones.set(false),
       });
   }
 }
