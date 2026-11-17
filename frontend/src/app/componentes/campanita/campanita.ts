@@ -9,7 +9,9 @@ import { FechaRelativa } from '../../pipes/fecha-relativa';
 import { Auth } from '../../servicios/auth/auth';
 import { NotificacionesApi } from '../../servicios/notificaciones/notificaciones';
 import { ListadoPaginado } from '../../utilidades/listado-paginado';
+import { AvisosDelDispositivo } from '../avisos-del-dispositivo/avisos-del-dispositivo';
 import { Aviso } from '../aviso/aviso';
+import { AvisosPush } from '../../servicios/avisos-push/avisos-push';
 import { CubreplatoLoading } from '../cubreplato-loading/cubreplato-loading';
 import { Icono } from '../icono/icono';
 import { ModalConfirmacion } from '../modal-confirmacion/modal-confirmacion';
@@ -21,6 +23,7 @@ const MAXIMO_MOSTRADO = 99;
 @Component({
   imports: [
     Aviso,
+    AvisosDelDispositivo,
     AutoFoco,
     CubreplatoLoading,
     FechaRelativa,
@@ -37,6 +40,7 @@ const MAXIMO_MOSTRADO = 99;
 export class Campanita {
   protected auth = inject(Auth);
   private api = inject(NotificacionesApi);
+  private avisosPush = inject(AvisosPush);
 
   readonly cantidad = signal(0);
   readonly abierto = signal(false);
@@ -48,6 +52,7 @@ export class Campanita {
     effect(() => {
       if (this.auth.usuario()) {
         this.actualizarCantidad();
+        this.avisosPush.iniciar();
       } else {
         this.cantidad.set(0);
         this.abierto.set(false);

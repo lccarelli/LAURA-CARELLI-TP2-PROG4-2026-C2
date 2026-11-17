@@ -414,5 +414,17 @@
     "borrar_historial_texto": "Se van a borrar todas tus notificaciones, leídas y sin leer. No se puede deshacer.",
     "borrar_historial_si": "Borrar todo",
     "borrando": "Borrando…"
+  },
+  "avisos": {
+    "titulo": "Avisos en este dispositivo",
+    "explicacion": "Recibí un aviso en este dispositivo cuando alguien comenta o le gusta una publicación tuya, aunque la app esté cerrada.",
+    "activar": "Activar avisos",
+    "activando": "Activando…",
+    "activados": "Los avisos están activados en este dispositivo.",
+    "desactivar": "Desactivar avisos",
+    "bloqueado": "Los avisos están bloqueados en este navegador. Podés activarlos desde los ajustes del sitio.",
+    "instalar_ios": "Para recibir avisos en el iPhone, instalá la app: tocá Compartir y después «Agregar a inicio». Abrila desde el ícono y activá los avisos.",
+    "instalar_app": "Instalar la app",
+    "error": "No se pudo cambiar el estado de los avisos. Probá de nuevo."
   }
 }

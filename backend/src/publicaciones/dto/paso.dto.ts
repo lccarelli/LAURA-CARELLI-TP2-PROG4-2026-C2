@@ -30,9 +30,11 @@ const sinVacios = ({ value }: { value: unknown }) => {
 @ValidatorConstraint({ name: 'pasoConContenido' })
 class PasoConContenido implements ValidatorConstraintInterface {
   validate(texto: unknown, { object }: ValidationArguments) {
-    const { titulo, fotos } = object as PasoDto;
+    const { titulo, fotos, imagenes } = object as PasoEdicionDto;
     if (texto === undefined) {
-      return Boolean(titulo) || Boolean(fotos?.length);
+      return (
+        Boolean(titulo) || Boolean(fotos?.length) || Boolean(imagenes?.length)
+      );
     }
     return typeof texto === 'string' && texto.length <= MAXIMO_TEXTO_PASO;
   }
@@ -57,4 +59,14 @@ export class PasoDto {
   @Min(0, { each: true })
   @Max(MAXIMO_FOTOS_PASOS - 1, { each: true })
   fotos?: number[];
+}
+
+export class PasoEdicionDto extends PasoDto {
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAXIMO_FOTOS_POR_PASO)
+  @ArrayUnique()
+  @IsString({ each: true })
+  @MaxLength(500, { each: true })
+  imagenes?: string[];
 }

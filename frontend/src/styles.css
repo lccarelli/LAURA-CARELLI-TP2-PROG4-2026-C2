@@ -869,6 +869,14 @@ body {
     @apply font-serif text-2xl font-black;
   }
 
+  .avisos-dispositivo {
+    @apply mt-auto flex flex-col items-stretch gap-2 border-t border-linea pt-4;
+  }
+
+  .avisos-texto {
+    @apply text-sm text-suave;
+  }
+
   .notificaciones-acciones {
     @apply flex flex-wrap items-center justify-between gap-2;
   }

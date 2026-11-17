@@ -147,6 +147,7 @@ Se definen en `backend/.env` (hay un ejemplo en `backend/.env.example`). El `.en
 | `ADMIN_EMAIL`  | Correo que queda como administrador al registrarse    |
 | `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_CLOUD_NAME` | Cuenta de Cloudinary donde se guardan las imágenes |
 | `CLOUDINARY_CARPETA` | Carpeta raíz en Cloudinary (opcional, por defecto `banquete`). En desarrollo conviene otra, como `banquete-dev`, para no mezclar las fotos de prueba |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_CONTACTO` | Claves para los avisos push del celular. Se generan una sola vez con `npx web-push generate-vapid-keys`. Sin ellas los avisos push no se ofrecen. Ver [Avisos push](#avisos-push-en-el-celular) |
 | `WEBHOOK_URL`, `WEBHOOK_SECRETO` | Webhook de notificaciones, ambos opcionales. Sin `WEBHOOK_URL` no se manda nada. Con `WEBHOOK_SECRETO` cada aviso lleva la firma. Ver [Notificaciones](#notificaciones) |
 | `LIMITE_*` | Límites de solicitudes, todos opcionales. La lista está en [Límite de solicitudes](#límite-de-solicitudes) |
 
@@ -258,6 +259,17 @@ Pantalla `/publicaciones/nueva` (requiere sesión). Se elige un tipo y el formul
 - **Cuándo se genera:** cuando otra persona comenta o da me gusta en una publicación tuya. Lo que hacés sobre tus propias publicaciones no avisa. Quitar un me gusta no avisa, y volver a darlo mientras el aviso anterior sigue sin leer no lo duplica. Se guardan 90 días.
 - **API** (requiere sesión; cada persona sólo ve las suyas): `GET /notificaciones?offset&limit&soloNoLeidas`, `GET /notificaciones/sin-leer`, `POST /notificaciones/:id/leer`, `POST /notificaciones/leer-todas`, `DELETE /notificaciones/:id` (204) y `DELETE /notificaciones` (borra todas las propias y responde `{ eliminadas }`). Un aviso ajeno o inexistente responde `404 NOTIFICACION_NO_ENCONTRADA`.
 - **Webhook:** si `WEBHOOK_URL` está definida, cada aviso nuevo se manda además con `POST` y este JSON: `{ "evento": "comentario" | "me_gusta", "publicacion": { "id", "titulo" }, "actor": { "id", "nombreUsuario" }, "destinatario": { "id" }, "fecha": "ISO 8601" }`. Con `WEBHOOK_SECRETO` el encabezado `X-Banquete-Firma: sha256=<HMAC-SHA256 del cuerpo>` permite verificar el origen. Espera como máximo 3 segundos y no reintenta; si falla, queda en el log (`webhook_no_enviado`) y la notificación se guarda igual.
+
+### Avisos push en el celular
+
+Además de la campanita, la app puede mandar **avisos del sistema** al teléfono o a la computadora, incluso con la app cerrada, cuando alguien comenta o da me gusta en una publicación tuya.
+
+- **Cómo se activan:** en el panel de la campanita, abajo, "Activar avisos". El navegador pide permiso y desde ahí ese dispositivo queda suscripto. Se pueden tener varios dispositivos y cada uno elige su idioma (es o en). "Desactivar avisos" lo da de baja. Al cerrar sesión el dispositivo se desvincula del servidor.
+- **Instalar la app:** en Android y en la computadora el panel ofrece "Instalar la app". **En el iPhone** los avisos sólo funcionan con la app instalada: en Safari tocar Compartir y "Agregar a inicio", abrirla desde el ícono y recién ahí activar los avisos (iOS 16.4 o superior).
+- **Al tocar el aviso:** abre la app en la publicación; si fue un comentario, directo en los comentarios.
+- **Cómo funciona:** estándar Web Push con claves VAPID. El navegador crea una suscripción con la clave pública del servidor, el backend la guarda (`suscripciones_push`) y, cuando se genera una notificación, manda el aviso con la librería `web-push`. El service worker de Angular muestra el aviso y maneja el toque. Una suscripción vencida (404 o 410) se borra sola; un fallo del envío nunca impide comentar ni da error.
+- **API** (requiere sesión): `GET /push/clave-publica`, `POST /push/suscripciones` y `DELETE /push/suscripciones`.
+- **Límites:** el service worker está apagado en desarrollo (`ng serve`), así que los avisos push se prueban en la versión publicada (los celulares exigen HTTPS) o con un build de producción en `localhost`.
 
 ### Mi perfil
 

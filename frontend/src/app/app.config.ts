@@ -15,6 +15,7 @@ import { reintentoInterceptor } from './interceptores/reintento-interceptor';
 import { sesionVencidaInterceptor } from './interceptores/sesion-vencida-interceptor';
 import { tokenInterceptor } from './interceptores/token-interceptor';
 import { Idioma } from './servicios/idioma/idioma';
+import { Instalacion } from './servicios/instalacion/instalacion';
 import { Sesion } from './servicios/sesion/sesion';
 
 export const appConfig: ApplicationConfig = {
@@ -29,6 +30,7 @@ export const appConfig: ApplicationConfig = {
     provideTranslateHttpLoader({ prefix: '/i18n/', suffix: '.json' }),
     provideAppInitializer(() => inject(Idioma).iniciar()),
     provideAppInitializer(() => inject(Sesion).iniciar()),
+    provideAppInitializer(() => inject(Instalacion).iniciar()),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',

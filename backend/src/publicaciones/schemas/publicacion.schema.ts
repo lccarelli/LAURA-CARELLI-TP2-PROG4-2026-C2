@@ -79,6 +79,9 @@ export class Publicacion {
   @Prop()
   imagen?: string;
 
+  @Prop()
+  fechaEdicion?: Date;
+
   @Prop({ default: true })
   activa: boolean;
 
