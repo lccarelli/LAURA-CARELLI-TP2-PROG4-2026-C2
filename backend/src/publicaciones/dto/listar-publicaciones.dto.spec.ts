@@ -17,9 +17,14 @@ describe('ListarPublicacionesDto', () => {
     expect(dto.usuario).toBeUndefined();
   });
 
-  it('[O] acepta los dos órdenes y un usuario con formato de id', async () => {
-    expect(await camposInvalidos({ orden: 'fecha' })).toEqual([]);
-    expect(await camposInvalidos({ orden: 'megusta' })).toEqual([]);
+  it.each(['fecha', 'megusta', 'guardadas', 'compartidas'])(
+    '[O] acepta el orden %s',
+    async (orden) => {
+      expect(await camposInvalidos({ orden })).toEqual([]);
+    },
+  );
+
+  it('[O] acepta un usuario con formato de id', async () => {
     expect(
       await camposInvalidos({ usuario: '64b64b64b64b64b64b64b64b' }),
     ).toEqual([]);

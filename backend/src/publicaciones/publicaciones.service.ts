@@ -58,6 +58,8 @@ type PublicacionConAutor = {
 const ORDENES = {
   fecha: { fecha: -1, _id: -1 },
   megusta: { cantidadMeGusta: -1, fecha: -1, _id: -1 },
+  guardadas: { cantidadGuardados: -1, fecha: -1, _id: -1 },
+  compartidas: { cantidadCompartidas: -1, fecha: -1, _id: -1 },
 } as const;
 
 export const CAMPOS_AUTOR = 'nombre apellido nombreUsuario imagenPerfil';

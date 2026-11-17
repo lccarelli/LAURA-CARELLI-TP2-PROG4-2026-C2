@@ -54,6 +54,7 @@ export interface Publicacion {
   meGusta?: boolean;
   guardada?: boolean;
   cantidadGuardados?: number;
+  cantidadCompartidas?: number;
   cantidadComentarios: number;
   fecha: string;
   fechaEdicion?: string;
@@ -68,7 +69,7 @@ export interface ListadoPublico {
   limit: number;
 }
 
-export const ORDENES = ['fecha', 'megusta'] as const;
+export const ORDENES = ['fecha', 'megusta', 'guardadas', 'compartidas'] as const;
 
 export type OrdenPublicaciones = (typeof ORDENES)[number];
 
