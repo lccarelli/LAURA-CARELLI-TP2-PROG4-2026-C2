@@ -4,12 +4,12 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Aviso } from '../../componentes/aviso/aviso';
 import { FormularioUsuario } from '../../componentes/formulario-usuario/formulario-usuario';
-import { MosaicoComidas } from '../../componentes/mosaico-comidas/mosaico-comidas';
+import { PanelPublicaciones } from '../../componentes/panel-publicaciones/panel-publicaciones';
 import { Auth } from '../../servicios/auth/auth';
 import { mensajeDeApi } from '../../utilidades/errores';
 
 @Component({
-  imports: [RouterLink, Aviso, FormularioUsuario, MosaicoComidas, TranslatePipe],
+  imports: [RouterLink, Aviso, FormularioUsuario, PanelPublicaciones, TranslatePipe],
   selector: 'app-registro',
   templateUrl: './registro.html',
 })

@@ -7,6 +7,7 @@ const TRAZOS = {
   tacho: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
   chevron: 'M6 9l6 6 6-6',
   marcador: 'M7 4h10v16l-5-4-5 4V4z',
+  telefono: 'M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2',
   cerrar: 'M6 6l12 12M18 6L6 18',
   corazon: 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z',
   comentario: 'M4 5h16v11H9l-5 4V5z',

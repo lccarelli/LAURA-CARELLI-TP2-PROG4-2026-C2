@@ -30,7 +30,8 @@
     "idioma": "Idioma",
     "modo_oscuro": "Activar modo oscuro",
     "modo_claro": "Activar modo claro",
-    "home": "Inicio"
+    "home": "Inicio",
+    "guardadas": "Guardadas"
   },
   "inicio": {
     "titulo": "Un lugar para compartir tu mundo culinario",
@@ -470,5 +471,17 @@
     "vacio": "Todavía no guardaste ninguna publicación. Tocá el marcador en cualquiera para encontrarla acá.",
     "tablero": "Guardadas",
     "ver": "Tus favoritas, de la A a la Z"
+  },
+  "acceso": {
+    "panel_titulo": "Lo que se comparte en Banquete"
+  },
+  "instalar": {
+    "titulo": "Usá Banquete como una app",
+    "beneficio": "A pantalla completa, sin la barra del navegador, y con avisos cuando comentan tus publicaciones.",
+    "boton": "Instalar la app",
+    "ahora_no": "Ahora no",
+    "paso_compartir": "Tocá Compartir (el cuadrado con la flecha).",
+    "paso_agregar": "Elegí «Agregar a inicio».",
+    "paso_abrir": "Abrila desde el ícono nuevo."
   }
 }

@@ -1,0 +1,20 @@
+@if (conPublicaciones()) {
+  <p class="etiqueta-seccion">{{ 'acceso.panel_titulo' | translate }}</p>
+}
+<div class="panel-fotos" [attr.aria-hidden]="conPublicaciones() ? null : 'true'">
+  @for (foto of fotos(); track foto.imagen; let primera = $first) {
+    @if (foto.enlace; as enlace) {
+      <a class="panel-foto" [class.panel-foto-ancha]="primera" [routerLink]="enlace">
+        <img class="panel-imagen" [src]="foto.imagen" alt="" />
+        <span class="panel-pie">
+          <span class="panel-titulo">{{ foto.titulo }}</span>
+          <span class="panel-autor">&#64;{{ foto.autor }}</span>
+        </span>
+      </a>
+    } @else {
+      <span class="panel-foto" [class.panel-foto-ancha]="primera">
+        <img class="panel-imagen" [src]="foto.imagen" alt="" />
+      </span>
+    }
+  }
+</div>

@@ -336,6 +336,8 @@ Sólo para administradores. El enlace "Estadísticas" de la barra lleva a `/dash
 
 ### Aplicación instalable (PWA)
 
+**Cartel para instalar** (portada e Ingresar, sólo en el celular): una tarjeta dentro de la página, que no tapa nada, invita a usar Banquete "como una app" (pantalla completa, sin la barra del navegador y con avisos). En Android con instalación nativa tiene el botón "Instalar la app"; en iPhone, donde el navegador no permite instalar con un botón, explica los tres pasos (Compartir → «Agregar a inicio» → abrirla desde el ícono). Reglas: no aparece en la compu, ni si la app ya está instalada, ni si el navegador no puede instalarla; se puede cerrar con "Ahora no" y **no vuelve durante 14 días** (queda guardado en el dispositivo); desaparece al instalarse. Es una sección con nombre, sin `role` de alerta ni diálogo, porque no es urgente.
+
 Banquete se puede instalar como una aplicación (en el teléfono, "Instalar" en Chrome o "Agregar a inicio" en el iPhone) y se abre en su propia ventana, sin la barra del navegador.
 
 - **Manifiesto** (`public/manifest.webmanifest`): nombre, colores del tema (barra `#404d63`, fondo `#eeece8`), `display: standalone`, tres íconos propios (192, 512 y uno enmascarable) hechos a partir del ícono de Banquete (la "B" con la cuchara y el plato) y un atajo "Nueva publicación". `index.html` lo enlaza, define el color de la barra del navegador para claro y oscuro y agrega el ícono del iPhone.

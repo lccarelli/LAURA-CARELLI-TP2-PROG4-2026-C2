@@ -91,3 +91,25 @@ describe('reglas de estilo', () => {
     expect(DISPOSICION.test(clase) || clasesDefinidas.has(clase)).toBe(false);
   });
 });
+
+describe('barra de arriba en el teléfono', () => {
+  const regla = (selector: string) => {
+    const inicio = hojaDeEstilos.indexOf(`\n  ${selector} {`);
+    return hojaDeEstilos.slice(inicio, hojaDeEstilos.indexOf('}', inicio));
+  };
+
+  it('[O] la barra con el logo, el idioma y el tema se queda fija arriba, también sin sesión', () => {
+    expect(regla('.barra')).toMatch(/\bsticky\b.*\btop-0\b/s);
+  });
+
+  it('[I] en el celular la barra con el buscador queda justo debajo de la barra fija, y en pantalla grande arriba de todo', () => {
+    expect(regla('.barra-superior')).toContain('top-[4.25rem]');
+    expect(regla('.barra-superior')).toContain('lg:top-0');
+  });
+
+  it('[S] la barra fija queda por encima de la del buscador', () => {
+    const zDe = (selector: string) => Number(regla(selector).match(/\bz-(\d+)\b/)?.[1]);
+
+    expect(zDe('.barra')).toBeGreaterThan(zDe('.barra-superior'));
+  });
+});

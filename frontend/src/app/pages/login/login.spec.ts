@@ -105,7 +105,7 @@ describe('Login', () => {
     const raiz = fixture.nativeElement as HTMLElement;
 
     expect(raiz.querySelector('.acceso-formulario form')).not.toBeNull();
-    expect(raiz.querySelectorAll('app-mosaico-comidas img')).toHaveLength(6);
+    expect(raiz.querySelector('app-panel-publicaciones')).not.toBeNull();
     expect(raiz.querySelector('[role="dialog"], [aria-modal], [inert]')).toBeNull();
     expect(raiz.querySelector('app-inicio')).toBeNull();
     expect(raiz.querySelector('h1')!.textContent).toContain('Ingresar');

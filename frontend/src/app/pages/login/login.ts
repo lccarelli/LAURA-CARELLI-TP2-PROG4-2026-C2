@@ -5,7 +5,8 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CampoClave } from '../../componentes/campo-clave/campo-clave';
 import { Aviso } from '../../componentes/aviso/aviso';
-import { MosaicoComidas } from '../../componentes/mosaico-comidas/mosaico-comidas';
+import { CartelInstalar } from '../../componentes/cartel-instalar/cartel-instalar';
+import { PanelPublicaciones } from '../../componentes/panel-publicaciones/panel-publicaciones';
 import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
 import { Auth } from '../../servicios/auth/auth';
 import { mensajeDeApi } from '../../utilidades/errores';
@@ -16,7 +17,8 @@ import { mensajeDeApi } from '../../utilidades/errores';
     ReactiveFormsModule,
     RouterLink,
     Aviso,
-    MosaicoComidas,
+    CartelInstalar,
+    PanelPublicaciones,
     TranslatePipe,
     CampoClave,
   ],

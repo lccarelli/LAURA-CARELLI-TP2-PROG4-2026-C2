@@ -471,24 +471,36 @@ body {
     @apply mx-auto flex w-full max-w-lg flex-col justify-start gap-4 p-6 md:justify-center md:p-12;
   }
 
-  .mosaico-contenedor {
-    @apply relative block h-28 md:h-auto;
+  .panel-publicaciones {
+    @apply hidden flex-col justify-center gap-4 bg-secundario/40 p-8 md:flex lg:p-12;
   }
 
-  .mosaico {
-    @apply absolute inset-0 grid grid-cols-3 grid-rows-[repeat(2,minmax(0,1fr))] gap-1 md:grid-cols-2 md:grid-rows-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))];
+  .panel-fotos {
+    @apply grid grid-cols-2 gap-3;
   }
 
-  .mosaico-foto {
+  .panel-foto {
+    @apply relative block aspect-[4/5] overflow-hidden rounded-3xl bg-secundario anillo-foco;
+  }
+
+  .panel-foto-ancha {
+    @apply col-span-2 aspect-[16/10];
+  }
+
+  .panel-imagen {
     @apply size-full object-cover;
   }
 
-  .mosaico-ancha {
-    @apply md:col-span-2;
+  .panel-pie {
+    @apply absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-tinta/75 to-transparent p-4 pt-10 text-hoja;
   }
 
-  .mosaico-alta {
-    @apply md:row-span-2;
+  .panel-titulo {
+    @apply line-clamp-2 font-serif text-lg leading-tight font-black;
+  }
+
+  .panel-autor {
+    @apply text-xs opacity-90;
   }
 
   .pagina-angosta {
@@ -836,7 +848,7 @@ body {
   }
 
   .barra-superior {
-    @apply sticky top-0 z-20 flex items-center gap-3 bg-papel px-4 py-3 lg:px-6;
+    @apply sticky top-[4.25rem] z-20 flex items-center gap-3 bg-papel px-4 py-3 lg:top-0 lg:px-6;
   }
 
   .buscador-barra {
@@ -1010,7 +1022,7 @@ body {
   }
 
   .barra {
-    @apply flex items-center justify-between gap-3 bg-barra px-4 py-3 text-barra-tinta lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:w-20 lg:flex-col lg:justify-start lg:gap-6 lg:px-0 lg:py-5;
+    @apply sticky top-0 z-30 flex items-center justify-between gap-3 bg-barra px-4 py-3 text-barra-tinta lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:w-20 lg:flex-col lg:justify-start lg:gap-6 lg:px-0 lg:py-5;
   }
 
   .enlace-marca {
@@ -1197,7 +1209,7 @@ body {
   }
 
   .indice {
-    @apply sticky top-[4.5rem] z-10 -mx-4 flex gap-1 overflow-x-auto bg-papel px-4 py-2;
+    @apply sticky top-[8.5rem] z-10 -mx-4 flex gap-1 overflow-x-auto bg-papel px-4 py-2 lg:top-[4.5rem];
   }
 
   .solapa-letra {
@@ -1210,6 +1222,22 @@ body {
 
   .solapa-letra-cantidad {
     @apply text-xs font-normal opacity-80;
+  }
+
+  .cartel-instalar {
+    @apply flex items-start gap-3 rounded-2xl bg-hoja p-4 text-tinta shadow-flota;
+  }
+
+  .cartel-instalar-cuerpo {
+    @apply flex min-w-0 flex-1 flex-col items-start gap-2;
+  }
+
+  .cartel-instalar-titulo {
+    @apply font-serif text-lg leading-tight font-black;
+  }
+
+  .cartel-instalar-pasos {
+    @apply list-decimal pl-5 text-sm text-suave;
   }
 
   .tableros {
