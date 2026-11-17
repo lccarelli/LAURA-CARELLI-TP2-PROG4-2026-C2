@@ -6,7 +6,7 @@
 
     @if (motivoDeSalida(); as motivo) {
       <app-aviso
-        titulo="login.sesion_cerrada_titulo"
+        [titulo]="tituloDelMotivo(motivo)"
         [info]="true"
         (cerrar)="motivoDeSalida.set(null)"
         >{{ motivo | translate }}</app-aviso

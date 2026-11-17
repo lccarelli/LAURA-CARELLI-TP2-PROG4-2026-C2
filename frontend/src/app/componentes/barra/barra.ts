@@ -1,11 +1,11 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { filter, map } from 'rxjs';
 import { Desplazamiento } from '../../servicios/desplazamiento/desplazamiento';
 import { AvisosPush } from '../../servicios/avisos-push/avisos-push';
-import { Auth } from '../../servicios/auth/auth';
+import { Auth, MOTIVO_ACCESO_DOCENTE } from '../../servicios/auth/auth';
 import { Idioma } from '../../servicios/idioma/idioma';
 import { Icono } from '../icono/icono';
 
@@ -31,6 +31,26 @@ export class Barra {
   protected readonly enPerfil = computed(
     () => this.ruta().startsWith('/perfil') && !this.ruta().startsWith('/perfil/guardadas'),
   );
+
+  protected readonly entrandoComoDocente = signal(false);
+
+  protected entrarComoDocente() {
+    if (this.entrandoComoDocente()) {
+      return;
+    }
+    this.entrandoComoDocente.set(true);
+    this.auth.accesoDocente().subscribe({
+      next: () => {
+        this.entrandoComoDocente.set(false);
+        this.router.navigate(['/dashboard/usuarios']);
+      },
+      error: () => {
+        this.entrandoComoDocente.set(false);
+        this.auth.motivoDeSalida.set(MOTIVO_ACCESO_DOCENTE);
+        this.router.navigate(['/login']);
+      },
+    });
+  }
 
   async salir() {
     await this.avisosPush.desvincular();

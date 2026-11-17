@@ -8,6 +8,7 @@ export const EVENTOS_DE_LOG = {
   EVENTO_ME_GUSTA_NO_REGISTRADO: 'evento_me_gusta_no_registrado',
   IMAGEN_BORRADA: 'imagen_borrada',
   IMAGEN_SUBIDA: 'imagen_subida',
+  ACCESO_DOCENTE: 'acceso_docente',
   INGRESO_CORRECTO: 'ingreso_correcto',
   INGRESO_FALLIDO: 'ingreso_fallido',
   INGRESO_RECHAZADO: 'ingreso_rechazado',

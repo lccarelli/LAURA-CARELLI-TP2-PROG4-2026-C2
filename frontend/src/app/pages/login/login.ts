@@ -8,7 +8,7 @@ import { Aviso } from '../../componentes/aviso/aviso';
 import { PanelPublicaciones } from '../../componentes/panel-publicaciones/panel-publicaciones';
 import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
 import { Instalacion } from '../../servicios/instalacion/instalacion';
-import { Auth } from '../../servicios/auth/auth';
+import { Auth, MOTIVO_ACCESO_DOCENTE } from '../../servicios/auth/auth';
 import { mensajeDeApi } from '../../utilidades/errores';
 
 @Component({
@@ -40,6 +40,12 @@ export class Login {
     identificador: ['', [Validators.required, Validators.maxLength(30)]],
     clave: ['', [Validators.required, Validators.maxLength(12)]],
   });
+
+  tituloDelMotivo(motivo: string) {
+    return motivo === MOTIVO_ACCESO_DOCENTE
+      ? 'login.acceso_docente_titulo'
+      : 'login.sesion_cerrada_titulo';
+  }
 
   mensajeDeError(campo: string): string | null {
     const control = this.formulario.get(campo);

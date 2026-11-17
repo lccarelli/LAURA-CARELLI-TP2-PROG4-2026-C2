@@ -247,4 +247,26 @@ describe('Login', () => {
       expect(fixture.nativeElement.querySelectorAll('app-aviso')).toHaveLength(2);
     });
   });
+
+  describe('aviso de un motivo', () => {
+    const aviso = () => fixture.nativeElement.querySelector('app-aviso') as HTMLElement;
+
+    it('[O] si se vuelve por un acceso docente que no está disponible, el título es «Acceso docente» y no «Sesión cerrada»', async () => {
+      TestBed.inject(Auth).motivoDeSalida.set('api.ACCESO_DOCENTE_NO_DISPONIBLE');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(aviso().textContent).toContain('Acceso docente');
+      expect(aviso().textContent).toContain('El acceso docente no está disponible.');
+      expect(aviso().textContent).not.toContain('Sesión cerrada');
+    });
+
+    it('[Z] cualquier otro motivo sigue titulándose «Sesión cerrada»', async () => {
+      TestBed.inject(Auth).motivoDeSalida.set('api.SESION_VENCIDA');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(aviso().textContent).toContain('Sesión cerrada');
+    });
+  });
 });

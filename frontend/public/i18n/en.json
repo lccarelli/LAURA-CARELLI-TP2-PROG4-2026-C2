@@ -29,7 +29,8 @@
     "registrarme": "Sign up",
     "idioma": "Language",
     "home": "Home",
-    "guardadas": "Saved"
+    "guardadas": "Saved",
+    "acceso_docente": "Teacher login"
   },
   "inicio": {
     "titulo": "A place to share your culinary world",
@@ -53,7 +54,8 @@
     "sin_cuenta": "Don't have an account?",
     "registrarme": "Sign up",
     "error_titulo": "Could not log in",
-    "sesion_cerrada_titulo": "Signed out"
+    "sesion_cerrada_titulo": "Signed out",
+    "acceso_docente_titulo": "Teacher access"
   },
   "registro": {
     "titulo": "Create account",
@@ -335,7 +337,8 @@
     "CUENTA_PROPIA": "You cannot change the status of your own account.",
     "USUARIO_NO_ENCONTRADO": "The user does not exist.",
     "RANGO_INVALIDO": "The from date cannot be later than the to date.",
-    "RANGO_DEMASIADO_LARGO": "The range cannot exceed 366 days."
+    "RANGO_DEMASIADO_LARGO": "The range cannot exceed 366 days.",
+    "ACCESO_DOCENTE_NO_DISPONIBLE": "Teacher access is not available."
   },
   "tipos": {
     "receta": "Recipe",

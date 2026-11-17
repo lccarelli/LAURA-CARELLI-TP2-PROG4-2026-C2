@@ -5,6 +5,8 @@ import { environment } from '../../../environments/environment';
 import { Sesion } from '../../interfaces/sesion';
 import { Usuario } from '../../interfaces/usuario';
 
+export const MOTIVO_ACCESO_DOCENTE = 'api.ACCESO_DOCENTE_NO_DISPONIBLE';
+
 @Service()
 export class Auth {
   private http = inject(HttpClient);
@@ -26,6 +28,12 @@ export class Auth {
   ingresar(identificador: string, clave: string) {
     return this.http
       .post<Sesion>(`${environment.API_URL}/auth/ingresar`, { identificador, clave })
+      .pipe(tap((sesion) => this.guardarSesion(sesion)));
+  }
+
+  accesoDocente() {
+    return this.http
+      .post<Sesion>(`${environment.API_URL}/auth/acceso-docente`, {})
       .pipe(tap((sesion) => this.guardarSesion(sesion)));
   }
 

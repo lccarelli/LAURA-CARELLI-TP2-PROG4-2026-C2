@@ -123,3 +123,24 @@ describe('menú de abajo del teléfono', () => {
     expect(hojaDeEstilos).not.toMatch(/\.item-nav \.etiqueta-nav[^{]*\{[^}]*not-sr-only/);
   });
 });
+
+describe('panel de notificaciones sobre las barras', () => {
+  const regla = (selector: string) => {
+    const inicio = hojaDeEstilos.indexOf(`\n  ${selector} {`);
+    return hojaDeEstilos.slice(inicio, hojaDeEstilos.indexOf('}', inicio));
+  };
+
+  it('[I] con el panel abierto la barra que lo contiene queda por encima de la barra de arriba y del menú de abajo', () => {
+    const zDe = (selector: string) => Number(regla(selector).match(/\bz-\[?(\d+)\]?/)?.[1]);
+
+    expect(zDe('.barra-superior:has(.notificaciones-panel)')).toBeGreaterThan(zDe('.barra'));
+    expect(zDe('.barra-superior:has(.notificaciones-panel)')).toBeGreaterThan(zDe('.barra-nav'));
+  });
+
+  it('[S] con el panel abierto la barra no lleva ninguna transformación: el panel es fijo y una transformación lo encerraría en la barra', () => {
+    expect(regla('.barra-superior.oculta:not(:has(.notificaciones-panel))')).toContain(
+      '-translate-y-full',
+    );
+    expect(regla('.barra-superior:has(.notificaciones-panel)')).not.toMatch(/translate|transform/);
+  });
+});
