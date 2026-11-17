@@ -326,6 +326,60 @@ describe('Publicaciones', () => {
     });
   });
 
+  describe('filtros desde la dirección', () => {
+    const abrirCon = async (consulta: string) => {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [Publicaciones],
+        providers: [
+          proveerIdiomaDePrueba(),
+          provideRouter([{ path: 'publicaciones', component: Publicaciones }]),
+          provideHttpClient(),
+          provideHttpClientTesting(),
+        ],
+      }).compileComponents();
+      await TestBed.inject(Router).navigateByUrl(`/publicaciones${consulta}`);
+      const abierto = TestBed.createComponent(Publicaciones);
+      await abierto.whenStable();
+      const solicitud = TestBed.inject(HttpTestingController).expectOne(
+        (s) => s.url === URL && s.params.get('offset') === '0',
+      );
+      return { solicitud, abierto };
+    };
+
+    it.each([
+      ['?tipo=receta', 'tipo', 'receta'],
+      ['?orden=megusta', 'orden', 'megusta'],
+      ['?tipo=tip&orden=megusta', 'tipo', 'tip'],
+    ])('[O] con %s la primera carga ya pide %s=%s', async (consulta, parametro, valor) => {
+      const { solicitud } = await abrirCon(consulta);
+
+      expect(solicitud.request.params.get(parametro)).toBe(valor);
+      solicitud.flush(pagina(1, 1, false));
+    });
+
+    it('[E] un tipo o un orden que no existen se ignoran', async () => {
+      const { solicitud } = await abrirCon('?tipo=postre&orden=azar');
+
+      expect(solicitud.request.params.has('tipo')).toBe(false);
+      expect(solicitud.request.params.get('orden')).toBe('fecha');
+      solicitud.flush(pagina(1, 1, false));
+    });
+
+    it('[S] los botones de la pantalla muestran el filtro que vino en la dirección', async () => {
+      const { solicitud, abierto } = await abrirCon('?tipo=tip&orden=megusta');
+      solicitud.flush(pagina(1, 1, false));
+      abierto.detectChanges();
+      await abierto.whenStable();
+
+      const activos = Array.from(
+        abierto.nativeElement.querySelectorAll('.activo') as NodeListOf<HTMLElement>,
+      ).map((boton) => boton.textContent?.trim());
+
+      expect(activos).toEqual(['Más me gusta', 'Tips']);
+    });
+  });
+
   describe('búsqueda', () => {
     const pedirBusqueda = (q: string, offset = 0) =>
       http.expectOne(

@@ -28,12 +28,12 @@ describe('rutas', () => {
     expect(harness.routeNativeElement?.tagName).toBe('APP-INICIO');
   });
 
-  it('[I] con sesión, la raíz lleva a las publicaciones', async () => {
+  it('[I] con sesión, la raíz lleva al inicio con la bienvenida', async () => {
     TestBed.inject(Auth).token.set('abc');
 
     await RouterTestingHarness.create('/');
 
-    expect(TestBed.inject(Router).url).toBe('/publicaciones');
+    expect(TestBed.inject(Router).url).toBe('/home');
   });
 
   it('[E] sin sesión, la página de nueva publicación lleva al login', async () => {

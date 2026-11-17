@@ -552,6 +552,10 @@ body {
     @apply text-error;
   }
 
+  .boton-metrica.guardada {
+    @apply text-primario;
+  }
+
   .boton-eliminar {
     @apply ml-auto;
   }
@@ -1164,6 +1168,58 @@ body {
 
   .pestana {
     @apply mt-8 mb-6 inline-block border-b-2 border-tinta pb-1 text-lg font-medium text-tinta;
+  }
+
+  .home {
+    @apply gap-10;
+  }
+
+  .home-portada {
+    @apply flex flex-col items-start gap-4 pt-4;
+  }
+
+  .home-lema {
+    @apply text-lg text-suave;
+  }
+
+  .home-barra {
+    @apply flex flex-wrap items-center justify-between gap-4;
+  }
+
+  .home-seccion {
+    @apply flex flex-col gap-4;
+  }
+
+  .home-cabecera {
+    @apply flex flex-wrap items-baseline justify-between gap-2;
+  }
+
+  .home-parrafo {
+    @apply max-w-3xl;
+  }
+
+  .home-tipos {
+    @apply grid gap-4 md:grid-cols-3;
+  }
+
+  .fila-tarjetas {
+    @apply grid grid-cols-2 items-start gap-4 lg:grid-cols-4;
+  }
+
+  .indice {
+    @apply sticky top-[4.5rem] z-10 -mx-4 flex gap-1 overflow-x-auto bg-papel px-4 py-2;
+  }
+
+  .solapa-letra {
+    @apply inline-flex min-h-9 min-w-9 shrink-0 items-center justify-center gap-1 rounded-full px-3 text-sm font-semibold text-suave anillo-foco hover:bg-secundario/70 hover:text-tinta disabled:pointer-events-none disabled:opacity-35;
+  }
+
+  .solapa-letra.activa {
+    @apply bg-barra text-hoja;
+  }
+
+  .solapa-letra-cantidad {
+    @apply text-xs font-normal opacity-80;
   }
 
   .tableros {

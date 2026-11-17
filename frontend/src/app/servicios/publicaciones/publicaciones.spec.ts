@@ -170,6 +170,68 @@ describe('PublicacionesApi', () => {
     solicitud.flush(null, { status: 204, statusText: 'No Content' });
   });
 
+  it('[O] guardar envía un POST sin body a la ruta de guardar', () => {
+    api.guardar('abc').subscribe();
+
+    const solicitud = http.expectOne(`${URL}/abc/guardar`);
+
+    expect(solicitud.request.method).toBe('POST');
+    expect(solicitud.request.body).toEqual({});
+    solicitud.flush({ guardada: true });
+  });
+
+  it('[O] quitarGuardada envía un DELETE a la ruta de guardar', () => {
+    api.quitarGuardada('abc').subscribe();
+
+    const solicitud = http.expectOne(`${URL}/abc/guardar`);
+
+    expect(solicitud.request.method).toBe('DELETE');
+    solicitud.flush(null);
+  });
+
+  it.each([
+    ['sin filtros', [0, 10], { offset: '0', limit: '10' }],
+    ['con letra', [0, 10, 'Ñ'], { offset: '0', limit: '10', letra: 'Ñ' }],
+    [
+      'con letra, tipo y texto',
+      [20, 5, 'A', 'tip', 'tarta'],
+      { offset: '20', limit: '5', letra: 'A', tipo: 'tip', q: 'tarta' },
+    ],
+    ['con letra vacía', [0, 10, null], { offset: '0', limit: '10' }],
+  ])('[I] listarGuardadas %s manda sólo lo que se pidió', (_caso, argumentos, esperados) => {
+    (api.listarGuardadas as (...valores: unknown[]) => ReturnType<typeof api.listarGuardadas>)(
+      ...argumentos,
+    ).subscribe();
+
+    const solicitud = http.expectOne((p) => p.url === `${environment.API_URL}/guardadas`);
+
+    expect(solicitud.request.method).toBe('GET');
+    expect(
+      Object.fromEntries(
+        solicitud.request.params.keys().map((k) => [k, solicitud.request.params.get(k)]),
+      ),
+    ).toEqual(esperados);
+    solicitud.flush({ datos: [], offset: 0, limit: 10, hayMas: false });
+  });
+
+  it('[I] letrasGuardadas pide las cantidades, con el texto si hay', () => {
+    api.letrasGuardadas('tarta').subscribe();
+
+    const solicitud = http.expectOne((p) => p.url === `${environment.API_URL}/guardadas/letras`);
+
+    expect(solicitud.request.params.get('q')).toBe('tarta');
+    solicitud.flush({ letras: {}, total: 0 });
+  });
+
+  it('[Z] letrasGuardadas sin texto no manda q', () => {
+    api.letrasGuardadas().subscribe();
+
+    const solicitud = http.expectOne((p) => p.url === `${environment.API_URL}/guardadas/letras`);
+
+    expect(solicitud.request.params.has('q')).toBe(false);
+    solicitud.flush({ letras: {}, total: 0 });
+  });
+
   it('[O] eliminar envía un DELETE a la publicación', () => {
     api.eliminar('abc123').subscribe();
 

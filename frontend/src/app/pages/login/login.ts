@@ -58,7 +58,7 @@ export class Login {
   private destinoAlIngresar() {
     const destino = this.auth.volverA();
     this.auth.volverA.set(null);
-    return destino?.startsWith('/') && !destino.startsWith('//') ? destino : '/publicaciones';
+    return destino?.startsWith('/') && !destino.startsWith('//') ? destino : '/home';
   }
 
   enviar() {

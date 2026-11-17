@@ -6,11 +6,14 @@ import { Auth } from '../../servicios/auth/auth';
 import { Buscador } from '../buscador/buscador';
 import { Campanita } from '../campanita/campanita';
 
+const INICIO = 'home';
 const PUBLICACIONES = 'publicaciones';
 const MIS_PUBLICACIONES = 'perfil/publicaciones';
+const GUARDADAS = 'perfil/guardadas';
 const BUSCABLES: Record<string, string> = {
   [PUBLICACIONES]: 'buscador.placeholder',
   [MIS_PUBLICACIONES]: 'buscador.placeholder_mias',
+  [GUARDADAS]: 'buscador.placeholder_guardadas',
 };
 
 @Component({
@@ -39,12 +42,13 @@ export class BarraSuperior {
   protected readonly q = computed(() =>
     this.ruta() in BUSCABLES ? (this.url().queryParamMap.get('q') ?? '') : '',
   );
+  protected readonly conBuscador = computed(() => this.ruta() !== INICIO);
   protected readonly descripcion = computed(
     () => BUSCABLES[this.ruta()] ?? BUSCABLES[PUBLICACIONES],
   );
 
   protected buscar(texto: string) {
-    const destino = this.ruta() === MIS_PUBLICACIONES ? MIS_PUBLICACIONES : PUBLICACIONES;
+    const destino = this.ruta() in BUSCABLES ? this.ruta() : PUBLICACIONES;
     this.router.navigate([`/${destino}`], { queryParams: { q: texto || null } });
   }
 }

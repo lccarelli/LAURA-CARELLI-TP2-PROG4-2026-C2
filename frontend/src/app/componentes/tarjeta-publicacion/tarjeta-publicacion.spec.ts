@@ -115,7 +115,7 @@ describe('TarjetaPublicacion', () => {
       m.getAttribute('aria-label'),
     );
 
-    expect(etiquetas).toEqual(['Dar me gusta (7)', '2 comentarios']);
+    expect(etiquetas).toEqual(['Dar me gusta (7)', '2 comentarios', 'Guardar']);
   });
 
   it('[Z] sin imagen en la publicación muestra el mensaje en un recuadro', async () => {
@@ -328,6 +328,51 @@ describe('TarjetaPublicacion', () => {
 
       expect(elemento.querySelector('a.pin button')).toBeNull();
       expect(elemento.querySelectorAll('button').length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('guardar', () => {
+    const botonGuardar = () =>
+      fixture.nativeElement.querySelector('app-boton-guardar button') as HTMLButtonElement;
+
+    it('[Z] una publicación sin guardar ofrece guardarla', async () => {
+      await crear(base);
+
+      expect(botonGuardar().getAttribute('aria-pressed')).toBe('false');
+    });
+
+    it('[I] una ya guardada llega marcada', async () => {
+      await crear({ ...base, guardada: true });
+
+      expect(botonGuardar().getAttribute('aria-pressed')).toBe('true');
+    });
+
+    it('[O] guardar manda el pedido y no avisa que se quitó', async () => {
+      await crear(base);
+      const quitadas: string[] = [];
+      fixture.componentInstance.desguardada.subscribe((id) => quitadas.push(id));
+
+      botonGuardar().click();
+      http
+        .expectOne({ method: 'POST', url: `${URL}/${base._id}/guardar` })
+        .flush({ guardada: true });
+      await fixture.whenStable();
+
+      expect(quitadas).toEqual([]);
+    });
+
+    it('[S] quitar de guardadas avisa con el id para que el listado la saque', async () => {
+      await crear({ ...base, guardada: true });
+      const quitadas: string[] = [];
+      fixture.componentInstance.desguardada.subscribe((id) => quitadas.push(id));
+
+      botonGuardar().click();
+      http
+        .expectOne({ method: 'DELETE', url: `${URL}/${base._id}/guardar` })
+        .flush(null, { status: 204, statusText: 'No Content' });
+      await fixture.whenStable();
+
+      expect(quitadas).toEqual([base._id]);
     });
   });
 
