@@ -176,6 +176,22 @@ La portada (`/`) muestra **publicaciones reales**, no ejemplos: las 8 más recie
 
 - **API sin token:** `GET /publico/publicaciones?limit` (1 a 12, 8 por defecto, más recientes primero) y `GET /publico/publicaciones/:id` (la publicación y sus 3 últimos comentarios). No traen marcas de me gusta ni de guardada, y el autor sólo con nombre, apellido, usuario y foto (nunca correo ni fecha de nacimiento). Escribir sigue pidiendo sesión (401). Tienen el límite de solicitudes de toda la API.
 
+### Compartir publicaciones
+
+- Cada tarjeta tiene un botón **Compartir**: se abre una ventana, se busca por nombre, apellido o usuario (desde 2 letras) y se eligen **hasta 20 personas** a la vez. Se puede compartir lo mismo a la misma persona las veces que se quiera.
+- `POST /publicaciones/:id/compartir` con `{ usuarios: [ids] }` → `201 { compartida, destinatarios, cantidadCompartidas }`. `400` si es a uno mismo o la lista es inválida; `404` si la publicación o alguna persona no existe (no se comparte con ninguna).
+- `GET /usuarios/directorio?texto=` → `{ datos }` con hasta 10 personas (sólo datos públicos).
+- `GET /publicaciones/compartidas` (paginado) → las que me compartieron, con `compartidaPor`, `fechaCompartida` y `vista`.
+- **Sin ver:** `GET /publicaciones/compartidas/sin-ver` → `{ cantidad }` y `POST /publicaciones/compartidas/marcar-vistas` → `{ actualizadas }`.
+- **En la aplicación:** en **Mi perfil** hay dos solapas, «Mi actividad» y «**Compartidos contigo (n)**» (el número son los que todavía no viste). Al abrir la solapa se marcan como vistos y las nuevas llevan la etiqueta «Nueva». La solapa se elige con `/perfil?solapa=compartidos`.
+- **Avisos:** cada persona que recibe una publicación recibe además un aviso en la **campanita** (`tipo: "compartida"`), un aviso en el celular (push) y un **webhook** con `evento: "compartida"`, igual que los comentarios y los me gusta.
+
+### Volver al mismo lugar
+
+- La **X**, el enlace «Volver» y **Escape** del detalle de una publicación vuelven **un paso atrás en el historial**, a la pantalla de la que venías (muro, Mi perfil en la solapa que estabas, guardadas, mis publicaciones…). Si se entró directo (enlace o aviso del celular) llevan al muro. No vuelven a un formulario (nueva publicación, editar, login, registro).
+- Las listas (muro, mis publicaciones, guardadas y Compartidos contigo) **recuerdan hasta dónde habías bajado**: al volver cargan las mismas páginas y se ubican a la altura en que estabas. Funciona también con el botón «atrás» del navegador. **Mi perfil → Mi actividad** también vuelve a la altura en que estabas: como esa pantalla se arma en pedazos (últimas publicaciones y sus comentarios, que llegan después), sigue fijando la altura durante 2,5 segundos mientras el contenido termina de cargarse, y deja de hacerlo apenas tocás la pantalla. No recuerda el filtro o el orden elegidos. El servicio `Historial` guarda la posición al salir de la pantalla y la función `recordarPosicion` la restaura.
+- El **detalle** también tiene el botón **Compartir** (junto a me gusta y guardar), el mismo componente que usan las tarjetas.
+
 ### Registro de ingresos y visitas (datos para las estadísticas)
 
 - Cada **ingreso correcto** (ingresar o acceso docente) guarda `(usuario, fecha)` en `ingresos`. Crear la cuenta no cuenta. Si guardarlo falla, la persona entra igual y queda un aviso en el log.
@@ -307,9 +323,9 @@ Quien publicó ve el botón **Editar** en el detalle de su publicación (nadie m
 ### Notificaciones
 
 - **Campanita:** en la barra superior, a la derecha del buscador, con la cantidad de avisos sin leer (hasta 99+). Se actualiza cada 30 segundos y al volver a la pestaña. Al tocarla se abre un panel a la derecha con los avisos de más nuevo a más viejo, de 10 en 10, con "Marcar todas como leídas". Tocar un aviso lo marca como leído y lleva a la publicación (si es un comentario, directo a la sección de comentarios). Cada aviso tiene una cruz para borrarlo, y "Borrar historial" borra todos después de pedir confirmación.
-- **Cuándo se genera:** cuando otra persona comenta o da me gusta en una publicación tuya. Lo que hacés sobre tus propias publicaciones no avisa. Quitar un me gusta no avisa, y volver a darlo mientras el aviso anterior sigue sin leer no lo duplica. Se guardan 90 días.
+- **Cuándo se genera:** cuando otra persona comenta o da me gusta en una publicación tuya, o **te comparte** una publicación (cada vez que lo hace llega un aviso nuevo, aunque sea la misma publicación; tocarlo abre Mi perfil en la solapa «Compartidos contigo», **ubicado en esa publicación y resaltada** (`/perfil?solapa=compartidos&publicacion=<id>`; si está en una página que todavía no se cargó, la lista trae páginas hasta encontrarla; lo mismo hace el aviso del celular). Lo que hacés sobre tus propias publicaciones no avisa. Quitar un me gusta no avisa, y volver a darlo mientras el aviso anterior sigue sin leer no lo duplica. Se guardan 90 días.
 - **API** (requiere sesión; cada persona sólo ve las suyas): `GET /notificaciones?offset&limit&soloNoLeidas`, `GET /notificaciones/sin-leer`, `POST /notificaciones/:id/leer`, `POST /notificaciones/leer-todas`, `DELETE /notificaciones/:id` (204) y `DELETE /notificaciones` (borra todas las propias y responde `{ eliminadas }`). Un aviso ajeno o inexistente responde `404 NOTIFICACION_NO_ENCONTRADA`.
-- **Webhook:** si `WEBHOOK_URL` está definida, cada aviso nuevo se manda además con `POST` y este JSON: `{ "evento": "comentario" | "me_gusta", "publicacion": { "id", "titulo" }, "actor": { "id", "nombreUsuario" }, "destinatario": { "id" }, "fecha": "ISO 8601" }`. Con `WEBHOOK_SECRETO` el encabezado `X-Banquete-Firma: sha256=<HMAC-SHA256 del cuerpo>` permite verificar el origen. Espera como máximo 3 segundos y no reintenta; si falla, queda en el log (`webhook_no_enviado`) y la notificación se guarda igual.
+- **Webhook:** si `WEBHOOK_URL` está definida, cada aviso nuevo se manda además con `POST` y este JSON: `{ "evento": "comentario" | "me_gusta" | "compartida", "publicacion": { "id", "titulo" }, "actor": { "id", "nombreUsuario" }, "destinatario": { "id" }, "fecha": "ISO 8601" }`. Con `WEBHOOK_SECRETO` el encabezado `X-Banquete-Firma: sha256=<HMAC-SHA256 del cuerpo>` permite verificar el origen. Espera como máximo 3 segundos y no reintenta; si falla, queda en el log (`webhook_no_enviado`) y la notificación se guarda igual.
 
 ### Avisos push en el celular
 
