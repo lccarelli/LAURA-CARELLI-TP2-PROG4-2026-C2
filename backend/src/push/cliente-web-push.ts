@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
-import webpush from 'web-push';
+import { sendNotification, setVapidDetails } from 'web-push';
 import { pushConfig } from './push.config.js';
 
 export type DestinoPush = {
@@ -20,7 +20,7 @@ export class ClienteWebPush {
   ) {
     this.habilitado = Boolean(config.clavePublica && config.clavePrivada);
     if (this.habilitado) {
-      webpush.setVapidDetails(
+      setVapidDetails(
         config.contacto,
         config.clavePublica!,
         config.clavePrivada!,
@@ -33,7 +33,7 @@ export class ClienteWebPush {
   }
 
   async enviar(destino: DestinoPush, contenido: object) {
-    await webpush.sendNotification(destino, JSON.stringify(contenido), {
+    await sendNotification(destino, JSON.stringify(contenido), {
       TTL: DURACION_MAXIMA_SEGUNDOS,
     });
   }
