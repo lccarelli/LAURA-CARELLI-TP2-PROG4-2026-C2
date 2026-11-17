@@ -839,6 +839,10 @@ body {
     @apply -translate-y-full focus-within:translate-y-0;
   }
 
+  .barra-superior:has(.notificaciones-panel) {
+    @apply z-50 translate-y-0;
+  }
+
   .buscador-barra {
     @apply block min-w-0 flex-1;
   }
