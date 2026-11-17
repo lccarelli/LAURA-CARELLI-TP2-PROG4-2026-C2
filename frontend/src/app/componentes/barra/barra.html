@@ -3,7 +3,7 @@
     <img class="logo" src="favicon.png" alt="" width="44" height="44" />
   </a>
 
-  <nav class="barra-nav" [class.subiendo]="subiendo()">
+  <nav class="barra-nav" [class.oculta]="!desplazamiento.mostrar()">
     @if (auth.usuario(); as usuario) {
       <a
         class="item-nav"

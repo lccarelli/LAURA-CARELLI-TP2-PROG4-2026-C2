@@ -153,6 +153,22 @@ describe('Barra', () => {
     expect(texto()).toContain('Ingresar');
   });
 
+  it('[I] cada opción del menú tiene un título (tooltip) además del texto para lectores de pantalla', async () => {
+    await iniciarSesion();
+
+    const items = Array.from(
+      fixture.nativeElement.querySelectorAll('.item-nav') as NodeListOf<HTMLElement>,
+    );
+
+    expect(items.length).toBeGreaterThan(3);
+    items.forEach((item) => {
+      expect(item.getAttribute('title')).toBeTruthy();
+      expect(item.querySelector('.etiqueta-nav')!.textContent!.trim()).toBe(
+        item.getAttribute('title'),
+      );
+    });
+  });
+
   it('[I] no ofrece cambiar de tema: la aplicación es sólo clara', async () => {
     await iniciarSesion();
 
@@ -177,37 +193,72 @@ describe('Barra', () => {
     expect(navegar).toHaveBeenCalledWith(['/']);
   });
 
-  describe('movimiento al volver hacia arriba', () => {
-    it('[Z] al abrir la página no se mueve', () => {
-      expect(barraInferior().classList).not.toContain('subiendo');
+  describe('la barra de abajo se esconde al bajar y reaparece al subir', () => {
+    const escondida = () => barraInferior().classList.contains('oculta');
+    const medidas = (alto: number, ventana: number) => {
+      Object.defineProperty(document.documentElement, 'scrollHeight', {
+        value: alto,
+        configurable: true,
+      });
+      Object.defineProperty(window, 'innerHeight', { value: ventana, configurable: true });
+    };
+
+    afterEach(() => medidas(0, 768));
+
+    it('[Z] al abrir la página se ve', () => {
+      expect(escondida()).toBe(false);
     });
 
-    it('[I] al bajar no se mueve y al subir sí', () => {
+    it('[I] al bajar se esconde y al subir reaparece', () => {
       desplazarA(300);
-      expect(barraInferior().classList).not.toContain('subiendo');
+      expect(escondida()).toBe(true);
 
       desplazarA(200);
-      expect(barraInferior().classList).toContain('subiendo');
+      expect(escondida()).toBe(false);
     });
 
-    it('[S] al volver a bajar deja de moverse y al subir de nuevo se repite', () => {
+    it('[S] al volver a bajar se esconde otra vez, y al subir de nuevo reaparece', () => {
       desplazarA(300);
       desplazarA(200);
       desplazarA(400);
-      expect(barraInferior().classList).not.toContain('subiendo');
+      expect(escondida()).toBe(true);
 
       desplazarA(350);
-      expect(barraInferior().classList).toContain('subiendo');
+      expect(escondida()).toBe(false);
+    });
+
+    it('[B] cerca del tope (64 px o menos) siempre se ve, aunque se baje', () => {
+      desplazarA(64);
+      expect(escondida()).toBe(false);
+
+      desplazarA(65);
+      expect(escondida()).toBe(true);
     });
 
     it('[B] un desplazamiento de 7 píxeles no cuenta y uno de 8 sí', () => {
       desplazarA(300);
 
       desplazarA(293);
-      expect(barraInferior().classList).not.toContain('subiendo');
+      expect(escondida()).toBe(true);
 
       desplazarA(292);
-      expect(barraInferior().classList).toContain('subiendo');
+      expect(escondida()).toBe(false);
+    });
+
+    it('[I] al llegar al final de la página se muestra, para poder navegar', () => {
+      medidas(2000, 800);
+      desplazarA(600);
+      expect(escondida()).toBe(true);
+
+      desplazarA(1195);
+      expect(escondida()).toBe(false);
+    });
+
+    it('[Z] en una página que no se desplaza no cuenta como "al final"', () => {
+      medidas(500, 800);
+      desplazarA(300);
+
+      expect(escondida()).toBe(true);
     });
   });
 });

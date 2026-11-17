@@ -235,7 +235,12 @@
     "cancelar": "Cancel",
     "mi_actividad": "My activity",
     "ver_publicaciones": "See all, search and filter",
-    "titulo": "My profile"
+    "titulo": "My profile",
+    "ultimas_publicaciones": "My latest posts",
+    "ultimos_comentarios": "Latest comments",
+    "sin_comentarios": "No comments yet.",
+    "error_comentarios": "Could not load the comments",
+    "ver_comentarios": "See all comments ({{n}})"
   },
   "usuarios": {
     "titulo": "Users",

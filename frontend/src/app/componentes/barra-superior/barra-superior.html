@@ -1,5 +1,5 @@
 @if (auth.usuario()) {
-  <div class="barra-superior">
+  <div class="barra-superior" [class.oculta]="!desplazamiento.mostrar()">
     @if (conBuscador()) {
       <app-buscador
         class="buscador-barra"

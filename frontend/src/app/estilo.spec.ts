@@ -113,3 +113,13 @@ describe('barra de arriba en el teléfono', () => {
     expect(zDe('.barra')).toBeGreaterThan(zDe('.barra-superior'));
   });
 });
+
+describe('menú de abajo del teléfono', () => {
+  it('[I] muestra sólo íconos: la etiqueta de cada opción queda oculta (para lectores de pantalla) y como tooltip', () => {
+    const inicio = hojaDeEstilos.indexOf('\n  .etiqueta-nav');
+    const regla = hojaDeEstilos.slice(inicio, hojaDeEstilos.indexOf('}', inicio));
+
+    expect(regla).toContain('sr-only');
+    expect(hojaDeEstilos).not.toMatch(/\.item-nav \.etiqueta-nav[^{]*\{[^}]*not-sr-only/);
+  });
+});
