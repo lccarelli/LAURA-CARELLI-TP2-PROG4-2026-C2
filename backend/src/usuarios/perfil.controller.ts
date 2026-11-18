@@ -7,6 +7,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiMultipart, UNA_IMAGEN } from '../common/api-multipart.decorator.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
@@ -17,9 +19,12 @@ import { UsuariosService } from './usuarios.service.js';
 
 @Controller('usuarios/yo')
 @UseGuards(AuthGuard)
+@ApiBearerAuth()
 export class PerfilController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
+  @ApiOperation({ summary: 'Editar mi perfil (foto opcional)' })
+  @ApiMultipart(UNA_IMAGEN, EditarPerfilDto)
   @Put()
   @UseInterceptors(
     FileInterceptor('imagen', { limits: { fileSize: TAMANO_MAXIMO_IMAGEN } }),

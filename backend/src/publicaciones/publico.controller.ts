@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 import { IdParamDto } from '../common/id-param.dto.js';
 import { ComentariosService } from './comentarios.service.js';
 import {
@@ -14,11 +15,17 @@ export class PublicoController {
     private readonly comentariosService: ComentariosService,
   ) {}
 
+  @ApiOperation({
+    summary: 'Listar publicaciones para la portada (sin sesión)',
+  })
   @Get()
   listar(@Query() { limit }: ListarPublicoDto) {
     return this.publicacionesService.listarPublico(limit);
   }
 
+  @ApiOperation({
+    summary: 'Ver una publicación con sus comentarios (sin sesión)',
+  })
   @Get(':id')
   async obtener(@Param() { id }: IdParamDto) {
     const publicacion = await this.publicacionesService.obtenerPublico(id);

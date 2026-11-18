@@ -12,6 +12,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiMultipart, UNA_IMAGEN } from '../common/api-multipart.decorator.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AdminGuard } from '../auth/admin.guard.js';
 import { AuthGuard } from '../auth/auth.guard.js';
@@ -25,14 +27,18 @@ import { UsuariosService } from './usuarios.service.js';
 
 @Controller('usuarios')
 @UseGuards(AuthGuard, AdminGuard)
+@ApiBearerAuth()
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
+  @ApiOperation({ summary: 'Listar usuarios (administrador)' })
   @Get()
   listar(@Query() { offset, limit }: PaginacionDto) {
     return this.usuariosService.listar(offset, limit);
   }
 
+  @ApiOperation({ summary: 'Crear un usuario (administrador)' })
+  @ApiMultipart(UNA_IMAGEN, CrearUsuarioDto)
   @Post()
   @UseInterceptors(
     FileInterceptor('imagen', { limits: { fileSize: TAMANO_MAXIMO_IMAGEN } }),
@@ -49,6 +55,7 @@ export class UsuariosController {
     );
   }
 
+  @ApiOperation({ summary: 'Deshabilitar un usuario (administrador)' })
   @Delete(':id')
   deshabilitar(
     @Param() { id }: IdParamDto,
@@ -61,6 +68,7 @@ export class UsuariosController {
     );
   }
 
+  @ApiOperation({ summary: 'Habilitar un usuario (administrador)' })
   @Post(':id/habilitar')
   @HttpCode(200)
   habilitar(

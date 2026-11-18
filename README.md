@@ -659,6 +659,14 @@ Retry-After-sustained: 300
 
 **Tests** (`backend/test/limites.e2e-spec.ts`): el cuarto ingreso en un segundo responde `429`; la respuesta trae el código y `Retry-After`; el registro tiene el mismo límite; pasado un segundo vuelve a aceptar; más de 10 intentos en un minuto bloquean más de un minuto; el resto de las rutas admite 10 por segundo y `/health` no tiene ninguno.
 
+### Encabezados de seguridad, errores y documentación de la API
+
+- **Encabezados de seguridad:** `helmet` se aplica a todas las respuestas (`backend/src/seguridad-global.ts`): `X-Content-Type-Options`, `Strict-Transport-Security`, `Content-Security-Policy`, y quita `X-Powered-By`. La ruta `/docs` queda sin la política de contenido porque la interfaz de Swagger usa scripts propios.
+- **Forma única de error:** todo error responde `{ message, codigo }`. Un filtro global (`backend/src/common/filtro-de-excepciones.ts`) completa los que Nest devuelve sin código: `RUTA_NO_ENCONTRADA` (404), `ARCHIVO_DEMASIADO_GRANDE` (413), `SOLICITUD_INVALIDA` (otros 4xx) y `ERROR_INESPERADO` (500, sin revelar la causa; el detalle queda en el log como `error_no_controlado`).
+- **Documentación interactiva:** `GET /docs` abre Swagger UI con los 56 endpoints, sus cuerpos y el botón *Authorize* para probar con un token. El documento en JSON está en `GET /docs-json`. Los esquemas de los cuerpos salen de los DTO (plugin de `@nestjs/swagger` en `nest-cli.json`) y cada endpoint lleva un resumen con `@ApiOperation`.
+
+**Tests:** `seguridad-global.e2e-spec.ts`, `filtro-de-excepciones.e2e-spec.ts` y `swagger.e2e-spec.ts` (falla si algún endpoint queda sin resumen).
+
 ---
 
 ## Estructura de carpetas
@@ -668,7 +676,7 @@ Retry-After-sustained: 300
 ├── backend/                  NestJS
 │   └── src/
 │       ├── auth/
-│       ├── common/           Guard de límite de solicitudes y DTOs compartidos
+│       ├── common/           Guard de límite, filtro de excepciones y DTOs compartidos
 │       ├── configs/          Límites de solicitudes
 │       ├── health/           GET /health
 │       ├── imagenes/
@@ -677,6 +685,8 @@ Retry-After-sustained: 300
 │       ├── usuarios/
 │       ├── app.module.ts
 │       ├── main.ts
+│       ├── seguridad-global.ts
+│       ├── swagger.ts
 │       └── validacion-global.ts
 ├── frontend/                 Angular
 │   └── src/

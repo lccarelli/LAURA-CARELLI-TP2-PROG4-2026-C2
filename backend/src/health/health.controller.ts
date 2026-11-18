@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 import {
   HealthCheck,
   HealthCheckService,
@@ -19,6 +20,9 @@ export class HealthController {
     private readonly memoria: MemoryHealthIndicator,
   ) {}
 
+  @ApiOperation({
+    summary: 'Estado del servicio: conexión a MongoDB y memoria',
+  })
   @Get()
   @HealthCheck()
   verificar() {

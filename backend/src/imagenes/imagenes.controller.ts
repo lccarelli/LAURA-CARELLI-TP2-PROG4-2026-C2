@@ -12,6 +12,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiMultipart, UNA_IMAGEN } from '../common/api-multipart.decorator.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
@@ -24,9 +26,12 @@ import { ImagenesService } from './imagenes.service.js';
 
 @Controller('imagenes')
 @UseGuards(AuthGuard)
+@ApiBearerAuth()
 export class ImagenesController {
   constructor(private readonly imagenesService: ImagenesService) {}
 
+  @ApiOperation({ summary: 'Subir una imagen' })
+  @ApiMultipart(UNA_IMAGEN)
   @Post()
   @UseInterceptors(
     FileInterceptor('imagen', { limits: { fileSize: TAMANO_MAXIMO_IMAGEN } }),
@@ -48,6 +53,7 @@ export class ImagenesController {
     );
   }
 
+  @ApiOperation({ summary: 'Listar mis imágenes' })
   @Get()
   listar(
     @Req() solicitud: SolicitudAutenticada,
@@ -61,11 +67,13 @@ export class ImagenesController {
     );
   }
 
+  @ApiOperation({ summary: 'Obtener una imagen' })
   @Get(':id')
   obtener(@Param() { id }: IdParamDto) {
     return this.imagenesService.obtener(id);
   }
 
+  @ApiOperation({ summary: 'Borrar una imagen propia' })
   @Delete(':id')
   @HttpCode(204)
   borrar(@Req() solicitud: SolicitudAutenticada, @Param() { id }: IdParamDto) {

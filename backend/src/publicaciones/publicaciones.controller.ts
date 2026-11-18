@@ -13,6 +13,11 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiMultipart,
+  IMAGEN_Y_FOTOS_DE_PASOS,
+} from '../common/api-multipart.decorator.js';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
@@ -35,12 +40,17 @@ import { PublicacionesService } from './publicaciones.service.js';
 
 @Controller('publicaciones')
 @UseGuards(AuthGuard)
+@ApiBearerAuth()
 export class PublicacionesController {
   constructor(
     private readonly publicacionesService: PublicacionesService,
     private readonly comentariosService: ComentariosService,
   ) {}
 
+  @ApiOperation({
+    summary: 'Crear una publicación (portada y fotos de pasos opcionales)',
+  })
+  @ApiMultipart(IMAGEN_Y_FOTOS_DE_PASOS, CrearPublicacionDto)
   @Post()
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -59,6 +69,8 @@ export class PublicacionesController {
     return this.publicacionesService.crear(solicitud.usuario.id, dto, archivos);
   }
 
+  @ApiOperation({ summary: 'Editar una publicación propia' })
+  @ApiMultipart(IMAGEN_Y_FOTOS_DE_PASOS, EditarPublicacionDto)
   @Put(':id')
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -83,6 +95,7 @@ export class PublicacionesController {
     );
   }
 
+  @ApiOperation({ summary: 'Listar y buscar publicaciones' })
   @Get()
   listar(
     @Query() consulta: ListarPublicacionesDto,
@@ -91,11 +104,13 @@ export class PublicacionesController {
     return this.publicacionesService.listar(consulta, solicitud.usuario.id);
   }
 
+  @ApiOperation({ summary: 'Obtener una publicación' })
   @Get(':id')
   obtener(@Param() { id }: IdParamDto, @Req() solicitud: SolicitudAutenticada) {
     return this.publicacionesService.obtener(id, solicitud.usuario.id);
   }
 
+  @ApiOperation({ summary: 'Eliminar una publicación (dueño o administrador)' })
   @Delete(':id')
   @HttpCode(204)
   eliminar(
@@ -105,6 +120,7 @@ export class PublicacionesController {
     return this.publicacionesService.eliminar(id, solicitud.usuario);
   }
 
+  @ApiOperation({ summary: 'Dar me gusta' })
   @Post(':id/megusta')
   darMeGusta(
     @Param() { id }: IdParamDto,
@@ -113,6 +129,7 @@ export class PublicacionesController {
     return this.publicacionesService.darMeGusta(id, solicitud.usuario.id);
   }
 
+  @ApiOperation({ summary: 'Quitar el me gusta' })
   @Delete(':id/megusta')
   @HttpCode(204)
   quitarMeGusta(
@@ -122,6 +139,7 @@ export class PublicacionesController {
     return this.publicacionesService.quitarMeGusta(id, solicitud.usuario.id);
   }
 
+  @ApiOperation({ summary: 'Listar los comentarios de una publicación' })
   @Get(':id/comentarios')
   listarComentarios(
     @Param() { id }: IdParamDto,
@@ -130,6 +148,7 @@ export class PublicacionesController {
     return this.comentariosService.listar(id, paginacion);
   }
 
+  @ApiOperation({ summary: 'Comentar una publicación' })
   @Post(':id/comentarios')
   comentar(
     @Param() { id }: IdParamDto,
@@ -139,6 +158,7 @@ export class PublicacionesController {
     return this.comentariosService.crear(id, solicitud.usuario.id, dto);
   }
 
+  @ApiOperation({ summary: 'Editar un comentario propio' })
   @Put(':publicacionId/comentarios/:comentarioId')
   editarComentario(
     @Param() { publicacionId, comentarioId }: ComentarioParamDto,
