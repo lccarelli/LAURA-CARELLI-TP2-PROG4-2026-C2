@@ -150,63 +150,68 @@ body {
     @apply flex flex-col gap-3;
   }
 
+  .seccion-ingredientes .ingredientes {
+    @apply gap-1.5;
+  }
+
+  .seccion-ingredientes .boton-agregar {
+    @apply mt-3;
+  }
+
   .ingrediente-fila {
-    @apply grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-2xl border border-linea/25 p-2 sm:gap-3 sm:p-3;
-  }
-
-  .cantidad-paso {
-    @apply flex items-center gap-1.5;
-  }
-
-  .contador {
-    @apply flex items-center gap-2;
-  }
-
-  .cantidad-paso .campo {
-    @apply min-w-0 px-1 text-center;
-    appearance: textfield;
-  }
-
-  .cantidad-paso .campo::-webkit-inner-spin-button,
-  .cantidad-paso .campo::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  .contador .campo {
-    @apply min-w-0 flex-1 text-lg font-semibold placeholder:text-sm;
-  }
-
-  .contador-unidad {
-    @apply text-sm text-suave;
-  }
-
-  .boton-contador {
-    @apply grid size-7 shrink-0 place-items-center rounded-full bg-secundario text-secundario-tinta anillo-foco hover:bg-secundario/70 disabled:opacity-40 md:size-8;
-  }
-
-  .fracciones {
-    @apply col-span-full flex gap-1.5;
-  }
-
-  .fraccion {
-    @apply inline-flex min-h-8 min-w-10 items-center justify-center rounded-full bg-secundario px-3 text-sm text-secundario-tinta sm:text-base anillo-foco hover:bg-secundario/70;
-  }
-
-  .fraccion.activo {
-    @apply bg-primario text-sobre-primario hover:bg-primario-fuerte;
+    @apply grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1.5 rounded-2xl border border-linea/25 p-1.5 sm:grid-cols-[auto_minmax(13rem,17rem)_minmax(0,1fr)_auto] sm:gap-2;
   }
 
   .ficha-campos {
-    @apply grid gap-3 sm:grid-cols-2 sm:gap-4;
+    @apply flex flex-col gap-5;
+  }
+
+  .ficha-fila {
+    @apply grid grid-cols-1 gap-1 sm:grid-cols-[8rem_minmax(0,1fr)] sm:items-center sm:gap-x-3;
+  }
+
+  .ficha-etiqueta {
+    @apply text-sm text-suave;
+  }
+
+  .ficha-valor {
+    @apply flex min-w-0 flex-wrap items-center gap-2;
+  }
+
+  .ficha-valor .ficha-numero {
+    @apply mt-0 w-24 min-w-0 flex-none text-center;
+  }
+
+  .ficha-valor .ficha-unidad {
+    @apply mt-0 min-h-11 w-[7.25rem] min-w-0 flex-none cursor-pointer px-3;
+  }
+
+  .ficha-valor .ficha-numero.ficha-cantidad {
+    @apply w-20;
+  }
+
+  .boton-paso-ficha {
+    @apply grid size-10 shrink-0 place-items-center rounded-full bg-secundario text-secundario-tinta anillo-foco hover:bg-secundario/70;
+  }
+
+  .ficha-sufijo {
+    @apply min-w-0 flex-1 text-center text-sm text-suave;
+  }
+
+  .ficha-valor > .meta {
+    @apply basis-full;
+  }
+
+  .ficha-error {
+    @apply sm:col-start-2;
   }
 
   .costos {
-    @apply flex items-center gap-2 pt-1;
+    @apply flex items-center gap-1.5;
   }
 
   .costo-signo {
-    @apply grid size-10 place-items-center rounded-full bg-secundario text-lg font-bold text-suave anillo-foco transition-colors;
+    @apply grid size-9 place-items-center rounded-full bg-secundario text-base font-bold text-suave anillo-foco transition-colors;
   }
 
   .costo-signo.activo,
@@ -223,36 +228,31 @@ body {
     @apply col-start-1 row-start-1;
   }
 
-  .ingrediente-fila > .cantidad-paso {
-    @apply col-span-full sm:max-w-xs;
+  .ingrediente-fila > .ingrediente-medida {
+    @apply col-span-full row-start-2 grid grid-cols-[7rem_minmax(0,1fr)] gap-2 sm:col-span-1 sm:col-start-2 sm:row-start-1;
   }
 
-  .ingrediente-fila > .medidas {
-    @apply col-span-full;
+  .ingrediente-cantidad {
+    @apply min-w-0 text-center;
+    appearance: textfield;
+  }
+
+  .ingrediente-cantidad::-webkit-inner-spin-button,
+  .ingrediente-cantidad::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .ingrediente-unidad {
+    @apply min-h-11 min-w-0 cursor-pointer;
   }
 
   .ingrediente-fila > .ingrediente-nombre {
-    @apply col-start-2 row-start-1;
+    @apply col-start-2 row-start-1 sm:col-start-3;
   }
 
   .ingrediente-fila > .boton-icono {
-    @apply col-start-3 row-start-1 size-9 sm:size-11;
-  }
-
-  .medidas {
-    @apply flex flex-col gap-1.5;
-  }
-
-  .medidas-grupo {
-    @apply flex flex-wrap gap-1;
-  }
-
-  .medida-opcion {
-    @apply inline-flex min-h-8 items-center rounded-full bg-secundario px-2 text-xs font-medium text-secundario-tinta anillo-foco hover:bg-secundario/70 sm:min-h-9 sm:px-3 sm:text-sm;
-  }
-
-  .medida-opcion.activa {
-    @apply bg-primario text-sobre-primario hover:bg-primario-fuerte;
+    @apply col-start-3 row-start-1 size-9 sm:col-start-4 sm:size-10;
   }
 
   .ingrediente-error {
@@ -272,11 +272,11 @@ body {
   }
 
   .portada-vista {
-    @apply aspect-video w-full rounded-2xl object-cover;
+    @apply aspect-[16/7] max-h-44 w-full rounded-2xl object-cover lg:aspect-[4/3] lg:max-h-none;
   }
 
   .portada-vacia {
-    @apply relative flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-linea-fuerte bg-hoja text-center text-suave hover:border-barra focus-within:border-barra;
+    @apply relative flex aspect-[16/7] max-h-44 w-full lg:aspect-[4/3] lg:max-h-none cursor-pointer flex-col items-center justify-center gap-1 px-4 rounded-2xl border-2 border-dashed border-linea-fuerte bg-hoja text-center text-suave hover:border-barra focus-within:border-barra;
   }
 
   .portada-texto {
@@ -313,14 +313,6 @@ body {
 
   .boton-foto {
     @apply relative cursor-pointer focus-within:ring-2 focus-within:ring-barra;
-  }
-
-  .rinde-opcion {
-    @apply inline-flex min-h-8 items-center rounded-full bg-secundario px-3 text-sm font-medium text-secundario-tinta anillo-foco hover:bg-secundario/70;
-  }
-
-  .rinde-opcion.activa {
-    @apply bg-primario text-sobre-primario hover:bg-primario-fuerte;
   }
 
   .paso-foto-boton {
@@ -489,6 +481,53 @@ body {
 
   .panel-foto-ancha .panel-autor {
     @apply block;
+  }
+
+  .pagina-publicacion {
+    @apply max-w-6xl;
+  }
+
+  .plantilla.plantilla-publicacion {
+    @apply gap-4 lg:grid lg:grid-cols-12 lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-0 lg:gap-y-3;
+  }
+
+  .plantilla-publicacion > .portada {
+    @apply lg:col-span-4 lg:row-span-2 lg:pr-6;
+  }
+
+  .plantilla-publicacion > .caja {
+    @apply lg:col-span-8;
+  }
+
+  .plantilla-publicacion > .caja + .caja {
+    @apply lg:self-stretch;
+  }
+
+  .plantilla-publicacion > .caja > textarea {
+    @apply lg:min-h-24 lg:flex-1;
+  }
+
+  .plantilla-publicacion > fieldset {
+    @apply relative pt-4 lg:mt-3;
+  }
+
+  .plantilla-publicacion > fieldset::before {
+    content: '';
+    @apply absolute inset-x-0 top-0 h-px bg-linea-fuerte/60;
+  }
+
+  .plantilla-publicacion > .seccion-ficha {
+    @apply lg:col-span-5 lg:pr-6;
+  }
+
+  .plantilla-publicacion > .seccion-ingredientes {
+    @apply lg:col-span-7 lg:border-l lg:pl-6;
+  }
+
+  .plantilla-publicacion > .seccion-pasos,
+  .plantilla-publicacion > p,
+  .plantilla-publicacion > button {
+    @apply lg:col-span-full;
   }
 
   .pagina-angosta {
@@ -670,7 +709,7 @@ body {
   }
 
   .plantilla legend {
-    @apply mb-2 w-full;
+    @apply mb-1 w-full;
   }
 
   .controles-listado {
@@ -778,10 +817,6 @@ body {
 
   .formulario {
     @apply flex flex-col gap-6;
-  }
-
-  .plantilla > fieldset {
-    @apply mt-4;
   }
 
   .encabezado-pagina {

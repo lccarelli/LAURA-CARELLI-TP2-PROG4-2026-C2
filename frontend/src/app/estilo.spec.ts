@@ -298,3 +298,174 @@ describe('botón de Google', () => {
     },
   );
 });
+
+describe('pantalla de nueva publicación', () => {
+  const regla = (selector: string) => {
+    const inicio = hojaDeEstilos.indexOf(`\n  ${selector} {`);
+    return hojaDeEstilos.slice(inicio, hojaDeEstilos.indexOf('}', inicio));
+  };
+
+  it('[I] es más ancha que una página de formulario común: hasta 6xl y no 3xl', () => {
+    expect(regla('.pagina-publicacion')).toContain('max-w-6xl');
+  });
+
+  it('[I] la grilla de la plantilla le gana a la base de `.plantilla` (que es una columna): si no, las columnas nunca se ven', () => {
+    const grilla = regla('.plantilla.plantilla-publicacion');
+
+    expect(grilla).toContain('lg:grid');
+    expect(grilla).toContain('lg:grid-cols-12');
+  });
+
+  it('[I] arriba van la portada (1/3) a la izquierda y el título con el mensaje (2/3) a la derecha, juntos', () => {
+    const grilla = regla('.plantilla.plantilla-publicacion');
+
+    expect(regla('.plantilla-publicacion > .portada')).toContain('lg:col-span-4');
+    expect(regla('.plantilla-publicacion > .portada')).toContain('lg:row-span-2');
+    expect(regla('.plantilla-publicacion > .caja')).toContain('lg:col-span-8');
+    expect(grilla).toContain('lg:grid-rows-[auto_1fr]');
+    expect(grilla).toContain('lg:gap-y-3');
+  });
+
+  it('[I] el mensaje ocupa el alto que sobra junto a la portada, así no queda un hueco entre el título y el mensaje', () => {
+    expect(regla('.plantilla-publicacion > .caja + .caja')).toContain('lg:self-stretch');
+    expect(regla('.plantilla-publicacion > .caja > textarea')).toContain('lg:flex-1');
+  });
+
+  it('[I] cada sección lleva una línea bajo su título, dibujada aparte: el borde de un `fieldset` lo corta la leyenda y casi no se ve', () => {
+    const linea = regla('.plantilla-publicacion > fieldset::before');
+
+    expect(linea).toContain('h-px');
+    expect(linea).toContain('inset-x-0');
+    expect(linea).toContain('bg-linea-fuerte/60');
+    expect(regla('.plantilla-publicacion > fieldset')).not.toContain('border-t');
+  });
+
+  it('[I] la ficha va a la izquierda (5/12) y los ingredientes a la derecha (7/12), con una línea vertical entre las dos', () => {
+    expect(regla('.plantilla-publicacion > .seccion-ficha')).toContain('lg:col-span-5');
+    const ingredientes = regla('.plantilla-publicacion > .seccion-ingredientes');
+
+    expect(ingredientes).toContain('lg:col-span-7');
+    expect(ingredientes).toContain('lg:border-l');
+  });
+
+  it('[I] los pasos, el botón de publicar y los avisos ocupan todo el ancho', () => {
+    const ancho = hojaDeEstilos.slice(
+      hojaDeEstilos.indexOf('.plantilla-publicacion > .seccion-pasos'),
+      hojaDeEstilos.indexOf('}', hojaDeEstilos.indexOf('.plantilla-publicacion > .seccion-pasos')),
+    );
+
+    expect(ancho).toContain('.plantilla-publicacion > button');
+    expect(ancho).toContain('lg:col-span-full');
+  });
+
+  it('[I] debajo del tamaño lg todo se apila en una columna: las reglas de columnas son sólo para pantallas grandes', () => {
+    const reglas = [
+      '.plantilla.plantilla-publicacion',
+      '.plantilla-publicacion > .portada',
+      '.plantilla-publicacion > .caja',
+      '.plantilla-publicacion > .seccion-ficha',
+      '.plantilla-publicacion > .seccion-ingredientes',
+    ];
+
+    for (const selector of reglas) {
+      const sinPrefijo = regla(selector)
+        .replace(/lg:[^\s;]+/g, '')
+        .replace(/[{}]/g, '')
+        .replace(selector, '');
+      expect(sinPrefijo, selector).not.toMatch(/col-span|grid-cols|row-span|\bgrid\b/);
+    }
+  });
+
+  it.each([
+    ['.ficha-valor .ficha-numero', /\bw-24\b/],
+    ['.ficha-valor .ficha-numero.ficha-cantidad', /\bw-20\b/],
+    ['.ficha-valor .ficha-unidad', /w-\[7\.25rem\]/],
+  ])(
+    '[I] %s tiene un ancho fijo y no ocupa todo el ancho (le gana a `.campo`, que sí)',
+    (selector, ancho) => {
+      expect(regla(selector)).toMatch(ancho);
+    },
+  );
+
+  it('[I] la lista de porciones o unidades es corta: menos de 8 rem', () => {
+    const medida = Number(regla('.ficha-valor .ficha-unidad').match(/w-\[([\d.]+)rem\]/)![1]);
+
+    expect(medida).toBeLessThan(8);
+  });
+
+  it('[I] la unidad (kcal, min) flota centrada en el espacio que dejan el número y sus botones', () => {
+    const sufijo = regla('.ficha-sufijo');
+
+    expect(sufijo).toContain('flex-1');
+    expect(sufijo).toContain('text-center');
+  });
+
+  it('[I] los botones de más y menos son círculos de 40 px, cómodos de tocar', () => {
+    expect(regla('.boton-paso-ficha')).toContain('size-10');
+  });
+
+  it('[I] la ficha son filas de dos columnas (nombre y valor) que en el celular pasan a una sola', () => {
+    const fila = regla('.ficha-fila');
+
+    expect(fila).toContain('grid-cols-1');
+    expect(fila).toContain('sm:grid-cols-[8rem_minmax(0,1fr)]');
+  });
+
+  it('[I] los campos de la ficha no tienen fondo de tarjeta propio: el valor va directo sobre la plantilla', () => {
+    for (const selector of ['.ficha-fila', '.ficha-valor', '.ficha-campos']) {
+      expect(regla(selector), selector).not.toMatch(/\bbg-/);
+    }
+  });
+
+  it('[I] entre las filas de la ficha hay la misma distancia vertical que entre un ingrediente y otro (20 px entre campos)', () => {
+    const rem = (valor: string) => Number(valor) * 16;
+    const clase = (selector: string, patron: RegExp) => Number(regla(selector).match(patron)![1]);
+    const entreIngredientes =
+      rem(String(clase('.ingrediente-fila', /\bp-(\d\.?\d*)\b/) * 0.25)) * 2 +
+      rem(String(clase('.seccion-ingredientes .ingredientes', /\bgap-(\d\.?\d*)\b/) * 0.25)) +
+      2;
+    const entreFilasDeLaFicha = rem(String(clase('.ficha-campos', /\bgap-(\d\.?\d*)\b/) * 0.25));
+
+    expect(entreFilasDeLaFicha).toBe(entreIngredientes);
+  });
+
+  it('[I] entre un ingrediente y otro hay poco espacio', () => {
+    expect(regla('.seccion-ingredientes .ingredientes')).toContain('gap-1.5');
+    expect(regla('.ingrediente-fila')).toContain('p-1.5');
+  });
+
+  it.each(['.portada-vista', '.portada-vacia'])(
+    '[I] la portada (%s) es chica: nunca 16:9 a todo el ancho, con una altura máxima en el celular',
+    (selector) => {
+      const portada = regla(selector);
+
+      expect(portada).not.toContain('aspect-video');
+      expect(portada).toContain('aspect-[16/7]');
+      expect(portada).toContain('max-h-44');
+      expect(portada).toContain('lg:aspect-[4/3]');
+    },
+  );
+
+  it('[I] cada ingrediente cabe en una sola línea desde el tamaño sm: número, medida y cantidad, nombre y quitar', () => {
+    const fila = regla('.ingrediente-fila');
+
+    expect(fila).toMatch(/sm:grid-cols-\[auto_minmax\(13rem,17rem\)_minmax\(0,1fr\)_auto\]/);
+    expect(regla('.ingrediente-fila > .ingrediente-medida')).toContain('sm:row-start-1');
+  });
+
+  it('[I] la lista de medidas y la cantidad son cómodas de tocar: alto mínimo de 44 px', () => {
+    expect(regla('.ingrediente-unidad')).toContain('min-h-11');
+  });
+
+  it('[I] se quitaron los estilos de los botones de fracciones, medidas y más y menos del ingrediente', () => {
+    for (const clase of [
+      '.fraccion',
+      '.fracciones',
+      '.medida-opcion',
+      '.medidas-grupo',
+      '.cantidad-paso',
+    ]) {
+      expect(hojaDeEstilos, clase).not.toContain(`  ${clase} {`);
+    }
+  });
+});

@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { Publicacion } from '../../interfaces/publicacion';
+import { Publicacion, Tipo } from '../../interfaces/publicacion';
 import { Auth } from '../../servicios/auth/auth';
 import { FotosBorrador } from '../../servicios/fotos-borrador/fotos-borrador';
 import { Idioma } from '../../servicios/idioma/idioma';
@@ -26,6 +26,11 @@ const publicacion = (numero: number): Publicacion => ({
   mensaje: `Mensaje ${numero}`,
   fecha: '2026-10-22T15:30:00',
 });
+
+function elegirOpcion(lista: HTMLSelectElement, valor: string) {
+  lista.value = valor;
+  lista.dispatchEvent(new Event('change'));
+}
 
 describe('NuevaPublicacion', () => {
   let fixture: ComponentFixture<NuevaPublicacion>;
@@ -244,16 +249,12 @@ describe('NuevaPublicacion', () => {
       });
     });
 
-    it('[I] los campos numéricos de la ficha aclaran con un ejemplo que sólo aceptan números', () => {
+    it('[I] los campos numéricos de la ficha muestran un ejemplo del número que se espera', () => {
       const campos = Array.from(
         fixture.nativeElement.querySelectorAll('.ficha-campos input'),
       ) as HTMLInputElement[];
 
-      expect(campos.map((campo) => campo.placeholder)).toEqual([
-        'Sólo números, ej. 4',
-        'Sólo números, ej. 250',
-        'Sólo números, ej. 30',
-      ]);
+      expect(campos.map((campo) => campo.placeholder)).toEqual(['4', '250', '30']);
     });
 
     it('[B] la cantidad debe ser mayor que 0 y tener hasta 2 decimales', async () => {
@@ -386,14 +387,61 @@ describe('NuevaPublicacion', () => {
       expect(Array.from(campos).map((campo) => campo.value)).toEqual(['1234', '1234', '1234']);
     });
 
-    it('[I] cada ingrediente pide primero el nombre, luego la medida y al final la cantidad', async () => {
+    it('[I] cada ingrediente es una sola línea: nombre, cantidad y una lista desplegable con la medida', async () => {
       const fila = fixture.nativeElement.querySelector('.ingrediente-fila') as HTMLElement;
-      const controles = Array.from(fila.querySelectorAll('[formcontrolname]')).map((control) =>
-        control.getAttribute('formcontrolname'),
+      const controles = Array.from(fila.querySelectorAll('input, select')).map(
+        (control) => control.getAttribute('formcontrolname') ?? control.tagName.toLowerCase(),
       );
 
-      expect(controles).toEqual(['nombre', 'cantidad']);
-      expect(fila.querySelector('.medidas')).not.toBeNull();
+      expect(controles).toEqual(['nombre', 'cantidad', 'select']);
+      expect(fila.querySelector('.ingrediente-medida select')).not.toBeNull();
+      expect(fila.querySelectorAll('button')).toHaveLength(1);
+    });
+
+    it.each(['receta', 'tip', 'experiencia'])(
+      '[I] la plantilla de %s usa la disposición ancha y la portada compacta',
+      async (tipo) => {
+        fixture.componentInstance.tipo.set(tipo as Tipo);
+        await actualizar();
+        const raiz = fixture.nativeElement as HTMLElement;
+
+        expect(raiz.querySelector('section.pagina-publicacion')).not.toBeNull();
+        expect(raiz.querySelector('section.max-w-3xl')).toBeNull();
+        expect(
+          raiz.querySelector('.plantilla.plantilla-publicacion > .portada .portada-vacia'),
+        ).not.toBeNull();
+        expect(raiz.querySelector('.plantilla-publicacion > label.caja')).not.toBeNull();
+        expect(raiz.querySelectorAll('.plantilla-publicacion > label.caja')).toHaveLength(2);
+      },
+    );
+
+    it('[I] la receta tiene tres secciones con su clase: ficha, ingredientes y pasos (para ubicarlas en la grilla)', () => {
+      const raiz = fixture.nativeElement as HTMLElement;
+
+      expect(raiz.querySelector('.plantilla-publicacion > fieldset.seccion-ficha')).not.toBeNull();
+      expect(
+        raiz.querySelector('.plantilla-publicacion > fieldset.seccion-ingredientes'),
+      ).not.toBeNull();
+      expect(raiz.querySelector('.plantilla-publicacion > fieldset.seccion-pasos')).not.toBeNull();
+    });
+
+    it('[I] las secciones siguen en el orden en que se leen: ficha, ingredientes y pasos', () => {
+      const secciones = Array.from(
+        fixture.nativeElement.querySelectorAll('.plantilla-publicacion > fieldset'),
+      ).map((seccion) =>
+        Array.from((seccion as HTMLElement).classList).find((clase) =>
+          clase.startsWith('seccion-'),
+        ),
+      );
+
+      expect(secciones).toEqual(['seccion-ficha', 'seccion-ingredientes', 'seccion-pasos']);
+    });
+
+    it('[I] ya no hay botones de más y menos, fracciones ni una fila de medidas: hay menos cosas para recorrer con el teclado', async () => {
+      const fila = fixture.nativeElement.querySelector('.ingrediente-fila') as HTMLElement;
+
+      expect(fila.querySelector('.medidas, .fracciones, .fraccion, .cantidad-paso')).toBeNull();
+      expect(fila.querySelector('.boton-contador')).toBeNull();
     });
 
     it('[I] los ingredientes se numeran en el orden en que se agregan', async () => {
@@ -410,19 +458,27 @@ describe('NuevaPublicacion', () => {
       expect(numeros).toEqual(['1', '2', '3']);
     });
 
+    const lista = () =>
+      fixture.nativeElement.querySelector('.ingrediente-fila select') as HTMLSelectElement;
     const nombresDeMedidas = () =>
-      Array.from(fixture.nativeElement.querySelectorAll('.ingrediente-fila .medidas-grupo')).map(
-        (grupo) =>
-          Array.from((grupo as HTMLElement).querySelectorAll('button')).map((boton) =>
-            boton.textContent?.trim(),
-          ),
-      );
+      Array.from(lista().options).map((opcion) => opcion.textContent?.trim());
+    const elegirUnidad = async (valor: string) => {
+      elegirOpcion(lista(), valor);
+      await actualizar();
+    };
 
-    it('[I] las medidas van por tamaño, de menor a mayor, en tres líneas y con la palabra completa', () => {
+    it('[I] las medidas van por tamaño, de menor a mayor, con la palabra completa', () => {
       expect(nombresDeMedidas()).toEqual([
-        ['a gusto', 'pizca', 'cucharadita', 'cucharada'],
-        ['gramos', 'kilogramos', 'mililitros', 'litros'],
-        ['taza', 'unidad'],
+        'a gusto',
+        'pizca',
+        'cucharadita',
+        'cucharada',
+        'gramos',
+        'kilogramos',
+        'mililitros',
+        'litros',
+        'taza',
+        'unidad',
       ]);
     });
 
@@ -431,23 +487,77 @@ describe('NuevaPublicacion', () => {
       await actualizar();
 
       expect(nombresDeMedidas()).toEqual([
-        ['to taste', 'pinch', 'teaspoon', 'tablespoon'],
-        ['grams', 'kilograms', 'milliliters', 'liters'],
-        ['cup', 'unit'],
+        'to taste',
+        'pinch',
+        'teaspoon',
+        'tablespoon',
+        'grams',
+        'kilograms',
+        'milliliters',
+        'liters',
+        'cup',
+        'unit',
       ]);
     });
 
-    it('[O] la medida elegida queda marcada y las demás no', async () => {
-      const botones = Array.from(
-        fixture.nativeElement.querySelectorAll('.medidas button'),
-      ) as HTMLButtonElement[];
-      botones.find((boton) => boton.textContent?.trim() === 'kilogramos')!.click();
-      await actualizar();
+    it('[O] la lista muestra la medida elegida y elegir otra cambia el valor del ingrediente', async () => {
+      const fila = fixture.componentInstance.ingredientes.at(0);
+      expect(lista().selectedOptions[0].textContent?.trim()).toBe('gramos');
 
-      const marcadas = Array.from(
-        fixture.nativeElement.querySelectorAll('.medidas [aria-pressed="true"]'),
-      ).map((boton) => (boton as HTMLElement).textContent?.trim());
-      expect(marcadas).toEqual(['kilogramos']);
+      await elegirUnidad('kg');
+
+      expect(fila.controls.unidad.value).toBe('kg');
+      expect(lista().selectedOptions[0].textContent?.trim()).toBe('kilogramos');
+    });
+
+    it('[E] un valor que no es una medida se ignora y no cambia nada', async () => {
+      const fila = fixture.componentInstance.ingredientes.at(0);
+      const antes = fila.controls.unidad.value;
+
+      fixture.componentInstance.elegirMedida(fila, 'litro-de-mentira');
+
+      expect(fila.controls.unidad.value).toBe(antes);
+    });
+
+    it('[S] la lista tiene nombre para los lectores de pantalla y la cantidad también', () => {
+      const fila = fixture.nativeElement.querySelector('.ingrediente-fila') as HTMLElement;
+
+      expect(lista().getAttribute('aria-label')).toBeTruthy();
+      expect(
+        fila.querySelector('input[formcontrolname="cantidad"]')!.getAttribute('aria-label'),
+      ).toBeTruthy();
+    });
+
+    it('[O] con «a gusto» la cantidad se vacía y se deshabilita, y al elegir otra medida se habilita', async () => {
+      const fila = fixture.componentInstance.ingredientes.at(0);
+      fila.controls.cantidad.setValue(3);
+
+      await elegirUnidad('a_gusto');
+      expect(fila.controls.cantidad.disabled).toBe(true);
+      expect(fila.controls.cantidad.value).toBeNull();
+      expect(
+        (
+          fixture.nativeElement.querySelector(
+            '.ingrediente-fila input[formcontrolname="cantidad"]',
+          ) as HTMLInputElement
+        ).disabled,
+      ).toBe(true);
+
+      await elegirUnidad('taza');
+      expect(fila.controls.cantidad.enabled).toBe(true);
+    });
+
+    it('[O] se puede escribir una cantidad con decimales (por ejemplo, media taza)', async () => {
+      const fila = fixture.componentInstance.ingredientes.at(0);
+      await elegirUnidad('taza');
+      const campo = fixture.nativeElement.querySelector(
+        '.ingrediente-fila input[formcontrolname="cantidad"]',
+      ) as HTMLInputElement;
+
+      campo.value = '0.5';
+      campo.dispatchEvent(new Event('input'));
+
+      expect(fila.controls.cantidad.value).toBe(0.5);
     });
 
     describe('plantillas con solapa', () => {
@@ -487,42 +597,45 @@ describe('NuevaPublicacion', () => {
     });
 
     describe('porciones o unidades', () => {
-      const opciones = () =>
-        Array.from(
-          fixture.nativeElement.querySelectorAll('.rinde-opcion') as NodeListOf<HTMLButtonElement>,
-        );
+      const lista = () => fixture.nativeElement.querySelector('.ficha-unidad') as HTMLSelectElement;
+      const elegirRinde = async (valor: string) => {
+        elegirOpcion(lista(), valor);
+        await actualizar();
+      };
 
-      it('[O] por defecto rinde porciones y se puede cambiar a unidades', async () => {
-        expect(opciones().map((opcion) => opcion.textContent!.trim())).toEqual([
+      it('[O] por defecto rinde porciones y en la lista desplegable se puede cambiar a unidades', async () => {
+        expect(Array.from(lista().options).map((opcion) => opcion.textContent!.trim())).toEqual([
           'Porciones',
           'Unidades',
         ]);
         expect(fixture.componentInstance.tipoRinde()).toBe('porciones');
-        expect(opciones()[0].getAttribute('aria-pressed')).toBe('true');
+        expect(lista().selectedOptions[0].textContent!.trim()).toBe('Porciones');
 
-        opciones()[1].click();
-        await actualizar();
+        await elegirRinde('unidades');
 
         expect(fixture.componentInstance.tipoRinde()).toBe('unidades');
-        expect(opciones()[1].getAttribute('aria-pressed')).toBe('true');
+        expect(lista().selectedOptions[0].textContent!.trim()).toBe('Unidades');
       });
 
-      it('[O] los botones y las calorías hablan de unidades cuando se elige unidades', async () => {
-        opciones()[1].click();
-        await actualizar();
+      it('[O] las calorías hablan de unidades cuando se elige unidades', async () => {
+        await elegirRinde('unidades');
 
-        const etiquetas = Array.from(
-          fixture.nativeElement.querySelectorAll('.contador button') as NodeListOf<HTMLElement>,
-        ).map((boton) => boton.getAttribute('aria-label'));
-        expect(etiquetas).toContain('Aumentar Unidades');
         expect(fixture.nativeElement.textContent).toContain('Calorías por unidad');
         expect(fixture.nativeElement.textContent).not.toContain('Calorías por porción');
+        expect(
+          fixture.nativeElement.querySelector('#ficha-porciones').getAttribute('aria-label'),
+        ).toBe('Unidades');
+      });
+
+      it('[E] un valor que no es una opción se ignora', () => {
+        fixture.componentInstance.elegirTipoRinde('litros');
+
+        expect(fixture.componentInstance.tipoRinde()).toBe('porciones');
       });
 
       it('[I] al publicar envía el tipo junto con la cantidad', async () => {
         fixture.componentInstance.formulario.patchValue({ ...formularioValido, porciones: '12' });
-        opciones()[1].click();
-        await actualizar();
+        await elegirRinde('unidades');
 
         await enviar();
 
@@ -533,8 +646,7 @@ describe('NuevaPublicacion', () => {
 
       it('[B] sin cantidad no envía el tipo', async () => {
         fixture.componentInstance.formulario.patchValue(formularioValido);
-        opciones()[1].click();
-        await actualizar();
+        await elegirRinde('unidades');
 
         await enviar();
 
@@ -544,70 +656,178 @@ describe('NuevaPublicacion', () => {
       });
     });
 
-    describe('ficha en columnas', () => {
-      it('[O] porciones, calorías, tiempo y costo son cuatro cajas de la misma grilla', () => {
-        const grilla = fixture.nativeElement.querySelector('.ficha-campos') as HTMLElement;
-        const cajas = Array.from(grilla.children) as HTMLElement[];
-
-        expect(cajas).toHaveLength(4);
-        expect(cajas.every((caja) => caja.classList.contains('caja'))).toBe(true);
-        expect(cajas[2].textContent).toContain('Tiempo de preparación');
-        expect(cajas[3].textContent).toContain('Costo');
-      });
-    });
-
-    describe('controles inteligentes', () => {
-      const botonDe = (selector: string, etiqueta: string) =>
+    describe('ficha en filas simples', () => {
+      const filas = () =>
         Array.from(
-          fixture.nativeElement.querySelectorAll(selector) as NodeListOf<HTMLButtonElement>,
-        ).find((boton) => boton.getAttribute('aria-label') === etiqueta)!;
+          fixture.nativeElement.querySelectorAll(
+            '.ficha-campos > .ficha-fila',
+          ) as NodeListOf<HTMLElement>,
+        );
       const ficha = () => fixture.componentInstance.formulario.getRawValue();
 
-      it('[O] el más de porciones arranca en 4 y suma de a uno; el menos baja y vuelve a vacío', async () => {
-        botonDe('.contador button', 'Aumentar Porciones').click();
-        expect(ficha().porciones).toBe('4');
-        botonDe('.contador button', 'Aumentar Porciones').click();
-        expect(ficha().porciones).toBe('5');
+      it('[O] porciones, calorías, tiempo y costo son cuatro filas: nombre a la izquierda y valor a la derecha', () => {
+        expect(filas()).toHaveLength(4);
+        expect(filas()[0].textContent).toContain('¿Qué rinde la receta?');
+        expect(filas()[1].textContent).toContain('Calorías por porción');
+        expect(filas()[2].textContent).toContain('Tiempo de preparación');
+        expect(filas()[3].textContent).toContain('Costo');
+      });
 
-        for (let i = 0; i < 5; i++) {
-          botonDe('.contador button', 'Disminuir Porciones').click();
+      it('[I] no hay tarjetas blancas ni botones que parezcan filtros: sólo más y menos de calorías y tiempo, y el costo', () => {
+        const raiz = fixture.nativeElement as HTMLElement;
+
+        expect(raiz.querySelector('.ficha-campos .caja')).toBeNull();
+        expect(
+          raiz.querySelector('.ficha-campos .rinde-opcion, .ficha-campos .tipo-opcion'),
+        ).toBeNull();
+        expect(
+          Array.from(raiz.querySelectorAll('.ficha-campos button')).map((boton) =>
+            boton.getAttribute('aria-label'),
+          ),
+        ).toEqual([
+          'Disminuir Calorías por porción',
+          'Aumentar Calorías por porción',
+          'Disminuir Tiempo de preparación',
+          'Aumentar Tiempo de preparación',
+          'Costo 1 de 4',
+          'Costo 2 de 4',
+          'Costo 3 de 4',
+          'Costo 4 de 4',
+        ]);
+      });
+
+      it.each([
+        ['ficha-porciones', '¿Qué rinde la receta?'],
+        ['ficha-calorias', 'Calorías por porción'],
+        ['ficha-tiempoMinutos', 'Tiempo de preparación'],
+      ])(
+        '[S] el campo %s tiene su nombre asociado (al tocar el nombre se enfoca el campo)',
+        (id, nombre) => {
+          const etiqueta = fixture.nativeElement.querySelector(
+            `label[for="${id}"]`,
+          ) as HTMLLabelElement;
+
+          expect(etiqueta.textContent).toContain(nombre);
+          expect(fixture.nativeElement.querySelector(`#${id}`)).not.toBeNull();
+        },
+      );
+
+      it('[O] calorías y tiempo tienen el menos a la izquierda y el más a la derecha del número, y la unidad después', () => {
+        for (const [posicion, unidad] of [
+          [1, 'kcal'],
+          [2, 'min'],
+        ] as const) {
+          const valor = filas()[posicion].querySelector('.ficha-valor')!;
+          const orden = Array.from(valor.children).map((hijo) => hijo.tagName.toLowerCase());
+
+          expect(orden.slice(0, 4), unidad).toEqual(['button', 'input', 'button', 'span']);
+          expect(valor.children[3].textContent).toContain(unidad);
+          expect(valor.children[3].classList).toContain('ficha-sufijo');
         }
-        expect(ficha().porciones).toBe('');
       });
 
-      it('[O] las calorías suben y bajan de a 50', () => {
-        botonDe('.contador button', 'Aumentar Calorías por porción').click();
-        botonDe('.contador button', 'Aumentar Calorías por porción').click();
+      it('[S] porciones no lleva más y menos: es un número y una lista corta', () => {
+        const valor = filas()[0].querySelector('.ficha-valor')!;
 
-        expect(ficha().calorias).toBe('300');
+        expect(valor.querySelectorAll('button')).toHaveLength(0);
+        expect(Array.from(valor.children).map((hijo) => hijo.tagName.toLowerCase())).toEqual([
+          'input',
+          'select',
+        ]);
       });
 
-      it('[B] el contador no pasa del máximo de la ficha ni baja de 1', () => {
-        fixture.componentInstance.formulario.patchValue({ porciones: '100' });
-        botonDe('.contador button', 'Aumentar Porciones').click();
-        expect(ficha().porciones).toBe('100');
-
-        fixture.componentInstance.formulario.patchValue({ porciones: '1' });
-        botonDe('.contador button', 'Disminuir Porciones').click();
-        expect(ficha().porciones).toBe('');
-      });
-
-      it('[O] un tiempo habitual carga los minutos, lo marca y al tocarlo de nuevo lo quita', async () => {
-        const chip = () =>
+      describe('más y menos de calorías y tiempo', () => {
+        const boton = (etiqueta: string) =>
           Array.from(
             fixture.nativeElement.querySelectorAll(
-              '.tipos button',
+              '.ficha-campos button',
             ) as NodeListOf<HTMLButtonElement>,
-          ).find((boton) => boton.textContent!.trim() === '1 h 30 min')!;
+          ).find((candidato) => candidato.getAttribute('aria-label') === etiqueta)!;
 
-        chip().click();
-        await actualizar();
-        expect(ficha().tiempoMinutos).toBe('90');
-        expect(chip().getAttribute('aria-pressed')).toBe('true');
-        expect(fixture.nativeElement.textContent).toContain('Equivale a 1 h 30 min');
+        it('[O] las calorías suben y bajan de a 50; la primera vez que se sube arranca en 250', () => {
+          boton('Aumentar Calorías por porción').click();
+          expect(ficha().calorias).toBe('250');
 
-        chip().click();
-        expect(ficha().tiempoMinutos).toBe('');
+          boton('Aumentar Calorías por porción').click();
+          expect(ficha().calorias).toBe('300');
+
+          boton('Disminuir Calorías por porción').click();
+          expect(ficha().calorias).toBe('250');
+        });
+
+        it('[O] el tiempo sube y baja de a 5 minutos; la primera vez que se sube arranca en 30', () => {
+          boton('Aumentar Tiempo de preparación').click();
+          expect(ficha().tiempoMinutos).toBe('30');
+
+          boton('Aumentar Tiempo de preparación').click();
+          expect(ficha().tiempoMinutos).toBe('35');
+
+          boton('Disminuir Tiempo de preparación').click();
+          expect(ficha().tiempoMinutos).toBe('30');
+        });
+
+        it('[B] no pasan del máximo (10000 calorías, 10080 minutos) ni bajan de 1: al llegar a 0 queda vacío', () => {
+          fixture.componentInstance.formulario.patchValue({
+            calorias: '10000',
+            tiempoMinutos: '10080',
+          });
+          boton('Aumentar Calorías por porción').click();
+          boton('Aumentar Tiempo de preparación').click();
+          expect([ficha().calorias, ficha().tiempoMinutos]).toEqual(['10000', '10080']);
+
+          fixture.componentInstance.formulario.patchValue({ calorias: '30', tiempoMinutos: '3' });
+          boton('Disminuir Calorías por porción').click();
+          boton('Disminuir Tiempo de preparación').click();
+          expect([ficha().calorias, ficha().tiempoMinutos]).toEqual(['', '']);
+        });
+
+        it('[B] con el campo vacío, el menos no hace nada raro', () => {
+          boton('Disminuir Calorías por porción').click();
+
+          expect(ficha().calorias).toBe('');
+        });
+
+        it('[O] las calorías dicen «por unidad» en los botones cuando se elige unidades', async () => {
+          fixture.componentInstance.elegirTipoRinde('unidades');
+          await actualizar();
+
+          expect(boton('Aumentar Calorías por unidad')).toBeTruthy();
+        });
+
+        it('[S] subir o bajar marca el campo como modificado (para el borrador automático)', () => {
+          boton('Aumentar Calorías por porción').click();
+
+          expect(fixture.componentInstance.formulario.controls.calorias.dirty).toBe(true);
+        });
+
+        it('[O] «Equivale a 1 h 30 min» sigue apareciendo al subir el tiempo con los botones', async () => {
+          fixture.componentInstance.formulario.patchValue({ tiempoMinutos: '55' });
+          boton('Aumentar Tiempo de preparación').click();
+          for (let i = 0; i < 6; i++) {
+            boton('Aumentar Tiempo de preparación').click();
+          }
+          await actualizar();
+
+          expect(ficha().tiempoMinutos).toBe('90');
+          expect(filas()[2].textContent).toContain('Equivale a 1 h 30 min');
+        });
+      });
+
+      it('[O] a partir de 60 minutos dice cuánto es en horas', async () => {
+        const tiempo = fixture.nativeElement.querySelector(
+          '#ficha-tiempoMinutos',
+        ) as HTMLInputElement;
+        const escribir = async (valor: string) => {
+          tiempo.value = valor;
+          tiempo.dispatchEvent(new Event('input'));
+          await actualizar();
+        };
+
+        await escribir('90');
+        expect(filas()[2].textContent).toContain('Equivale a 1 h 30 min');
+
+        await escribir('45');
+        expect(filas()[2].textContent).not.toContain('Equivale');
       });
 
       it('[O] el costo se ilumina hasta el nivel elegido y dice cuál es', async () => {
@@ -628,91 +848,15 @@ describe('NuevaPublicacion', () => {
         expect(fixture.nativeElement.textContent).toContain('Algo caro');
       });
 
-      it('[O] el más y el menos de la cantidad usan el paso de la medida', async () => {
-        const fila = fixture.componentInstance.ingredientes.at(0);
-        const mas = () =>
-          fixture.nativeElement.querySelector(
-            '.cantidad-paso button:last-of-type',
-          ) as HTMLButtonElement;
-        const menos = () =>
-          fixture.nativeElement.querySelector('.cantidad-paso button') as HTMLButtonElement;
+      it('[I] los números se escriben (sólo dígitos) y llegan al formulario', async () => {
+        const campo = fixture.nativeElement.querySelector('#ficha-calorias') as HTMLInputElement;
 
-        mas().click();
-        expect(fila.controls.cantidad.value).toBe(50);
-
-        fila.controls.unidad.setValue('taza');
-        fila.controls.cantidad.setValue(1);
-        mas().click();
-        expect(fila.controls.cantidad.value).toBe(1.25);
-
-        fila.controls.cantidad.setValue(0.25);
-        menos().click();
-        expect(fila.controls.cantidad.value).toBeNull();
-      });
-
-      const elegirUnidad = async (unidad: string) => {
-        const nombre = {
-          g: 'gramos',
-          kg: 'kilogramos',
-          ml: 'mililitros',
-          l: 'litros',
-          taza: 'taza',
-          cucharada: 'cucharada',
-          cucharadita: 'cucharadita',
-          unidad: 'unidad',
-          pizca: 'pizca',
-          a_gusto: 'a gusto',
-        }[unidad];
-        const botones = Array.from(
-          fixture.nativeElement.querySelectorAll('.medidas button'),
-        ) as HTMLButtonElement[];
-        botones.find((boton) => boton.textContent?.trim() === nombre)!.click();
-        await actualizar();
-      };
-      const fraccion = (texto: string) =>
-        Array.from(
-          fixture.nativeElement.querySelectorAll('.fraccion') as NodeListOf<HTMLButtonElement>,
-        ).find((boton) => boton.textContent!.trim() === texto)!;
-
-      it('[O] las fracciones se ven siempre, sin pasar el mouse, sólo en medidas que las usan', async () => {
-        expect(fixture.nativeElement.querySelector('.fracciones')).toBeNull();
-
-        for (const unidad of ['taza', 'cucharada', 'cucharadita', 'unidad', 'kg', 'l']) {
-          await elegirUnidad(unidad);
-          expect(fixture.nativeElement.querySelectorAll('.fraccion'), unidad).toHaveLength(3);
-        }
-        for (const unidad of ['g', 'ml', 'pizca', 'a_gusto']) {
-          await elegirUnidad(unidad);
-          expect(fixture.nativeElement.querySelector('.fracciones'), unidad).toBeNull();
-        }
-      });
-
-      it('[O] las fracciones suman a la parte entera y al tocarlas de nuevo se quitan', async () => {
-        const fila = fixture.componentInstance.ingredientes.at(0);
-        await elegirUnidad('taza');
-
-        fila.controls.cantidad.setValue(2);
-        fraccion('½').click();
-        expect(fila.controls.cantidad.value).toBe(2.5);
-
-        fraccion('¾').click();
-        expect(fila.controls.cantidad.value).toBe(2.75);
-
-        fraccion('¾').click();
-        expect(fila.controls.cantidad.value).toBe(2);
-      });
-
-      it('[E] con la medida "a gusto" no hay fracciones ni botones de cantidad activos', async () => {
-        const fila = fixture.componentInstance.ingredientes.at(0);
-        fila.controls.unidad.setValue('a_gusto');
-        fixture.componentInstance.alCambiarUnidad(fila);
+        campo.value = '3a5b0';
+        campo.dispatchEvent(new Event('input'));
         await actualizar();
 
-        expect(fixture.nativeElement.querySelector('.fraccion')).toBeNull();
-        expect(
-          (fixture.nativeElement.querySelector('.cantidad-paso button') as HTMLButtonElement)
-            .disabled,
-        ).toBe(true);
+        expect(ficha().calorias).toBe('350');
+        expect(campo.value).toBe('350');
       });
     });
 
