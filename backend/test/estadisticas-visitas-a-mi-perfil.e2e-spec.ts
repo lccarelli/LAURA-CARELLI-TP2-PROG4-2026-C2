@@ -1,7 +1,7 @@
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import request from 'supertest';
 import { Visita } from '../src/usuarios/schemas/visita.schema.js';
+import { ingresarConClave, postConToken } from './ayudas/datos.js';
 import { prepararEstadisticas } from './ayudas/estadisticas.js';
 import { hoyEnBuenosAires, probarRangoYPermisos } from './ayudas/rango.js';
 import { tokenDeAdministrador } from './ayudas/sesiones.js';
@@ -68,14 +68,12 @@ describe('GET /estadisticas/visitas-a-mi-perfil', () => {
 
   it('[S] el flujo real: abrir el perfil de otra persona suma una visita', async () => {
     const hoy = hoyEnBuenosAires();
-    const { body: sesion } = await request(contexto.app.getHttpServer())
-      .post('/auth/ingresar')
-      .send({ identificador: 'juan_p', clave: 'Clave1234' })
-      .expect(200);
-    await request(contexto.app.getHttpServer())
-      .post(`/usuarios/${contexto.lauraId}/visitas`)
-      .set('Authorization', `Bearer ${sesion.token}`)
-      .expect(201);
+    const { token } = await ingresarConClave(contexto.app, 'juan_p');
+    await postConToken(
+      contexto.app,
+      `/usuarios/${contexto.lauraId}/visitas`,
+      token,
+    ).expect(201);
 
     const { body } = await consultar(`desde=${hoy}&hasta=${hoy}`).expect(200);
 

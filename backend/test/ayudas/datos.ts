@@ -91,3 +91,25 @@ export function registrarOtraPersona(app: INestApplication) {
     nombreUsuario: 'juan_p',
   });
 }
+
+export async function ingresarConClave(
+  app: INestApplication,
+  identificador: string,
+  clave = 'Clave1234',
+) {
+  const { body } = await request(app.getHttpServer())
+    .post('/auth/ingresar')
+    .send({ identificador, clave })
+    .expect(200);
+  return body as { token: string };
+}
+
+export function postConToken(
+  app: INestApplication,
+  ruta: string,
+  token: string,
+) {
+  return request(app.getHttpServer())
+    .post(ruta)
+    .set('Authorization', `Bearer ${token}`);
+}

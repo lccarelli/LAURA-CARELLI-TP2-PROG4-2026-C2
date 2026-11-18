@@ -1,8 +1,8 @@
 import { getModelToken } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import request from 'supertest';
 import { EventoMeGusta } from '../src/publicaciones/schemas/evento-me-gusta.schema.js';
 import { Publicacion } from '../src/publicaciones/schemas/publicacion.schema.js';
+import { ingresarConClave, postConToken } from './ayudas/datos.js';
 import { prepararEstadisticas } from './ayudas/estadisticas.js';
 import { hoyEnBuenosAires, probarRangoYPermisos } from './ayudas/rango.js';
 
@@ -114,14 +114,12 @@ describe('GET /estadisticas/megusta-por-dia', () => {
 
   it('[S] el flujo real: dar me gusta desde la aplicación suma uno en el día de hoy', async () => {
     const hoy = hoyEnBuenosAires();
-    const { body: sesion } = await request(contexto.app.getHttpServer())
-      .post('/auth/ingresar')
-      .send({ identificador: 'juan_p', clave: 'Clave1234' })
-      .expect(200);
-    await request(contexto.app.getHttpServer())
-      .post(`/publicaciones/${publicacionId}/megusta`)
-      .set('Authorization', `Bearer ${sesion.token}`)
-      .expect(201);
+    const { token } = await ingresarConClave(contexto.app, 'juan_p');
+    await postConToken(
+      contexto.app,
+      `/publicaciones/${publicacionId}/megusta`,
+      token,
+    ).expect(201);
 
     const { body } = await consultar(`desde=${hoy}&hasta=${hoy}`).expect(200);
 

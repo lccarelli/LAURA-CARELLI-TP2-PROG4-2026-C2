@@ -4,7 +4,7 @@ import request from 'supertest';
 import { Ingreso } from '../src/auth/schemas/ingreso.schema.js';
 import { Usuario } from '../src/usuarios/schemas/usuario.schema.js';
 import { limpiarBase } from './ayudas/app.js';
-import { registrarYObtenerSesion } from './ayudas/datos.js';
+import { ingresarConClave, registrarYObtenerSesion } from './ayudas/datos.js';
 import { prepararEstadisticas } from './ayudas/estadisticas.js';
 import { hoyEnBuenosAires, probarRangoYPermisos } from './ayudas/rango.js';
 import { tokenDeAdministrador } from './ayudas/sesiones.js';
@@ -94,10 +94,7 @@ describe('GET /estadisticas/ingresos-por-usuario', () => {
   it('[S] los ingresos reales cuentan: ingresar con clave suma uno', async () => {
     await limpiarBase(contexto.app);
     await registrarYObtenerSesion(contexto.app);
-    await request(contexto.app.getHttpServer())
-      .post('/auth/ingresar')
-      .send({ identificador: 'laura_c', clave: 'Clave1234' })
-      .expect(200);
+    await ingresarConClave(contexto.app, 'laura_c');
     const hoy = hoyEnBuenosAires();
     const admin = tokenDeAdministrador(
       (await usuarios.findOne().lean())!._id.toString(),
