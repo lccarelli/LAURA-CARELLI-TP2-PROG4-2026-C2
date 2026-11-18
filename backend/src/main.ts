@@ -5,6 +5,8 @@ import { AppModule } from './app.module.js';
 
 import { LoggerGlobal } from './logs/logger-global.js';
 import { EVENTOS_DE_LOG, LoggerFactory } from './logs/logs.factory.js';
+import { aplicarSeguridadGlobal } from './seguridad-global.js';
+import { configurarSwagger } from './swagger.js';
 import { aplicarValidacionGlobal } from './validacion-global.js';
 
 async function bootstrap() {
@@ -12,7 +14,9 @@ async function bootstrap() {
     logger: new LoggerGlobal(),
   });
   app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  aplicarSeguridadGlobal(app);
   aplicarValidacionGlobal(app);
+  configurarSwagger(app);
   const config = app.get<ConfigType<typeof appConfig>>(appConfig.KEY);
   app.enableCors({ origin: config.urlFrontend });
   await app.listen(config.puerto);
