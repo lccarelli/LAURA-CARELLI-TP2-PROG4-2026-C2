@@ -4,6 +4,7 @@ import { Campos, Nivel, emitirLog } from './logger-global.js';
 export const EVENTOS_DE_LOG = {
   ACCESO_DENEGADO: 'acceso_denegado',
   COMENTARIO_CREADO: 'comentario_creado',
+  ERROR_NO_CONTROLADO: 'error_no_controlado',
   COMENTARIO_MODIFICADO: 'comentario_modificado',
   EVENTO_ME_GUSTA_NO_REGISTRADO: 'evento_me_gusta_no_registrado',
   IMAGEN_BORRADA: 'imagen_borrada',

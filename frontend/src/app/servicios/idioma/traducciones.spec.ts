@@ -17,6 +17,10 @@ const CODIGOS_DE_LA_API = [
   'USUARIO_NO_ENCONTRADO',
   'RANGO_INVALIDO',
   'RANGO_DEMASIADO_LARGO',
+  'ERROR_INESPERADO',
+  'SOLICITUD_INVALIDA',
+  'RUTA_NO_ENCONTRADA',
+  'ARCHIVO_DEMASIADO_GRANDE',
 ];
 
 function aplanar(objeto: object, prefijo = ''): Record<string, string> {

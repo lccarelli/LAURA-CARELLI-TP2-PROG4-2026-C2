@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { appConfig } from './app.config.js';
+import { FiltroDeExcepciones } from './common/filtro-de-excepciones.js';
 import { LimiteSolicitudesGuard } from './common/limite-solicitudes.guard.js';
 import { authConfig } from './auth/auth.config.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -44,6 +45,7 @@ import { UsuariosModule } from './usuarios/usuarios.module.js';
   providers: [
     LimiteSolicitudesGuard,
     { provide: APP_GUARD, useExisting: LimiteSolicitudesGuard },
+    { provide: APP_FILTER, useClass: FiltroDeExcepciones },
   ],
 })
 export class AppModule {}
