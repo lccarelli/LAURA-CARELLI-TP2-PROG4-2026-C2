@@ -7,8 +7,10 @@ import { GraficoTorta } from '../../componentes/grafico-torta/grafico-torta';
 import { Indicador } from '../../componentes/indicador/indicador';
 import { SeccionEstadistica } from '../../componentes/seccion-estadistica/seccion-estadistica';
 import {
+  CantidadDelDia,
   ComentariosDePublicacion,
   ComentariosDelDia,
+  IngresosDeUsuario,
   PublicacionesDeTipo,
   PublicacionesDeUsuario,
   ResumenDelRango,
@@ -65,6 +67,9 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
     filas.every((fila) => fila.cantidad === 0),
   );
   readonly ranking = new Carga<ComentariosDePublicacion[]>((filas) => filas.length === 0);
+  readonly ingresos = new Carga<IngresosDeUsuario[]>((filas) => filas.length === 0);
+  readonly visitas = new Carga<CantidadDelDia[]>((dias) => dias.every((dia) => dia.cantidad === 0));
+  readonly meGusta = new Carga<CantidadDelDia[]>((dias) => dias.every((dia) => dia.cantidad === 0));
 
   readonly errorDeRango = computed(() => {
     const desde = this.desde();
@@ -115,6 +120,17 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
     (this.ranking.datos() ?? []).map((fila) => fila.cantidad),
   );
 
+  readonly personasQueIngresaron = computed(() =>
+    (this.ingresos.datos() ?? []).map((fila) => `@${fila.nombreUsuario}`),
+  );
+  readonly ingresosPorPersona = computed(() =>
+    (this.ingresos.datos() ?? []).map((fila) => fila.cantidad),
+  );
+  readonly diasDeVisitas = computed(() => this.etiquetasDeDias(this.visitas.datos()));
+  readonly visitasPorDia = computed(() => (this.visitas.datos() ?? []).map((dia) => dia.cantidad));
+  readonly diasDeMeGusta = computed(() => this.etiquetasDeDias(this.meGusta.datos()));
+  readonly meGustaPorDia = computed(() => (this.meGusta.datos() ?? []).map((dia) => dia.cantidad));
+
   readonly nombresDeTipos = computed(() => {
     this.idioma.actual();
     return (this.tipos.datos() ?? []).map((fila) => this.traductor.instant(`tipos.${fila.tipo}`));
@@ -133,6 +149,9 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
     this.comentarios.detener();
     this.ranking.detener();
     this.tipos.detener();
+    this.ingresos.detener();
+    this.visitas.detener();
+    this.meGusta.detener();
   }
 
   elegirAtajo(dias: number) {
@@ -158,6 +177,9 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
     this.cargarComentarios();
     this.cargarRanking();
     this.cargarTipos();
+    this.cargarIngresos();
+    this.cargarVisitas();
+    this.cargarMeGusta();
   }
 
   cargarResumen() {
@@ -180,6 +202,23 @@ export class DashboardEstadisticas implements OnInit, OnDestroy {
 
   cargarTipos() {
     this.pedir(this.tipos, () => this.api.publicacionesPorTipo(this.desde(), this.hasta()));
+  }
+
+  cargarIngresos() {
+    this.pedir(this.ingresos, () => this.api.ingresosPorUsuario(this.desde(), this.hasta()));
+  }
+
+  cargarVisitas() {
+    this.pedir(this.visitas, () => this.api.visitasAMiPerfil(this.desde(), this.hasta()));
+  }
+
+  cargarMeGusta() {
+    this.pedir(this.meGusta, () => this.api.meGustaPorDia(this.desde(), this.hasta()));
+  }
+
+  private etiquetasDeDias(dias: CantidadDelDia[] | null) {
+    const idioma = this.idioma.actual() ?? undefined;
+    return (dias ?? []).map((dia) => etiquetaDeDia(dia.fecha, idioma));
   }
 
   private pedir<T>(carga: Carga<T>, origen: () => Observable<T>) {

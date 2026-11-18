@@ -2,6 +2,8 @@
   <a class="ultima-cabecera" [routerLink]="['/publicaciones', publicacion()._id]">
     @if (publicacion().imagen; as imagen) {
       <img class="ultima-imagen" [src]="imagen" alt="" />
+    } @else {
+      <app-portada-generica [tipo]="publicacion().tipo" [chica]="true" />
     }
     <span class="ultima-texto">
       <span class="pin-tipo">{{ 'tipos.' + publicacion().tipo | translate }}</span>

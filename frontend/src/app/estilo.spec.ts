@@ -469,3 +469,47 @@ describe('pantalla de nueva publicación', () => {
     }
   });
 });
+
+describe('portada genérica', () => {
+  const regla = (selector: string) => {
+    const inicio = hojaDeEstilos.indexOf(`\n  ${selector} {`);
+    return hojaDeEstilos.slice(inicio, hojaDeEstilos.indexOf('}', inicio));
+  };
+
+  it('[I] ocupa todo el ancho de la tarjeta en la proporción de una foto, así la tarjeta no queda chata ni con un hueco', () => {
+    const portada = regla('.portada-generica');
+
+    expect(portada).toContain('aspect-[4/3]');
+    expect(portada).toContain('w-full');
+    expect(portada).toContain('bg-secundario');
+  });
+
+  it('[I] la miniatura mide lo mismo que una foto chica de «Mi actividad»', () => {
+    const miniatura = regla('.portada-generica-chica');
+    const foto = regla('.ultima-imagen');
+
+    for (const medida of ['size-24', 'md:size-28']) {
+      expect(miniatura).toContain(medida);
+      expect(foto).toContain(medida);
+    }
+  });
+
+  it('[I] los trazos y los rellenos usan la paleta (variables de color), nunca un color escrito', () => {
+    const reglas = [
+      '.portada-generica',
+      '.portada-generica-dibujo',
+      '.portada-generica-acento',
+      '.portada-generica-relleno',
+    ]
+      .map(regla)
+      .join('\n');
+
+    expect(reglas).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgb\(|oklch\(/);
+  });
+
+  it('[I] dos tonos de la paleta: el dibujo en el color de la barra y los detalles (vapor, rayos) en gris suave', () => {
+    expect(regla('.portada-generica')).toContain('text-barra');
+    expect(regla('.portada-generica-acento')).toContain('var(--color-suave)');
+    expect(regla('.portada-generica-relleno')).toContain('var(--color-barra)');
+  });
+});

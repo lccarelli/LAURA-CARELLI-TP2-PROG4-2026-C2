@@ -1,4 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import {
   HealthCheck,
   HealthCheckService,
@@ -11,6 +13,7 @@ import { SIN_LIMITES } from '../configs/throttler.config.js';
 export const LIMITE_MEMORIA_BYTES = 300 * 1024 * 1024;
 
 @Controller('health')
+@ApiTags(ETIQUETAS.estado.nombre)
 @SkipThrottle(SIN_LIMITES)
 export class HealthController {
   constructor(
@@ -19,6 +22,9 @@ export class HealthController {
     private readonly memoria: MemoryHealthIndicator,
   ) {}
 
+  @ApiOperation({
+    summary: 'Estado del servicio: conexión a MongoDB y memoria',
+  })
   @Get()
   @HealthCheck()
   verificar() {

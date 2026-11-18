@@ -7,6 +7,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
 import { IdParamDto } from '../common/id-param.dto.js';
@@ -14,10 +16,13 @@ import { DirectorioDto } from './dto/directorio.dto.js';
 import { UsuariosService } from './usuarios.service.js';
 
 @Controller('usuarios')
+@ApiTags(ETIQUETAS.perfiles.nombre)
 @UseGuards(AuthGuard)
+@ApiBearerAuth()
 export class PerfilAjenoController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
+  @ApiOperation({ summary: 'Directorio de personas' })
   @Get('directorio')
   directorio(
     @Query() { texto }: DirectorioDto,
@@ -26,6 +31,7 @@ export class PerfilAjenoController {
     return this.usuariosService.directorio(texto, solicitud.usuario.id);
   }
 
+  @ApiOperation({ summary: 'Registrar una visita al perfil de otra persona' })
   @Post(':id/visitas')
   registrarVisita(
     @Param() { id }: IdParamDto,
@@ -34,6 +40,7 @@ export class PerfilAjenoController {
     return this.usuariosService.registrarVisita(solicitud.usuario.id, id);
   }
 
+  @ApiOperation({ summary: 'Ver el perfil de una persona' })
   @Get(':id')
   obtener(@Param() { id }: IdParamDto) {
     return this.usuariosService.perfilPublico(id);

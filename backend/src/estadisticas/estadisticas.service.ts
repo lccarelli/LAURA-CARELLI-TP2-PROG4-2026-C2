@@ -33,6 +33,17 @@ export type TotalesDelRango = TotalesDeUnLapso & {
   hasta: string;
 };
 
+export type IngresosDeUsuario = {
+  usuario: string;
+  nombreUsuario: string;
+  cantidad: number;
+};
+
+export type CantidadDelDia = {
+  fecha: string;
+  cantidad: number;
+};
+
 export type ResumenDelRango = {
   actual: TotalesDelRango;
   anterior: TotalesDelRango;
@@ -93,6 +104,42 @@ export class EstadisticasService {
     return filas.map((fila) => ({
       ...fila,
       publicacion: fila.publicacion.toString(),
+    }));
+  }
+
+  async ingresosPorUsuario(
+    desde: string,
+    hasta: string,
+  ): Promise<IngresosDeUsuario[]> {
+    const { inicio, fin } = limitesDelRango(desde, hasta);
+    const filas = await this.estadisticas.ingresosPorUsuario(inicio, fin);
+    return filas.map((fila) => ({ ...fila, usuario: fila.usuario.toString() }));
+  }
+
+  async visitasAPerfiles(
+    desde: string,
+    hasta: string,
+  ): Promise<CantidadDelDia[]> {
+    const { inicio, fin } = limitesDelRango(desde, hasta);
+    const filas = await this.estadisticas.visitasPorDia(inicio, fin);
+    return this.completarDias(desde, hasta, filas);
+  }
+
+  async meGustaPorDia(desde: string, hasta: string): Promise<CantidadDelDia[]> {
+    const { inicio, fin } = limitesDelRango(desde, hasta);
+    const filas = await this.estadisticas.meGustaPorDia(inicio, fin);
+    return this.completarDias(desde, hasta, filas);
+  }
+
+  private completarDias(
+    desde: string,
+    hasta: string,
+    filas: CantidadDelDia[],
+  ): CantidadDelDia[] {
+    const porDia = new Map(filas.map((fila) => [fila.fecha, fila.cantidad]));
+    return diasDelRango(desde, hasta).map((fecha) => ({
+      fecha,
+      cantidad: porDia.get(fecha) ?? 0,
     }));
   }
 

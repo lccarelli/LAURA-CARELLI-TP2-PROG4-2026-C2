@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { Ingreso } from '../auth/schemas/ingreso.schema.js';
 import { Comentario } from '../publicaciones/schemas/comentario.schema.js';
+import { EventoMeGusta } from '../publicaciones/schemas/evento-me-gusta.schema.js';
 import { Publicacion } from '../publicaciones/schemas/publicacion.schema.js';
+import { Visita } from '../usuarios/schemas/visita.schema.js';
 import { DESFASE_BUENOS_AIRES } from './rango.js';
 
 export type FilaDePublicacionesPorUsuario = {
@@ -27,6 +30,17 @@ export type FilaDeComentariosPorDia = {
   cantidad: number;
 };
 
+export type FilaDeIngresosPorUsuario = {
+  usuario: Types.ObjectId;
+  nombreUsuario: string;
+  cantidad: number;
+};
+
+export type FilaPorDia = {
+  fecha: string;
+  cantidad: number;
+};
+
 export type TotalesDeUnLapso = {
   publicaciones: number;
   comentarios: number;
@@ -34,6 +48,19 @@ export type TotalesDeUnLapso = {
 };
 
 type Cantidad = { cantidad: number };
+
+const porDia = (campo: string) => ({
+  $group: {
+    _id: {
+      $dateToString: {
+        format: '%Y-%m-%d',
+        date: campo,
+        timezone: DESFASE_BUENOS_AIRES,
+      },
+    },
+    cantidad: { $sum: 1 },
+  },
+});
 
 const comentariosDePublicacionesActivas = (inicio: Date, fin: Date) => [
   { $match: { fecha: { $gte: inicio, $lt: fin } } },
@@ -55,7 +82,68 @@ export class EstadisticasRepositorio {
     private readonly publicacionModel: Model<Publicacion>,
     @InjectModel(Comentario.name)
     private readonly comentarioModel: Model<Comentario>,
+    @InjectModel(Ingreso.name)
+    private readonly ingresoModel: Model<Ingreso>,
+    @InjectModel(Visita.name)
+    private readonly visitaModel: Model<Visita>,
+    @InjectModel(EventoMeGusta.name)
+    private readonly eventoMeGustaModel: Model<EventoMeGusta>,
   ) {}
+
+  ingresosPorUsuario(inicio: Date, fin: Date) {
+    return this.ingresoModel.aggregate<FilaDeIngresosPorUsuario>([
+      { $match: { fecha: { $gte: inicio, $lt: fin } } },
+      { $group: { _id: '$usuario', cantidad: { $sum: 1 } } },
+      {
+        $lookup: {
+          from: 'usuarios',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'persona',
+        },
+      },
+      { $unwind: '$persona' },
+      {
+        $project: {
+          _id: 0,
+          usuario: '$_id',
+          nombreUsuario: '$persona.nombreUsuario',
+          cantidad: 1,
+        },
+      },
+      { $sort: { cantidad: -1, nombreUsuario: 1 } },
+    ]);
+  }
+
+  visitasPorDia(inicio: Date, fin: Date) {
+    return this.visitaModel.aggregate<FilaPorDia>([
+      {
+        $match: {
+          fecha: { $gte: inicio, $lt: fin },
+          $expr: { $ne: ['$visitante', '$visitado'] },
+        },
+      },
+      porDia('$fecha'),
+      { $project: { _id: 0, fecha: '$_id', cantidad: 1 } },
+    ]);
+  }
+
+  meGustaPorDia(inicio: Date, fin: Date) {
+    return this.eventoMeGustaModel.aggregate<FilaPorDia>([
+      { $match: { tipo: 'dado', fecha: { $gte: inicio, $lt: fin } } },
+      {
+        $lookup: {
+          from: 'publicaciones',
+          localField: 'publicacion',
+          foreignField: '_id',
+          as: 'origen',
+        },
+      },
+      { $match: { 'origen.activa': true } },
+      porDia('$fecha'),
+      { $project: { _id: 0, fecha: '$_id', cantidad: 1 } },
+    ]);
+  }
 
   publicacionesPorUsuario(inicio: Date, fin: Date) {
     return this.publicacionModel.aggregate<FilaDePublicacionesPorUsuario>([

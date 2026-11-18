@@ -12,6 +12,8 @@ import { CompartidasService } from './compartidas.service.js';
 import { GuardadasController } from './guardadas.controller.js';
 import { GuardadasService } from './guardadas.service.js';
 import { PublicoController } from './publico.controller.js';
+import { ComentariosController } from './comentarios.controller.js';
+import { MeGustaController } from './me-gusta.controller.js';
 import { PublicacionesController } from './publicaciones.controller.js';
 import { PublicacionesService } from './publicaciones.service.js';
 import { Comentario, ComentarioSchema } from './schemas/comentario.schema.js';
@@ -50,6 +52,8 @@ export const TTL_LISTADO_MS = 1000;
     CompartidasController,
     PublicoController,
     PublicacionesController,
+    ComentariosController,
+    MeGustaController,
   ],
   providers: [
     PublicacionesService,

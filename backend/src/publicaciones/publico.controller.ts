@@ -1,4 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import { IdParamDto } from '../common/id-param.dto.js';
 import { ComentariosService } from './comentarios.service.js';
 import {
@@ -8,17 +10,24 @@ import {
 import { PublicacionesService } from './publicaciones.service.js';
 
 @Controller('publico/publicaciones')
+@ApiTags(ETIQUETAS.portada.nombre)
 export class PublicoController {
   constructor(
     private readonly publicacionesService: PublicacionesService,
     private readonly comentariosService: ComentariosService,
   ) {}
 
+  @ApiOperation({
+    summary: 'Listar publicaciones para la portada (sin sesión)',
+  })
   @Get()
   listar(@Query() { limit }: ListarPublicoDto) {
     return this.publicacionesService.listarPublico(limit);
   }
 
+  @ApiOperation({
+    summary: 'Ver una publicación con sus comentarios (sin sesión)',
+  })
   @Get(':id')
   async obtener(@Param() { id }: IdParamDto) {
     const publicacion = await this.publicacionesService.obtenerPublico(id);

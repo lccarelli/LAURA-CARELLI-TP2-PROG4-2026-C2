@@ -157,29 +157,43 @@ describe('TarjetaPublicacion', () => {
     expect(elemento.querySelector('[role="status"]')).toBeNull();
   });
 
-  it('[Z] sin imagen en la publicación muestra el mensaje en un recuadro', async () => {
+  it('[Z] sin imagen en la publicación muestra una portada genérica, no un hueco ni el mensaje', async () => {
     const elemento = await crear(base);
 
     expect(elemento.querySelector('.pin-imagen')).toBeNull();
-    expect(elemento.querySelector('.pin-texto')!.textContent).toContain('Mi mensaje');
+    expect(elemento.querySelector('.pin-texto')).toBeNull();
+    expect(elemento.querySelector('app-portada-generica .portada-generica svg')).not.toBeNull();
     expect(elemento.querySelectorAll('img')).toHaveLength(1);
   });
 
-  it('[O] un mensaje largo sin imagen se corta con puntos suspensivos', async () => {
-    const mensaje = `${'Crocantes por fuera y blandas por dentro. '.repeat(6)}fin`;
+  it.each(['receta', 'tip', 'experiencia'] as const)(
+    '[O] la portada genérica de una %s lleva su propio dibujo',
+    async (tipo) => {
+      const elemento = await crear({ ...base, tipo });
 
-    const texto = (await crear({ ...base, mensaje })).querySelector('.pin-texto')!.textContent!;
+      const portada = elemento.querySelector('.portada-generica')!;
 
-    expect(texto.endsWith('…')).toBe(true);
-    expect(Array.from(texto).length).toBeLessThanOrEqual(140);
+      expect(portada.getAttribute('data-tipo')).toBe(tipo);
+      expect(portada.querySelectorAll('svg path').length).toBeGreaterThan(0);
+    },
+  );
+
+  it('[I] la portada genérica es decorativa: no suma ruido a los lectores de pantalla, el título ya está debajo', async () => {
+    const elemento = await crear(base);
+
+    expect(elemento.querySelector('.portada-generica svg')!.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
+    expect(elemento.querySelector('.pin-titulo')!.textContent).toContain('Mi título');
   });
 
-  it('[B] un mensaje de hasta 140 letras se ve entero', async () => {
-    const mensaje = 'a'.repeat(140);
+  it('[I] el enlace de toda la tarjeta sigue funcionando sobre la portada genérica', async () => {
+    const elemento = await crear(base);
 
-    const texto = (await crear({ ...base, mensaje })).querySelector('.pin-texto')!.textContent;
+    const enlace = elemento.querySelector('a.pin') as HTMLAnchorElement;
 
-    expect(texto).toBe(mensaje);
+    expect(enlace.getAttribute('href')).toBe('/publicaciones/1');
+    expect(enlace.getAttribute('aria-label')).toBe('Mi título');
   });
 
   it('[Z] un autor sin foto muestra la imagen por defecto', async () => {
@@ -188,7 +202,7 @@ describe('TarjetaPublicacion', () => {
     expect(elemento.querySelector('img')!.getAttribute('src')).toBe('/sin-foto.svg');
   });
 
-  it('[M] con imagen la muestra en lugar del mensaje, junto a la foto del autor', async () => {
+  it('[M] con imagen muestra esa imagen y no la portada genérica, junto a la foto del autor', async () => {
     const elemento = await crear({
       ...base,
       imagen: 'https://res.cloudinary.com/nube/image/upload/banquete/aaa.png',
@@ -201,6 +215,7 @@ describe('TarjetaPublicacion', () => {
       img.getAttribute('src'),
     );
 
+    expect(elemento.querySelector('app-portada-generica')).toBeNull();
     expect(fuentes).toEqual([
       'https://res.cloudinary.com/nube/image/upload/banquete/aaa.png',
       'https://res.cloudinary.com/nube/image/upload/banquete/bbb.png',

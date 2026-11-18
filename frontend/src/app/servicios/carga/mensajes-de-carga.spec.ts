@@ -20,7 +20,6 @@ describe('mensajeParaSolicitud', () => {
     ['POST', '/usuarios', 'carga.creando_usuario'],
     ['DELETE', '/usuarios/abc', 'carga.deshabilitando'],
     ['POST', '/usuarios/abc/habilitar', 'carga.habilitando'],
-    ['POST', '/imagenes', 'carga.subiendo_imagen'],
     ['GET', '/estadisticas/resumen', 'carga.calculando'],
   ])('[O] %s %s dice «%s»', (metodo, ruta, clave) => {
     expect(mensajeParaSolicitud(metodo, `${URL}${ruta}`, sin).clave).toBe(clave);

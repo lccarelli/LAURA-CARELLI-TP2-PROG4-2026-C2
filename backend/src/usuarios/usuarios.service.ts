@@ -77,24 +77,29 @@ export class UsuariosService {
 
     const clave = await bcrypt.hash(dto.clave, this.config.rondasBcrypt);
     const usuarioId = new Types.ObjectId();
-    const imagenPerfil = imagen
-      ? (
-          await this.imagenesService.guardar(
-            imagen,
-            Destino.PERFILES,
-            String(usuarioId),
-          )
-        ).url
+    const guardada = imagen
+      ? await this.imagenesService.guardar(
+          imagen,
+          Destino.PERFILES,
+          String(usuarioId),
+        )
       : undefined;
 
-    return this.crear({
-      ...dto,
-      _id: usuarioId,
-      clave,
-      fechaNacimiento,
-      perfil,
-      imagenPerfil,
-    });
+    try {
+      return await this.crear({
+        ...dto,
+        _id: usuarioId,
+        clave,
+        fechaNacimiento,
+        perfil,
+        imagenPerfil: guardada?.url,
+      });
+    } catch (error) {
+      if (guardada) {
+        await this.imagenesService.descartar(guardada);
+      }
+      throw error;
+    }
   }
 
   buscarParaGoogle(googleId: string, correo: string) {
@@ -116,34 +121,45 @@ export class UsuariosService {
     const usuarioId = new Types.ObjectId();
     const clave = await bcrypt.hash(claveAleatoria(), this.config.rondasBcrypt);
     const base = baseDeNombreDeUsuario(perfilGoogle.correo);
-    const imagenPerfil = await this.copiarFotoDeGoogle(foto, usuarioId);
-    for (let intento = 0; intento < INTENTOS_DE_NOMBRE_DE_USUARIO; intento++) {
-      try {
-        return await this.crear({
-          _id: usuarioId,
-          nombre: perfilGoogle.nombre ?? base,
-          apellido: perfilGoogle.apellido,
-          correo: perfilGoogle.correo,
-          nombreUsuario: conSufijo(base, intento),
-          clave,
-          googleId: perfilGoogle.id,
-          perfil,
-          imagenPerfil,
-        });
-      } catch (error) {
-        const repetido =
-          error instanceof ConflictException &&
-          (error.getResponse() as { codigo?: string }).codigo ===
-            'USUARIO_REPETIDO';
-        if (!repetido) {
-          throw error;
+    const guardada = await this.copiarFotoDeGoogle(foto, usuarioId);
+    try {
+      for (
+        let intento = 0;
+        intento < INTENTOS_DE_NOMBRE_DE_USUARIO;
+        intento++
+      ) {
+        try {
+          return await this.crear({
+            _id: usuarioId,
+            nombre: perfilGoogle.nombre ?? base,
+            apellido: perfilGoogle.apellido,
+            correo: perfilGoogle.correo,
+            nombreUsuario: conSufijo(base, intento),
+            clave,
+            googleId: perfilGoogle.id,
+            perfil,
+            imagenPerfil: guardada?.url,
+          });
+        } catch (error) {
+          const repetido =
+            error instanceof ConflictException &&
+            (error.getResponse() as { codigo?: string }).codigo ===
+              'USUARIO_REPETIDO';
+          if (!repetido) {
+            throw error;
+          }
         }
       }
+      throw new ConflictException({
+        message: 'No se pudo generar un nombre de usuario',
+        codigo: 'USUARIO_REPETIDO',
+      });
+    } catch (error) {
+      if (guardada) {
+        await this.imagenesService.descartar(guardada);
+      }
+      throw error;
     }
-    throw new ConflictException({
-      message: 'No se pudo generar un nombre de usuario',
-      codigo: 'USUARIO_REPETIDO',
-    });
   }
 
   private async copiarFotoDeGoogle(
@@ -154,12 +170,11 @@ export class UsuariosService {
       return undefined;
     }
     try {
-      const guardada = await this.imagenesService.guardar(
+      return await this.imagenesService.guardar(
         foto,
         Destino.PERFILES,
         String(usuarioId),
       );
-      return guardada.url;
     } catch (error) {
       this.logger.advertir(
         EVENTOS_DE_LOG.FOTO_GOOGLE_NO_COPIADA,

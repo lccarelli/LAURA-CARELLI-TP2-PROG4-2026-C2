@@ -103,4 +103,41 @@ describe('EstadisticasApi', () => {
     expect(solicitud.request.params.get('hasta')).toBe('2026-03-12');
     expect(recibido).toHaveBeenCalledWith([{ tipo: 'receta', cantidad: 4 }]);
   });
+
+  it.each([
+    [
+      'ingresosPorUsuario',
+      'ingresos-por-usuario',
+      [{ usuario: 'u1', nombreUsuario: 'laura_c', cantidad: 3 }],
+      (api: EstadisticasApi, observador: () => void) =>
+        api.ingresosPorUsuario('2026-03-10', '2026-03-12').subscribe(observador),
+    ],
+    [
+      'visitasAMiPerfil',
+      'visitas-a-mi-perfil',
+      [{ fecha: '2026-03-10', cantidad: 2 }],
+      (api: EstadisticasApi, observador: () => void) =>
+        api.visitasAMiPerfil('2026-03-10', '2026-03-12').subscribe(observador),
+    ],
+    [
+      'meGustaPorDia',
+      'megusta-por-dia',
+      [{ fecha: '2026-03-10', cantidad: 5 }],
+      (api: EstadisticasApi, observador: () => void) =>
+        api.meGustaPorDia('2026-03-10', '2026-03-12').subscribe(observador),
+    ],
+  ])('[O] %s pide /estadisticas/%s con desde y hasta', (_metodo, ruta, respuesta, pedir) => {
+    const recibido = vi.fn();
+    pedir(api, recibido);
+
+    const solicitud = http.expectOne(
+      (pedido) => pedido.url === `${environment.API_URL}/estadisticas/${ruta}`,
+    );
+    solicitud.flush(respuesta);
+
+    expect(solicitud.request.method).toBe('GET');
+    expect(solicitud.request.params.get('desde')).toBe('2026-03-10');
+    expect(solicitud.request.params.get('hasta')).toBe('2026-03-12');
+    expect(recibido).toHaveBeenCalledWith(respuesta);
+  });
 });

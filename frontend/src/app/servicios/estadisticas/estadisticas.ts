@@ -2,8 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import {
+  CantidadDelDia,
   ComentariosDePublicacion,
   ComentariosDelDia,
+  IngresosDeUsuario,
   PublicacionesDeTipo,
   PublicacionesDeUsuario,
   ResumenDelRango,
@@ -38,6 +40,26 @@ export class EstadisticasApi {
       `${environment.API_URL}/estadisticas/comentarios-por-publicacion`,
       { params: { desde, hasta } },
     );
+  }
+
+  ingresosPorUsuario(desde: string, hasta: string) {
+    return this.http.get<IngresosDeUsuario[]>(
+      `${environment.API_URL}/estadisticas/ingresos-por-usuario`,
+      { params: { desde, hasta } },
+    );
+  }
+
+  visitasAMiPerfil(desde: string, hasta: string) {
+    return this.http.get<CantidadDelDia[]>(
+      `${environment.API_URL}/estadisticas/visitas-a-mi-perfil`,
+      { params: { desde, hasta } },
+    );
+  }
+
+  meGustaPorDia(desde: string, hasta: string) {
+    return this.http.get<CantidadDelDia[]>(`${environment.API_URL}/estadisticas/megusta-por-dia`, {
+      params: { desde, hasta },
+    });
   }
 
   publicacionesPorTipo(desde: string, hasta: string) {

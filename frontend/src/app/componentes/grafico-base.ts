@@ -16,6 +16,7 @@ export interface Datos {
   valores: number[];
   serie: string;
   detalles?: string[];
+  color: number;
 }
 
 export function variable(nombre: string) {
@@ -29,6 +30,7 @@ export abstract class GraficoBase {
   readonly serie = input.required<string>();
   readonly descripcion = input.required<string>();
   readonly detalles = input<string[]>();
+  readonly color = input(1);
 
   private lienzo = viewChild.required<ElementRef<HTMLCanvasElement>>('lienzo');
   private grafico?: Chart;
@@ -41,6 +43,7 @@ export abstract class GraficoBase {
         valores: this.valores(),
         serie: this.serie(),
         detalles: this.detalles(),
+        color: this.color(),
       });
     });
     inject(DestroyRef).onDestroy(() => {

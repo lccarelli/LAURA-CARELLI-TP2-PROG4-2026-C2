@@ -118,6 +118,57 @@
   </app-seccion-estadistica>
 
   <app-seccion-estadistica
+    titulo="estadisticas.ingresos_por_usuario"
+    textoVacio="estadisticas.vacio_ingresos"
+    [carga]="ingresos"
+    (reintentar)="cargarIngresos()"
+  >
+    @if (ingresos.estado() === 'datos') {
+      <app-grafico-barras
+        [etiquetas]="personasQueIngresaron()"
+        [valores]="ingresosPorPersona()"
+        [serie]="'estadisticas.serie_ingresos' | translate"
+        [descripcion]="'estadisticas.descripcion_ingresos' | translate"
+        [color]="2"
+      />
+    }
+  </app-seccion-estadistica>
+
+  <app-seccion-estadistica
+    titulo="estadisticas.visitas_a_mi_perfil"
+    textoVacio="estadisticas.vacio_visitas"
+    [carga]="visitas"
+    (reintentar)="cargarVisitas()"
+  >
+    @if (visitas.estado() === 'datos') {
+      <app-grafico-lineas
+        [etiquetas]="diasDeVisitas()"
+        [valores]="visitasPorDia()"
+        [serie]="'estadisticas.serie_visitas' | translate"
+        [descripcion]="'estadisticas.descripcion_visitas' | translate"
+        [color]="3"
+      />
+    }
+  </app-seccion-estadistica>
+
+  <app-seccion-estadistica
+    titulo="estadisticas.megusta_por_dia"
+    textoVacio="estadisticas.vacio_megusta"
+    [carga]="meGusta"
+    (reintentar)="cargarMeGusta()"
+  >
+    @if (meGusta.estado() === 'datos') {
+      <app-grafico-lineas
+        [etiquetas]="diasDeMeGusta()"
+        [valores]="meGustaPorDia()"
+        [serie]="'estadisticas.serie_megusta' | translate"
+        [descripcion]="'estadisticas.descripcion_megusta' | translate"
+        [color]="4"
+      />
+    }
+  </app-seccion-estadistica>
+
+  <app-seccion-estadistica
     titulo="estadisticas.publicaciones_por_tipo"
     textoVacio="estadisticas.vacio"
     [carga]="tipos"

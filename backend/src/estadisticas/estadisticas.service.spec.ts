@@ -14,6 +14,9 @@ describe('EstadisticasService', () => {
     publicacionesPorTipo: vi.fn(),
     comentariosPorPublicacion: vi.fn(),
     comentariosPorDia: vi.fn(),
+    ingresosPorUsuario: vi.fn(),
+    visitasPorDia: vi.fn(),
+    meGustaPorDia: vi.fn(),
     totales: vi.fn(),
   };
   let servicio: EstadisticasService;
@@ -23,6 +26,8 @@ describe('EstadisticasService', () => {
     ['publicacionesPorTipo'],
     ['comentariosPorPublicacion'],
     ['comentariosPorDia'],
+    ['ingresosPorUsuario'],
+    ['meGustaPorDia'],
   ] as const;
 
   beforeEach(() => {
@@ -31,6 +36,9 @@ describe('EstadisticasService', () => {
     repositorio.publicacionesPorTipo.mockResolvedValue([]);
     repositorio.comentariosPorPublicacion.mockResolvedValue([]);
     repositorio.comentariosPorDia.mockResolvedValue([]);
+    repositorio.ingresosPorUsuario.mockResolvedValue([]);
+    repositorio.visitasPorDia.mockResolvedValue([]);
+    repositorio.meGustaPorDia.mockResolvedValue([]);
     repositorio.totales.mockResolvedValue(sinTotales);
     servicio = new EstadisticasService(
       repositorio as unknown as EstadisticasRepositorio,
@@ -267,5 +275,90 @@ describe('EstadisticasService', () => {
         hasta: '2025-02-28',
       });
     });
+  });
+
+  describe('ingresosPorUsuario', () => {
+    it('[O] devuelve el id de la persona como texto, en el orden que da el repositorio', async () => {
+      const [a, b] = [new Types.ObjectId(), new Types.ObjectId()];
+      repositorio.ingresosPorUsuario.mockResolvedValue([
+        { usuario: a, nombreUsuario: 'juan_p', cantidad: 3 },
+        { usuario: b, nombreUsuario: 'laura_c', cantidad: 1 },
+      ]);
+
+      const filas = await servicio.ingresosPorUsuario(
+        '2026-03-01',
+        '2026-03-31',
+      );
+
+      expect(filas).toEqual([
+        { usuario: String(a), nombreUsuario: 'juan_p', cantidad: 3 },
+        { usuario: String(b), nombreUsuario: 'laura_c', cantidad: 1 },
+      ]);
+    });
+
+    it('[Z] sin ingresos devuelve una lista vacía, no una fila en cero por cada persona', async () => {
+      expect(
+        await servicio.ingresosPorUsuario('2026-03-01', '2026-03-31'),
+      ).toEqual([]);
+    });
+  });
+
+  describe.each([
+    ['meGustaPorDia', () => servicio.meGustaPorDia('2026-03-10', '2026-03-12')],
+    [
+      'visitasAPerfiles',
+      () => servicio.visitasAPerfiles('2026-03-10', '2026-03-12'),
+    ],
+  ] as const)('%s', (nombre, ejecutar) => {
+    const origen = () =>
+      nombre === 'meGustaPorDia'
+        ? repositorio.meGustaPorDia
+        : repositorio.visitasPorDia;
+
+    it('[O] completa con cero los días sin datos y los deja en orden', async () => {
+      origen().mockResolvedValue([{ fecha: '2026-03-12', cantidad: 2 }]);
+
+      expect(await ejecutar()).toEqual([
+        { fecha: '2026-03-10', cantidad: 0 },
+        { fecha: '2026-03-11', cantidad: 0 },
+        { fecha: '2026-03-12', cantidad: 2 },
+      ]);
+    });
+
+    it('[Z] sin datos devuelve todos los días del rango con cero', async () => {
+      expect((await ejecutar()).map((dia) => dia.cantidad)).toEqual([0, 0, 0]);
+    });
+
+    it('[S] ignora los días que el repositorio devuelva fuera del rango', async () => {
+      origen().mockResolvedValue([{ fecha: '2026-03-20', cantidad: 9 }]);
+
+      expect((await ejecutar()).map((dia) => dia.cantidad)).toEqual([0, 0, 0]);
+    });
+  });
+
+  describe('visitasAPerfiles', () => {
+    it('[I] pide las visitas con el rango en hora de Buenos Aires', async () => {
+      await servicio.visitasAPerfiles('2026-03-10', '2026-03-12');
+
+      const [inicio, fin] = repositorio.visitasPorDia.mock.calls[0] as [
+        Date,
+        Date,
+      ];
+      expect(inicio.toISOString()).toBe('2026-03-10T03:00:00.000Z');
+      expect(fin.toISOString()).toBe('2026-03-13T03:00:00.000Z');
+    });
+
+    it.each([
+      ['desde posterior a hasta', '2026-03-31', '2026-03-01', 'RANGO_INVALIDO'],
+      ['más de 366 días', '2025-02-28', '2026-03-01', 'RANGO_DEMASIADO_LARGO'],
+    ])(
+      '[E] con %s lanza 400 y no consulta',
+      async (_caso, desde, hasta, codigo) => {
+        const intento = servicio.visitasAPerfiles(desde, hasta);
+
+        await expect(intento).rejects.toMatchObject({ response: { codigo } });
+        expect(repositorio.visitasPorDia).not.toHaveBeenCalled();
+      },
+    );
   });
 });

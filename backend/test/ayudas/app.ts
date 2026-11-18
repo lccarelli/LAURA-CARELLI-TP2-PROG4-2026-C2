@@ -9,6 +9,7 @@ import { LimiteSolicitudesGuard } from '../../src/common/limite-solicitudes.guar
 import type { Destino } from '../../src/imagenes/destinos.js';
 import { CloudinaryCliente } from '../../src/imagenes/cloudinary.cliente.js';
 import { ClienteWebPush } from '../../src/push/cliente-web-push.js';
+import { aplicarSeguridadGlobal } from '../../src/seguridad-global.js';
 import { aplicarValidacionGlobal } from '../../src/validacion-global.js';
 import { PUBLIC_ID_IMAGEN_SUBIDA, URL_IMAGEN_SUBIDA } from './datos.js';
 
@@ -52,6 +53,7 @@ export async function crearApp(
   }
   const modulo = await personalizar(constructor).compile();
   const app = modulo.createNestApplication();
+  aplicarSeguridadGlobal(app);
   aplicarValidacionGlobal(app);
   await app.init();
   const conexion = app.get<Connection>(getConnectionToken());
