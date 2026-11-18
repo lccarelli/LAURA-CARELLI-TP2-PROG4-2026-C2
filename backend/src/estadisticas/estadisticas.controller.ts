@@ -29,6 +29,21 @@ export class EstadisticasController {
     return this.estadisticasService.publicacionesPorTipo(desde, hasta);
   }
 
+  @Get('ingresos-por-usuario')
+  ingresosPorUsuario(@Query() { desde, hasta }: RangoFechasDto) {
+    return this.estadisticasService.ingresosPorUsuario(desde, hasta);
+  }
+
+  @Get('visitas-a-mi-perfil')
+  visitasAPerfiles(@Query() { desde, hasta }: RangoFechasDto) {
+    return this.estadisticasService.visitasAPerfiles(desde, hasta);
+  }
+
+  @Get('megusta-por-dia')
+  meGustaPorDia(@Query() { desde, hasta }: RangoFechasDto) {
+    return this.estadisticasService.meGustaPorDia(desde, hasta);
+  }
+
   @Get('comentarios-por-publicacion')
   comentariosPorPublicacion(@Query() { desde, hasta }: RangoFechasDto) {
     return this.estadisticasService.comentariosPorPublicacion(desde, hasta);

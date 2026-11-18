@@ -1,6 +1,9 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 
+export const hoyEnBuenosAires = () =>
+  new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
 export interface ContextoDeRango {
   app: INestApplication;
   tokenComun: string;
