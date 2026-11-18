@@ -1,6 +1,9 @@
 import { INestApplication } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
+import { Usuario } from '../src/usuarios/schemas/usuario.schema.js';
 import { crearApp, limpiarBase } from './ayudas/app.js';
 import { registrarYObtenerSesion } from './ayudas/datos.js';
 
@@ -120,5 +123,81 @@ describe('POST /auth/refrescar', () => {
     await refrescar(firmar({}, { expiresIn: '10m' }, 'otro-secreto')).expect(
       401,
     );
+  });
+
+  describe('revalidación contra la base', () => {
+    const usuarios = () => app.get<Model<Usuario>>(getModelToken(Usuario.name));
+
+    it('[E] una cuenta deshabilitada no puede renovar: 401 USUARIO_NO_AUTORIZADO', async () => {
+      await usuarios().updateOne({ _id: usuarioId }, { habilitado: false });
+
+      const { body } = await refrescar().expect(401);
+
+      expect(body.codigo).toBe('USUARIO_NO_AUTORIZADO');
+      expect(body.token).toBeUndefined();
+    });
+
+    it('[E] una cuenta que ya no existe no puede renovar, aunque el token sea válido', async () => {
+      await usuarios().deleteOne({ _id: usuarioId });
+
+      const { body } = await refrescar().expect(401);
+
+      expect(body.codigo).toBe('USUARIO_NO_AUTORIZADO');
+    });
+
+    it('[E] un token válido con un id que no es de una persona real responde 401 y no 500', async () => {
+      const raro = firmar({ sub: 'no-es-un-id' });
+
+      const { body } = await refrescar(raro).expect(401);
+
+      expect(body.codigo).toBe('USUARIO_NO_AUTORIZADO');
+    });
+
+    it('[S] al renovar toma el perfil de la base: si le dieron el rol de administrador, el token nuevo ya lo trae', async () => {
+      await usuarios().updateOne(
+        { _id: usuarioId },
+        { perfil: 'administrador' },
+      );
+
+      const { body } = await refrescar().expect(200);
+
+      expect(decodificar(body.token).perfil).toBe('administrador');
+    });
+
+    it('[S] al renovar toma el perfil de la base: si le sacaron el rol de administrador, el token nuevo ya no lo trae', async () => {
+      await usuarios().updateOne(
+        { _id: usuarioId },
+        { perfil: 'administrador' },
+      );
+      const comoAdministrador = (await refrescar().expect(200)).body.token;
+      await usuarios().updateOne({ _id: usuarioId }, { perfil: 'usuario' });
+
+      const { body } = await refrescar(comoAdministrador).expect(200);
+
+      expect(decodificar(body.token).perfil).toBe('usuario');
+    });
+
+    it('[I] el rol que viaja en el token no se puede cambiar desde el cliente: un token firmado con otro secreto que diga administrador no sirve', async () => {
+      const falso = firmar(
+        { perfil: 'administrador' },
+        vigencia,
+        'otro-secreto',
+      );
+
+      await request(app.getHttpServer())
+        .get('/usuarios')
+        .set('Authorization', `Bearer ${falso}`)
+        .expect(401);
+    });
+
+    it('[I] límite conocido: el guard sólo verifica el token, así que una baja no corta un token ya emitido hasta que vence (máximo 15 minutos), pero impide renovarlo', async () => {
+      await usuarios().updateOne({ _id: usuarioId }, { habilitado: false });
+
+      await request(app.getHttpServer())
+        .get('/publicaciones')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+      await refrescar().expect(401);
+    });
   });
 });
