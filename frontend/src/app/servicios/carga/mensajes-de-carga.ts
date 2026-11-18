@@ -21,7 +21,7 @@ const TARDA: Pick<MensajeDeCarga, 'nota' | 'segundosHastaNota'> = {
 const REGLAS: [metodo: string, ruta: RegExp, mensaje: MensajeDeCarga][] = [
   [
     'POST',
-    /\/auth\/(ingresar|acceso-docente)$/,
+    /\/auth\/(ingresar|google|acceso-docente)$/,
     { clave: 'carga.ingresando', ...SERVIDOR_DESPIERTO },
   ],
   ['POST', /\/auth\/registro$/, { clave: 'carga.creando_cuenta', ...SERVIDOR_DESPIERTO }],

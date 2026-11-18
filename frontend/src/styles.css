@@ -986,6 +986,22 @@ body {
     @apply mt-1 block text-sm text-error;
   }
 
+  .acceso-google {
+    @apply mt-5 flex w-full max-w-full min-w-0 flex-col items-center gap-4 overflow-hidden;
+  }
+
+  .acceso-google.oculto {
+    @apply invisible h-0 mt-0 gap-0;
+  }
+
+  .separador-o {
+    @apply flex w-full items-center gap-3 text-sm text-suave before:h-px before:flex-1 before:bg-linea after:h-px after:flex-1 after:bg-linea;
+  }
+
+  .boton-google {
+    @apply flex w-full max-w-full min-w-0 justify-center overflow-hidden;
+  }
+
   .pie-formulario {
     @apply mt-4 text-center text-sm;
   }

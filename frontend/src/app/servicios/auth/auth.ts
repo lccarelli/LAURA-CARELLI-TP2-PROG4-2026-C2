@@ -31,6 +31,18 @@ export class Auth {
       .pipe(tap((sesion) => this.guardarSesion(sesion)));
   }
 
+  google(credencial: string) {
+    return this.http
+      .post<Sesion>(`${environment.API_URL}/auth/google`, { credencial })
+      .pipe(tap((sesion) => this.guardarSesion(sesion)));
+  }
+
+  destinoAlIngresar() {
+    const destino = this.volverA();
+    this.volverA.set(null);
+    return destino?.startsWith('/') && !destino.startsWith('//') ? destino : '/home';
+  }
+
   accesoDocente() {
     return this.http
       .post<Sesion>(`${environment.API_URL}/auth/acceso-docente`, {})

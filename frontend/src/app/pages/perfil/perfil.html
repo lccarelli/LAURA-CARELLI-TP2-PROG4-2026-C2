@@ -29,17 +29,21 @@
         <dt class="etiqueta-seccion">{{ 'perfil.correo' | translate }}</dt>
         <dd class="mt-1 break-words">{{ usuario.correo }}</dd>
       </div>
-      <div>
-        <dt class="etiqueta-seccion">{{ 'perfil.fecha_nacimiento' | translate }}</dt>
-        <dd class="mt-1">
-          {{ usuario.fechaNacimiento | date: ('formatos.fecha' | translate) : 'UTC' }}
-          <span class="texto-suave">({{ usuario.fechaNacimiento | edad }})</span>
-        </dd>
-      </div>
-      <div>
-        <dt class="etiqueta-seccion">{{ 'perfil.descripcion' | translate }}</dt>
-        <dd class="nota mt-1 whitespace-pre-line">{{ usuario.descripcion }}</dd>
-      </div>
+      @if (usuario.fechaNacimiento) {
+        <div>
+          <dt class="etiqueta-seccion">{{ 'perfil.fecha_nacimiento' | translate }}</dt>
+          <dd class="mt-1">
+            {{ usuario.fechaNacimiento | date: ('formatos.fecha' | translate) : 'UTC' }}
+            <span class="texto-suave">({{ usuario.fechaNacimiento | edad }})</span>
+          </dd>
+        </div>
+      }
+      @if (usuario.descripcion) {
+        <div>
+          <dt class="etiqueta-seccion">{{ 'perfil.descripcion' | translate }}</dt>
+          <dd class="nota mt-1 whitespace-pre-line">{{ usuario.descripcion }}</dd>
+        </div>
+      }
     </dl>
 
     <nav class="solapas" [attr.aria-label]="'perfil.solapas' | translate">

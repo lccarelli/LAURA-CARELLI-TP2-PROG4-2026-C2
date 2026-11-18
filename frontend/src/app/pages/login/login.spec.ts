@@ -7,6 +7,7 @@ import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
 import { environment } from '../../../environments/environment';
 import { Instalacion } from '../../servicios/instalacion/instalacion';
 import { Auth } from '../../servicios/auth/auth';
+import { BotonGoogle } from '../../componentes/boton-google/boton-google';
 import { Login } from './login';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { ESCRITURA_LITERAL, atributosDeEscrituraLiteral } from '../../../testing/teclado';
@@ -267,6 +268,34 @@ describe('Login', () => {
       await fixture.whenStable();
 
       expect(aviso().textContent).toContain('Sesión cerrada');
+    });
+  });
+
+  describe('ingreso con Google', () => {
+    const boton = () =>
+      fixture.debugElement.query(By.directive(BotonGoogle)).componentInstance as BotonGoogle;
+
+    it('[O] ofrece el ingreso con Google debajo del formulario, en la misma pantalla', () => {
+      const raiz = fixture.nativeElement as HTMLElement;
+
+      expect(raiz.querySelector('.acceso-formulario app-boton-google')).not.toBeNull();
+      expect(raiz.querySelector('form')).not.toBeNull();
+    });
+
+    it('[S] un error al ingresar con Google se muestra en el mismo aviso que los del formulario', async () => {
+      boton().fallo.emit('api.GOOGLE_CREDENCIAL_INVALIDA');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(componente.mensajeError()).toBe('api.GOOGLE_CREDENCIAL_INVALIDA');
+      expect(fixture.nativeElement.querySelector('app-aviso')).not.toBeNull();
+    });
+
+    it('[S] cuando Google no está disponible el formulario sigue siendo la forma de entrar', () => {
+      const raiz = fixture.nativeElement as HTMLElement;
+
+      expect(raiz.querySelector('.acceso-google')).toBeNull();
+      expect(raiz.querySelector('button[type="submit"]')).not.toBeNull();
     });
   });
 });

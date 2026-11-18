@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsuariosModule } from '../usuarios/usuarios.module.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
+import { ClienteGoogle } from './cliente-google.js';
 import { Ingreso, IngresoSchema } from './schemas/ingreso.schema.js';
 
 @Module({
@@ -11,7 +12,7 @@ import { Ingreso, IngresoSchema } from './schemas/ingreso.schema.js';
     forwardRef(() => UsuariosModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, ClienteGoogle],
   exports: [AuthService],
 })
 export class AuthModule {}

@@ -148,6 +148,7 @@ Se definen en `backend/.env` (hay un ejemplo en `backend/.env.example`). El `.en
 | `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_CLOUD_NAME` | Cuenta de Cloudinary donde se guardan las imágenes |
 | `CLOUDINARY_CARPETA` | Carpeta raíz en Cloudinary (opcional, por defecto `banquete`). En desarrollo conviene otra, como `banquete-dev`, para no mezclar las fotos de prueba |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_CONTACTO` | Claves para los avisos push del celular. Se generan una sola vez con `npx web-push generate-vapid-keys`. Sin ellas los avisos push no se ofrecen. Ver [Avisos push](#avisos-push-en-el-celular) |
+| `GOOGLE_CLIENT_ID` | ID de cliente de Google para «Continuar con Google» (opcional; sin él el botón no aparece). Es público. Ver [Ingreso con Google](#ingreso-con-google-extra) |
 | `WEBHOOK_URL`, `WEBHOOK_SECRETO` | Webhook de notificaciones, ambos opcionales. Sin `WEBHOOK_URL` no se manda nada. Con `WEBHOOK_SECRETO` cada aviso lleva la firma. Ver [Notificaciones](#notificaciones) |
 | `LIMITE_*` | Límites de solicitudes, todos opcionales. La lista está en [Límite de solicitudes](#límite-de-solicitudes) |
 
@@ -197,6 +198,15 @@ La portada (`/`) muestra **publicaciones reales**, no ejemplos: las 8 más recie
 - Cada **ingreso correcto** (ingresar o acceso docente) guarda `(usuario, fecha)` en `ingresos`. Crear la cuenta no cuenta. Si guardarlo falla, la persona entra igual y queda un aviso en el log.
 - Al abrir el perfil de otra persona, la aplicación hace `POST /usuarios/:id/visitas` y se guarda `(visitante, visitado, fecha)` en `visitas`: `201 { registrada: true }`, `400 VISITA_PROPIA` si es el propio perfil, `404` si no existe. Es un `POST` aparte para que el reintento de los `GET` no cuente dos visitas, y no muestra el indicador de espera.
 - Los gráficos que usan estos datos se agregan al final.
+
+### Ingreso con Google (extra)
+
+- El botón oficial **«Continuar con Google»** aparece en el ingreso y en el registro, debajo del formulario. El ingreso con correo y clave **sigue igual**; Google es una alternativa para quien olvida la clave.
+- **Cómo funciona:** el navegador recibe de Google una credencial firmada (un JWT) y la manda a `POST /auth/google` con `{ credencial }`; el servidor la **verifica** (firma, audiencia = nuestro ID de cliente, vencimiento y correo verificado) y devuelve **nuestro mismo token** que el ingreso normal. Respuestas: `200 { token, usuario }`, `400` (credencial ausente o con formato inválido), `401 GOOGLE_CREDENCIAL_INVALIDA`, `401 GOOGLE_CORREO_NO_VERIFICADO`, `403 USUARIO_DESHABILITADO`, `404 GOOGLE_NO_DISPONIBLE` (sin `GOOGLE_CLIENT_ID`). Tiene el mismo límite de intentos que el ingreso.
+- **Tres casos:** si ya entró con Google, entra a su cuenta; si existe una cuenta con **ese correo**, se **vincula** (misma persona); si no existe, se **crea** con nombre y apellido de Google, el nombre de usuario generado desde el correo (con un número si está ocupado), la **foto de Google copiada a Cloudinary** y una clave al azar que nadie conoce.
+- **Campos opcionales:** las cuentas de Google no tienen fecha de nacimiento ni descripción (ni a veces apellido). En el esquema son opcionales; el **registro con correo sigue exigiéndolos** y el perfil oculta las filas vacías.
+- **Configuración:** la variable `GOOGLE_CLIENT_ID` en el servidor (`backend/.env`, Render) y el mismo valor en `frontend/src/environments/*`. Es público. Sin él, el botón no aparece y todo sigue funcionando con correo y clave. Pasos de Google Cloud, problemas conocidos y preguntas de defensa: `docs/27-ingreso-con-google.md`.
+- **Navegadores internos:** Google no deja iniciar sesión desde el navegador de WhatsApp o Instagram; hay que abrir el link en Chrome o Safari.
 
 ### Perfil de otra persona (Sprint 5)
 

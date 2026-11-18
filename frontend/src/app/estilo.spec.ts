@@ -273,3 +273,28 @@ describe('íconos de la tarjeta resumida', () => {
     expect(hojaDeEstilos).not.toContain('.boton-eliminar');
   });
 });
+
+describe('botón de Google', () => {
+  const regla = (selector: string) => {
+    const inicio = hojaDeEstilos.indexOf(`\n  ${selector} {`);
+    return hojaDeEstilos.slice(inicio, hojaDeEstilos.indexOf('}', inicio));
+  };
+
+  it('[I] cuando está oculto no usa display:none: así se puede medir el ancho disponible antes de dibujarlo', () => {
+    const oculto = regla('.acceso-google.oculto');
+
+    expect(oculto).toContain('invisible');
+    expect(oculto).not.toMatch(/\bhidden\b/);
+  });
+
+  it.each(['.acceso-google', '.boton-google'])(
+    '[I] %s nunca ensancha la página: ocupa como máximo el ancho disponible y recorta lo que sobre',
+    (selector) => {
+      const estilo = regla(selector);
+
+      expect(estilo).toContain('max-w-full');
+      expect(estilo).toContain('min-w-0');
+      expect(estilo).toContain('overflow-hidden');
+    },
+  );
+});

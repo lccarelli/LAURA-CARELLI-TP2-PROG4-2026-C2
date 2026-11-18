@@ -79,6 +79,66 @@ describe('Auth', () => {
     });
   });
 
+  describe('google', () => {
+    it('[O] manda la credencial a /auth/google y guarda el token y el usuario', () => {
+      const { auth, http } = crearAuth();
+
+      auth.google('credencial-de-google').subscribe();
+      const solicitud = http.expectOne(`${environment.API_URL}/auth/google`);
+      solicitud.flush(sesion);
+
+      expect(solicitud.request.method).toBe('POST');
+      expect(solicitud.request.body).toEqual({ credencial: 'credencial-de-google' });
+      expect(auth.token()).toBe('token-de-prueba');
+      expect(auth.usuario()?.nombreUsuario).toBe('laura_c');
+      expect(localStorage.getItem('token')).toBe('token-de-prueba');
+    });
+
+    it('[E] si el servidor rechaza, no guarda ninguna sesión', () => {
+      const { auth, http } = crearAuth();
+
+      auth.google('falsa').subscribe({ error: () => undefined });
+      http
+        .expectOne(`${environment.API_URL}/auth/google`)
+        .flush({ codigo: 'GOOGLE_CREDENCIAL_INVALIDA' }, { status: 401, statusText: 'x' });
+
+      expect(auth.token()).toBeNull();
+      expect(auth.usuario()).toBeNull();
+    });
+
+    it('[S] una cuenta de Google puede venir sin fecha de nacimiento ni descripción', () => {
+      const { auth, http } = crearAuth();
+      const sinEsosDatos = {
+        ...sesion.usuario,
+        fechaNacimiento: undefined,
+        descripcion: undefined,
+      };
+
+      auth.google('c').subscribe();
+      http
+        .expectOne(`${environment.API_URL}/auth/google`)
+        .flush({ ...sesion, usuario: sinEsosDatos });
+
+      expect(auth.usuario()?.fechaNacimiento).toBeUndefined();
+      expect(auth.usuario()?.descripcion).toBeUndefined();
+    });
+  });
+
+  describe('destinoAlIngresar', () => {
+    it.each([
+      [null, '/home'],
+      ['/publicaciones/abc', '/publicaciones/abc'],
+      ['//sitio-ajeno.test', '/home'],
+      ['https://sitio-ajeno.test', '/home'],
+    ])('[S] con volverA = %j va a %s', (volverA, esperado) => {
+      const { auth } = crearAuth();
+      auth.volverA.set(volverA);
+
+      expect(auth.destinoAlIngresar()).toBe(esperado);
+      expect(auth.volverA()).toBeNull();
+    });
+  });
+
   describe('ingresar', () => {
     it('[O] ingresar guarda el token y el usuario', () => {
       const { auth, http } = crearAuth();

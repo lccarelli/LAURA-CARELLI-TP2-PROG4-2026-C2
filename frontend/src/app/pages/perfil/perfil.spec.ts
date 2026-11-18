@@ -84,6 +84,17 @@ describe('Perfil', () => {
     expect(fixture.nativeElement.querySelector('.chip')).toBeNull();
   });
 
+  it('[S] una cuenta de Google puede no tener fecha de nacimiento ni descripción: esas filas no se muestran', async () => {
+    const deGoogle = { ...usuario, fechaNacimiento: undefined, descripcion: undefined };
+
+    const pagina = await mostrar(deGoogle);
+
+    expect(pagina.textContent).toContain('laura@correo.com');
+    expect(pagina.textContent).not.toContain('Fecha de nacimiento');
+    expect(pagina.textContent).not.toContain('Descripción');
+    expect(pagina.textContent).not.toContain('NaN');
+  });
+
   it('[B] sin foto muestra la imagen por defecto', async () => {
     const pagina = await mostrar(usuario);
 

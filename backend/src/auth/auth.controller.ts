@@ -16,6 +16,7 @@ import { LIMITES_AUTENTICACION } from '../configs/throttler.config.js';
 import { AuthGuard } from './auth.guard.js';
 import type { SolicitudAutenticada } from './auth.guard.js';
 import { AuthService } from './auth.service.js';
+import { GoogleDto } from './dto/google.dto.js';
 import { IngresarDto } from './dto/ingresar.dto.js';
 import { RegistroDto } from './dto/registro.dto.js';
 
@@ -40,6 +41,13 @@ export class AuthController {
   @HttpCode(200)
   ingresar(@Body() dto: IngresarDto) {
     return this.authService.ingresar(dto);
+  }
+
+  @Post('google')
+  @Throttle(LIMITES_AUTENTICACION)
+  @HttpCode(200)
+  google(@Body() dto: GoogleDto) {
+    return this.authService.google(dto);
   }
 
   @Post('acceso-docente')

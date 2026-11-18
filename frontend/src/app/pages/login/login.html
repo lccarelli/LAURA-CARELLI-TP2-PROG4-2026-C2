@@ -59,6 +59,8 @@
         </button>
       </form>
 
+      <app-boton-google (fallo)="mensajeError.set($event)" />
+
       <p class="pie-formulario">
         {{ 'login.sin_cuenta' | translate }}
         <a class="enlace" routerLink="/registro">{{ 'login.registrarme' | translate }}</a>

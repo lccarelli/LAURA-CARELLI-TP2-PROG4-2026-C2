@@ -7,5 +7,6 @@ export const authConfig = registerAs('auth', () => ({
   duracionMaximaSesionSegundos: 12 * 60 * 60,
   rondasBcrypt: 10,
   correoAdmin: process.env.ADMIN_EMAIL?.toLowerCase(),
+  googleClientId: process.env.GOOGLE_CLIENT_ID,
   correoAccesoDocente: process.env.ACCESO_DOCENTE_CORREO?.toLowerCase(),
 }));

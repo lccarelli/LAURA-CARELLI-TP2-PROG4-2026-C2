@@ -73,7 +73,8 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "coverageReporters": ["text-summary", "json-summary", "lcov"]
+            "coverageReporters": ["text-summary", "json-summary", "lcov"],
+            "setupFiles": ["src/testing/sin-google.ts"]
           }
         },
         "lint": {
