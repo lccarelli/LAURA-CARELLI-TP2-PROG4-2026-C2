@@ -28,4 +28,15 @@ describe('GraficoLineas', () => {
 
     expect(graficos[0].config.options.interaction).toEqual({ mode: 'index', intersect: false });
   });
+
+  it('[O] con color 3 usa la serie 3 de la paleta y no la 1', async () => {
+    document.documentElement.style.setProperty('--tema-serie-3', '#334455');
+    banco.fixture().componentRef.setInput('color', 3);
+    banco.poner(['A'], [1]);
+
+    await banco.dibujados(1);
+
+    expect(graficos[0].config.data.datasets[0].borderColor).toBe('#334455');
+    document.documentElement.style.removeProperty('--tema-serie-3');
+  });
 });

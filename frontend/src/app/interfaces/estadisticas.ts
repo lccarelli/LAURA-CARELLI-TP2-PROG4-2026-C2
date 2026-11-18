@@ -9,6 +9,17 @@ export interface ComentariosDelDia {
   cantidad: number;
 }
 
+export interface IngresosDeUsuario {
+  usuario: string;
+  nombreUsuario: string;
+  cantidad: number;
+}
+
+export interface CantidadDelDia {
+  fecha: string;
+  cantidad: number;
+}
+
 export interface ComentariosDePublicacion {
   publicacion: string;
   titulo: string;

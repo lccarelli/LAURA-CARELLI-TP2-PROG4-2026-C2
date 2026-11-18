@@ -32,8 +32,8 @@ export class GraficoLineas extends GraficoBase {
     return cargarChartJs();
   }
 
-  protected configuracion({ etiquetas, valores, serie }: Datos) {
-    const color = variable('--tema-serie-1');
+  protected configuracion({ etiquetas, valores, serie, color: numero }: Datos) {
+    const color = variable(`--tema-serie-${numero}`);
     const tinta = variable('--tema-suave');
     return {
       type: 'line' as const,

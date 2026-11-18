@@ -35,13 +35,15 @@ export class GraficoBarras extends GraficoBase {
     return cargarChartJs();
   }
 
-  protected configuracion({ etiquetas, valores, serie, detalles }: Datos) {
+  protected configuracion({ etiquetas, valores, serie, detalles, color }: Datos) {
     const tinta = variable('--tema-suave');
     return {
       type: 'bar' as const,
       data: {
         labels: etiquetas,
-        datasets: [{ label: serie, data: valores, backgroundColor: variable('--tema-serie-1') }],
+        datasets: [
+          { label: serie, data: valores, backgroundColor: variable(`--tema-serie-${color}`) },
+        ],
       },
       options: {
         indexAxis: 'y' as const,

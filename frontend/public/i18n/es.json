@@ -443,7 +443,19 @@
     "descripcion_ranking": "Gráfico de barras con las 10 publicaciones que más comentarios recibieron en el rango elegido",
     "vacio_ranking": "No hay publicaciones con comentarios en el rango elegido.",
     "publicaciones_por_tipo": "Publicaciones por tipo",
-    "descripcion_tipos": "Gráfico de torta con el reparto de las publicaciones activas del rango elegido entre receta, tip culinario y experiencia"
+    "descripcion_tipos": "Gráfico de torta con el reparto de las publicaciones activas del rango elegido entre receta, tip culinario y experiencia",
+    "ingresos_por_usuario": "Ingresos por usuario",
+    "serie_ingresos": "Ingresos",
+    "descripcion_ingresos": "Gráfico de barras con la cantidad de veces que ingresó cada usuario en el rango elegido",
+    "vacio_ingresos": "Nadie ingresó en el rango elegido.",
+    "visitas_a_mi_perfil": "Visitas a perfiles",
+    "serie_visitas": "Visitas",
+    "descripcion_visitas": "Gráfico de líneas con la cantidad de visitas a perfiles de personas que no son su dueño en cada día del rango elegido",
+    "vacio_visitas": "Nadie visitó perfiles ajenos en el rango elegido.",
+    "megusta_por_dia": "Me gusta por día",
+    "serie_megusta": "Me gusta",
+    "descripcion_megusta": "Gráfico de líneas con la cantidad de me gusta otorgados en cada día del rango elegido",
+    "vacio_megusta": "No se otorgaron me gusta en el rango elegido."
   },
   "buscador": {
     "placeholder": "Buscar publicaciones",

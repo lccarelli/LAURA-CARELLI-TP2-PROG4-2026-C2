@@ -443,7 +443,19 @@
     "descripcion_ranking": "Bar chart with the 10 posts that received the most comments in the selected range",
     "vacio_ranking": "There are no commented posts in the selected range.",
     "publicaciones_por_tipo": "Posts by type",
-    "descripcion_tipos": "Pie chart with how the active posts in the selected range are split between recipe, culinary tip and experience"
+    "descripcion_tipos": "Pie chart with how the active posts in the selected range are split between recipe, culinary tip and experience",
+    "ingresos_por_usuario": "Logins per user",
+    "serie_ingresos": "Logins",
+    "descripcion_ingresos": "Bar chart with the number of times each user logged in during the selected range",
+    "vacio_ingresos": "Nobody logged in during the selected range.",
+    "visitas_a_mi_perfil": "Profile visits",
+    "serie_visitas": "Visits",
+    "descripcion_visitas": "Line chart with the number of visits to profiles by people other than their owner on each day of the selected range",
+    "vacio_visitas": "Nobody visited other people's profiles during the selected range.",
+    "megusta_por_dia": "Likes per day",
+    "serie_megusta": "Likes",
+    "descripcion_megusta": "Line chart with the number of likes given on each day of the selected range",
+    "vacio_megusta": "No likes were given during the selected range."
   },
   "buscador": {
     "placeholder": "Search posts",
