@@ -1,0 +1,28 @@
+<div class="portada-generica" [class.portada-generica-chica]="chica()" [attr.data-tipo]="tipo()">
+  <svg class="portada-generica-dibujo" viewBox="0 0 120 120" aria-hidden="true">
+    @switch (tipo()) {
+      @case ('receta') {
+        <path d="M14 90h92" />
+        <path d="M24 90a36 36 0 0 1 72 0" />
+        <circle class="portada-generica-acento" cx="60" cy="47" r="5" />
+        <path d="M46 34c-4-4 4-8 0-12" />
+        <path d="M74 34c-4-4 4-8 0-12" />
+      }
+      @case ('tip') {
+        <path d="M60 22a25 25 0 0 0-14 45c3 3 4 6 4 10h20c0-4 1-7 4-10a25 25 0 0 0-14-45z" />
+        <path d="M52 88h16" />
+        <path d="M55 97h10" />
+        <path class="portada-generica-acento" d="M60 8v7M25 26l5 5M95 26l-5 5M12 54h7M101 54h7" />
+      }
+      @default {
+        <path
+          d="M20 26h80a8 8 0 0 1 8 8v42a8 8 0 0 1-8 8H58l-18 16V84H20a8 8 0 0 1-8-8V34a8 8 0 0 1 8-8z"
+        />
+        <path
+          class="portada-generica-acento portada-generica-relleno"
+          d="M60 72s-17-9-17-21a9.5 9.5 0 0 1 17-5.5A9.5 9.5 0 0 1 77 51c0 12-17 21-17 21z"
+        />
+      }
+    }
+  </svg>
+</div>

@@ -5,19 +5,18 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { Resaltar } from '../../directivas/resaltar/resaltar';
 import { Publicacion, Tipo } from '../../interfaces/publicacion';
 import { FechaRelativa } from '../../pipes/fecha-relativa';
-import { TextoLargo } from '../../pipes/texto-largo';
 import { urlImagen } from '../../utilidades/imagen';
 import { BotonCompartir } from '../boton-compartir/boton-compartir';
 import { BotonGuardar } from '../boton-guardar/boton-guardar';
 import { BotonMeGusta } from '../boton-me-gusta/boton-me-gusta';
 import { Icono } from '../icono/icono';
+import { PortadaGenerica } from '../portada-generica/portada-generica';
 
 const COLOR_DE_TIPO: Record<Tipo, string> = {
   receta: 'var(--tema-torta-1)',
   tip: 'var(--tema-torta-2)',
   experiencia: 'var(--tema-torta-3)',
 };
-const LETRAS_DEL_MENSAJE = 140;
 
 @Component({
   imports: [
@@ -26,8 +25,8 @@ const LETRAS_DEL_MENSAJE = 140;
     BotonMeGusta,
     NgTemplateOutlet,
     FechaRelativa,
+    PortadaGenerica,
     RouterLink,
-    TextoLargo,
     TranslatePipe,
     Icono,
   ],
@@ -38,8 +37,6 @@ const LETRAS_DEL_MENSAJE = 140;
 })
 export class TarjetaPublicacion {
   private resaltar = inject(Resaltar);
-
-  protected readonly letrasDelMensaje = LETRAS_DEL_MENSAJE;
 
   readonly publicacion = input.required<Publicacion>();
   readonly soloLectura = input(false);
