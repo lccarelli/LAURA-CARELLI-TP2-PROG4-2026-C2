@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import { IdParamDto } from '../common/id-param.dto.js';
 import { ComentariosService } from './comentarios.service.js';
 import {
@@ -9,6 +10,7 @@ import {
 import { PublicacionesService } from './publicaciones.service.js';
 
 @Controller('publico/publicaciones')
+@ApiTags(ETIQUETAS.portada.nombre)
 export class PublicoController {
   constructor(
     private readonly publicacionesService: PublicacionesService,

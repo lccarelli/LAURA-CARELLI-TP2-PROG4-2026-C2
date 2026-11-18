@@ -1,11 +1,13 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import { AdminGuard } from '../auth/admin.guard.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 import { RangoFechasDto } from './dto/rango-fechas.dto.js';
 import { EstadisticasService } from './estadisticas.service.js';
 
 @Controller('estadisticas')
+@ApiTags(ETIQUETAS.estadisticas.nombre)
 @UseGuards(AuthGuard, AdminGuard)
 @ApiBearerAuth()
 export class EstadisticasController {

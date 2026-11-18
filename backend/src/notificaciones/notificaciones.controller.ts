@@ -9,7 +9,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
 import { IdParamDto } from '../common/id-param.dto.js';
@@ -17,6 +18,7 @@ import { ListarNotificacionesDto } from './dto/listar-notificaciones.dto.js';
 import { NotificacionesService } from './notificaciones.service.js';
 
 @Controller('notificaciones')
+@ApiTags(ETIQUETAS.notificaciones.nombre)
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class NotificacionesController {

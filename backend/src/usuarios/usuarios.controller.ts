@@ -12,7 +12,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import { ApiMultipart, UNA_IMAGEN } from '../common/api-multipart.decorator.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AdminGuard } from '../auth/admin.guard.js';
@@ -26,6 +27,7 @@ import { CrearUsuarioDto } from './dto/crear-usuario.dto.js';
 import { UsuariosService } from './usuarios.service.js';
 
 @Controller('usuarios')
+@ApiTags(ETIQUETAS.administracion.nombre)
 @UseGuards(AuthGuard, AdminGuard)
 @ApiBearerAuth()
 export class UsuariosController {

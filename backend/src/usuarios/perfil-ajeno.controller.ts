@@ -7,7 +7,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
 import { IdParamDto } from '../common/id-param.dto.js';
@@ -15,6 +16,7 @@ import { DirectorioDto } from './dto/directorio.dto.js';
 import { UsuariosService } from './usuarios.service.js';
 
 @Controller('usuarios')
+@ApiTags(ETIQUETAS.perfiles.nombre)
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class PerfilAjenoController {

@@ -8,13 +8,15 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
 import { BajaPushDto, SuscribirPushDto } from './dto/suscribir-push.dto.js';
 import { PushService } from './push.service.js';
 
 @Controller('push')
+@ApiTags(ETIQUETAS.push.nombre)
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class PushController {

@@ -9,7 +9,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
 import { IdParamDto } from '../common/id-param.dto.js';
@@ -18,6 +19,7 @@ import { CompartidasService } from './compartidas.service.js';
 import { CompartirDto } from './dto/compartir.dto.js';
 
 @Controller('publicaciones')
+@ApiTags(ETIQUETAS.compartidas.nombre)
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class CompartidasController {

@@ -663,9 +663,11 @@ Retry-After-sustained: 300
 
 - **Encabezados de seguridad:** `helmet` se aplica a todas las respuestas (`backend/src/seguridad-global.ts`): `X-Content-Type-Options`, `Strict-Transport-Security`, `Content-Security-Policy`, y quita `X-Powered-By`. La ruta `/docs` queda sin la política de contenido porque la interfaz de Swagger usa scripts propios.
 - **Forma única de error:** todo error responde `{ message, codigo }`. Un filtro global (`backend/src/common/filtro-de-excepciones.ts`) completa los que Nest devuelve sin código: `RUTA_NO_ENCONTRADA` (404), `ARCHIVO_DEMASIADO_GRANDE` (413), `SOLICITUD_INVALIDA` (otros 4xx) y `ERROR_INESPERADO` (500, sin revelar la causa; el detalle queda en el log como `error_no_controlado`).
-- **Documentación interactiva:** `GET /docs` abre Swagger UI con los 56 endpoints, sus cuerpos y el botón *Authorize* para probar con un token. El documento en JSON está en `GET /docs-json`. Los esquemas de los cuerpos salen de los DTO (plugin de `@nestjs/swagger` en `nest-cli.json`) y cada endpoint lleva un resumen con `@ApiOperation`.
+- **Documentación interactiva:** `GET /docs` abre Swagger UI con los 52 endpoints, sus cuerpos y el botón *Authorize* para probar con un token. El documento en JSON está en `GET /docs-json`. Los esquemas de los cuerpos salen de los DTO (plugin de `@nestjs/swagger` en `nest-cli.json`) y cada endpoint lleva un resumen con `@ApiOperation`. Los endpoints se agrupan por tema (Autenticación, Publicaciones, Comentarios, Me gusta, Guardadas, Compartidas, Perfiles, etc.); los grupos y su descripción están en `backend/src/etiquetas-swagger.ts`.
 
-**Tests:** `seguridad-global.e2e-spec.ts`, `filtro-de-excepciones.e2e-spec.ts` y `swagger.e2e-spec.ts` (falla si algún endpoint queda sin resumen).
+**Foto del alta:** si crear una cuenta falla después de subir la foto (correo o usuario repetido), la foto se borra de Cloudinary y de la colección `imagenes` (`ImagenesService.descartar`). La API no tiene endpoints `/imagenes`: la consigna sólo pide guardar la imagen dentro del registro y de las publicaciones.
+
+**Tests:** `foto-sin-usuario.e2e-spec.ts`, `seguridad-global.e2e-spec.ts`, `filtro-de-excepciones.e2e-spec.ts` y `swagger.e2e-spec.ts` (falla si algún endpoint queda sin resumen).
 
 ---
 

@@ -8,7 +8,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import { ApiMultipart, UNA_IMAGEN } from '../common/api-multipart.decorator.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
@@ -23,6 +24,7 @@ import { IngresarDto } from './dto/ingresar.dto.js';
 import { RegistroDto } from './dto/registro.dto.js';
 
 @Controller('auth')
+@ApiTags(ETIQUETAS.autenticacion.nombre)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

@@ -8,7 +8,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ETIQUETAS } from '../etiquetas-swagger.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 import type { SolicitudAutenticada } from '../auth/auth.guard.js';
 import { IdParamDto } from '../common/id-param.dto.js';
@@ -16,6 +17,7 @@ import { ListarGuardadasDto } from './dto/listar-guardadas.dto.js';
 import { GuardadasService } from './guardadas.service.js';
 
 @Controller()
+@ApiTags(ETIQUETAS.guardadas.nombre)
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class GuardadasController {

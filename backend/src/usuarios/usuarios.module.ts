@@ -16,7 +16,7 @@ import { UsuariosService } from './usuarios.service.js';
       { name: Visita.name, schema: VisitaSchema },
     ]),
     forwardRef(() => AuthModule),
-    forwardRef(() => ImagenesModule),
+    ImagenesModule,
   ],
   controllers: [UsuariosController, PerfilController, PerfilAjenoController],
   providers: [UsuariosService],

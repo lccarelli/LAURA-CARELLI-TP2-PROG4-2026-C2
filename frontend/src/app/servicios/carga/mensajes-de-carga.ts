@@ -35,7 +35,6 @@ const REGLAS: [metodo: string, ruta: RegExp, mensaje: MensajeDeCarga][] = [
   ['POST', /\/usuarios$/, { clave: 'carga.creando_usuario', ...TARDA }],
   ['DELETE', /\/usuarios\/[^/]+$/, { clave: 'carga.deshabilitando' }],
   ['POST', /\/usuarios\/[^/]+\/habilitar$/, { clave: 'carga.habilitando' }],
-  ['POST', /\/imagenes$/, { clave: 'carga.subiendo_imagen', ...TARDA }],
   ['GET', /\/estadisticas\//, { clave: 'carga.calculando' }],
 ];
 
