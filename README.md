@@ -144,6 +144,7 @@ Se definen en `backend/.env` (hay un ejemplo en `backend/.env.example`). El `.en
 | `PORT`         | Puerto del backend (3001 en local)                    |
 | `FRONTEND_URL` | Origen permitido por CORS (por defecto `http://localhost:4200`) |
 | `JWT_SECRET`   | Clave con la que se firma el token                    |
+| `JWT_EXPIRA`   | Duración del token: un número y `s`, `m` o `h` (`30s`, `2m`, `1h`). Opcional, por defecto `15m`. Sirve para mostrar el aviso y el cierre de sesión sin esperar 15 minutos |
 | `ADMIN_EMAIL`  | Correo que queda como administrador al registrarse    |
 | `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_CLOUD_NAME` | Cuenta de Cloudinary donde se guardan las imágenes |
 | `CLOUDINARY_CARPETA` | Carpeta raíz en Cloudinary (opcional, por defecto `banquete`). En desarrollo conviene otra, como `banquete-dev`, para no mezclar las fotos de prueba |
@@ -418,7 +419,7 @@ Al abrir la aplicación con una sesión guardada se muestra una pantalla de carg
 
 ## Sesión
 
-El token JWT dura **15 minutos**. Un aviso modal pregunta si se quiere extender a los **10 minutos** de haberse emitido, cuando faltan 5.
+El token JWT dura **15 minutos** (se cambia con la variable `JWT_EXPIRA`). Un aviso modal pregunta si se quiere extender a los **10 minutos** de haberse emitido, cuando faltan 5. El aviso se calcula como un tercio de la duración real del token (con `JWT_EXPIRA=2m`, aparece cuando faltan 40 segundos), así que se puede mostrar sin esperar.
 
 | Qué | Cómo funciona |
 | --- | --- |

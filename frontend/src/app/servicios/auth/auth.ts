@@ -18,6 +18,7 @@ export class Auth {
   readonly motivoDeSalida = signal<string | null>(null);
   readonly volverA = signal<string | null>(null);
   readonly vencimiento = computed(() => this.leerVencimiento(this.token()));
+  readonly duracion = computed(() => this.leerDuracion(this.token()));
 
   registro(datos: FormData) {
     return this.http
@@ -117,14 +118,23 @@ export class Auth {
     this.token.set(token);
   }
 
-  private leerVencimiento(token: string | null): number | null {
+  private leerClaims(token: string | null): { exp?: unknown; iat?: unknown } {
     try {
       const body = token?.split('.')[1]?.replaceAll('-', '+').replaceAll('_', '/');
-      const { exp } = JSON.parse(atob(body ?? ''));
-      return typeof exp === 'number' ? exp * 1000 : null;
+      return JSON.parse(atob(body ?? '')) ?? {};
     } catch {
-      return null;
+      return {};
     }
+  }
+
+  private leerVencimiento(token: string | null): number | null {
+    const { exp } = this.leerClaims(token);
+    return typeof exp === 'number' ? exp * 1000 : null;
+  }
+
+  private leerDuracion(token: string | null): number | null {
+    const { exp, iat } = this.leerClaims(token);
+    return typeof exp === 'number' && typeof iat === 'number' ? exp - iat : null;
   }
 
   private leerUsuario(): Usuario | null {

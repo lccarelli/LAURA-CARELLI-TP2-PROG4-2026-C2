@@ -1,6 +1,7 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import jwt from 'jsonwebtoken';
+import type { SignOptions } from 'jsonwebtoken';
 import { LoggerFactory } from '../logs/logs.factory.js';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
 import { authConfig } from './auth.config.js';
@@ -25,7 +26,8 @@ function contexto(authorization?: string) {
 }
 
 describe('AuthGuard', () => {
-  const config = { secretoJwt: SECRETO, expiraJwt: '15m' } as ConfigType<
+  const expiraJwt: SignOptions['expiresIn'] = '15m';
+  const config = { secretoJwt: SECRETO, expiraJwt } as ConfigType<
     typeof authConfig
   >;
   const loggerFactory = new LoggerFactory();
