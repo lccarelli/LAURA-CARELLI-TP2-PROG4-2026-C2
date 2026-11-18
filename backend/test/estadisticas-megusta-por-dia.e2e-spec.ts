@@ -1,38 +1,24 @@
-import { INestApplication } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import request from 'supertest';
 import { EventoMeGusta } from '../src/publicaciones/schemas/evento-me-gusta.schema.js';
 import { Publicacion } from '../src/publicaciones/schemas/publicacion.schema.js';
-import { crearApp, limpiarBase } from './ayudas/app.js';
-import {
-  registrarOtraPersona,
-  registrarYObtenerSesion,
-} from './ayudas/datos.js';
+import { prepararEstadisticas } from './ayudas/estadisticas.js';
 import { hoyEnBuenosAires, probarRangoYPermisos } from './ayudas/rango.js';
-import { tokenDeAdministrador } from './ayudas/sesiones.js';
 
 describe('GET /estadisticas/megusta-por-dia', () => {
-  let app: INestApplication;
+  const contexto = prepararEstadisticas(
+    '/estadisticas/megusta-por-dia',
+    'desde=2026-03-10&hasta=2026-03-12',
+  );
+  const { consultar } = contexto;
   let publicaciones: Model<Publicacion>;
   let eventos: Model<EventoMeGusta>;
-  let tokenAdministrador: string;
-  let tokenComun: string;
-  let lauraId: string;
-  let juanId: string;
   let publicacionId: string;
-
-  const consultar = (
-    consulta = 'desde=2026-03-10&hasta=2026-03-12',
-    token = tokenAdministrador,
-  ) =>
-    request(app.getHttpServer())
-      .get(`/estadisticas/megusta-por-dia?${consulta}`)
-      .set('Authorization', `Bearer ${token}`);
 
   const publicar = (activa = true) =>
     publicaciones.create({
-      usuario: lauraId,
+      usuario: contexto.lauraId,
       tipo: 'experiencia',
       titulo: 'Título',
       mensaje: 'Mensaje',
@@ -46,35 +32,23 @@ describe('GET /estadisticas/megusta-por-dia', () => {
   ) =>
     eventos.create({
       tipo,
-      usuario: juanId,
+      usuario: contexto.juanId,
       nombreUsuario: 'juan_p',
       publicacion,
       tituloPublicacion: 'Título',
-      autor: lauraId,
+      autor: contexto.lauraId,
       nombreAutor: 'laura_c',
       cantidadMeGusta: 1,
       fecha: new Date(fecha),
     });
 
   beforeAll(async () => {
-    app = await crearApp();
-    publicaciones = app.get(getModelToken(Publicacion.name));
-    eventos = app.get(getModelToken(EventoMeGusta.name));
+    publicaciones = contexto.app.get(getModelToken(Publicacion.name));
+    eventos = contexto.app.get(getModelToken(EventoMeGusta.name));
   });
 
   beforeEach(async () => {
-    await limpiarBase(app);
-    const laura = await registrarYObtenerSesion(app);
-    const juan = await registrarOtraPersona(app);
-    tokenComun = laura.token;
-    tokenAdministrador = tokenDeAdministrador(laura.usuario._id);
-    lauraId = laura.usuario._id;
-    juanId = juan.usuario._id;
     publicacionId = String((await publicar())._id);
-  });
-
-  afterAll(async () => {
-    await app.close();
   });
 
   it('[O] cuenta los me gusta otorgados de cada día del rango', async () => {
@@ -140,11 +114,11 @@ describe('GET /estadisticas/megusta-por-dia', () => {
 
   it('[S] el flujo real: dar me gusta desde la aplicación suma uno en el día de hoy', async () => {
     const hoy = hoyEnBuenosAires();
-    const { body: sesion } = await request(app.getHttpServer())
+    const { body: sesion } = await request(contexto.app.getHttpServer())
       .post('/auth/ingresar')
       .send({ identificador: 'juan_p', clave: 'Clave1234' })
       .expect(200);
-    await request(app.getHttpServer())
+    await request(contexto.app.getHttpServer())
       .post(`/publicaciones/${publicacionId}/megusta`)
       .set('Authorization', `Bearer ${sesion.token}`)
       .expect(201);
@@ -216,9 +190,5 @@ describe('GET /estadisticas/megusta-por-dia', () => {
     expect(body).toHaveLength(366);
   });
 
-  probarRangoYPermisos('/estadisticas/megusta-por-dia', () => ({
-    app,
-    tokenComun,
-    consultar,
-  }));
+  probarRangoYPermisos('/estadisticas/megusta-por-dia', () => contexto);
 });
