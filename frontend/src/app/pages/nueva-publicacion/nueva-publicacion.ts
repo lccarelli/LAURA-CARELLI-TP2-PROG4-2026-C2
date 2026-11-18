@@ -53,14 +53,6 @@ const GRUPOS_DE_MEDIDAS: readonly (readonly Unidad[])[] = [
   ['taza', 'unidad'],
 ];
 
-const UNIDADES_CON_FRACCION: readonly Unidad[] = [
-  'kg',
-  'l',
-  'taza',
-  'cucharada',
-  'cucharadita',
-  'unidad',
-];
 const LIMITES_FICHA = { porciones: 100, tiempoMinutos: 10080, calorias: 10000 } as const;
 const COSTOS = [1, 2, 3, 4] as const;
 const CAMPOS_FICHA = ['porciones', 'tiempoMinutos', 'calorias'] as const;
@@ -69,27 +61,6 @@ const ESPERA_AUTOGUARDADO_MS = 800;
 const EJEMPLOS_FICHA = { porciones: 4, tiempoMinutos: 30, calorias: 250 } as const;
 const PASOS_FICHA = { porciones: 1, tiempoMinutos: 5, calorias: 50 } as const;
 const CAMPOS_CONTADOR = ['porciones', 'calorias'] as const;
-const TIEMPOS_RAPIDOS = [15, 30, 45, 60, 90, 120] as const;
-const PASO_CANTIDAD: Record<Unidad, number> = {
-  g: 50,
-  kg: 0.5,
-  ml: 50,
-  l: 0.5,
-  taza: 0.25,
-  cucharada: 0.5,
-  cucharadita: 0.5,
-  unidad: 1,
-  pizca: 1,
-  a_gusto: 1,
-};
-const FRACCIONES = [
-  { texto: '¼', valor: 0.25 },
-  { texto: '½', valor: 0.5 },
-  { texto: '¾', valor: 0.75 },
-] as const;
-
-const redondear = (numero: number) => Math.round(numero * 100) / 100;
-
 interface FotoElegida {
   archivo: File | null;
   url: string;
@@ -165,7 +136,7 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
   readonly formularioListo = signal(!this.editando);
   readonly publicando = signal(false);
   readonly tipos = TIPOS;
-  readonly gruposDeMedidas = GRUPOS_DE_MEDIDAS;
+  readonly medidas: readonly Unidad[] = GRUPOS_DE_MEDIDAS.flat();
   readonly maximoIngredientes = MAXIMO_INGREDIENTES;
   readonly maximoPasos = MAXIMO_PASOS;
   readonly maximoFotosPasos = MAXIMO_FOTOS_PASOS;
@@ -179,8 +150,6 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
   readonly camposFicha = CAMPOS_FICHA;
   readonly ejemplosFicha = EJEMPLOS_FICHA;
   readonly camposContador = CAMPOS_CONTADOR;
-  readonly tiemposRapidos = TIEMPOS_RAPIDOS;
-  readonly fracciones = FRACCIONES;
   readonly intentoDePublicar = signal(false);
   readonly costo = signal<number | null>(null);
   readonly tipo = signal<Tipo>('receta');
@@ -459,12 +428,10 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
     this.erroresFotoPaso.set(new Map());
   }
 
-  elegirTipoRinde(tipo: TipoRinde) {
-    this.tipoRinde.set(tipo);
-  }
-
-  usaFracciones(fila: FilaIngrediente) {
-    return UNIDADES_CON_FRACCION.includes(fila.controls.unidad.value);
+  elegirTipoRinde(tipo: string) {
+    if (this.tiposRinde.includes(tipo as TipoRinde)) {
+      this.tipoRinde.set(tipo as TipoRinde);
+    }
   }
 
   get ingredientes() {
@@ -496,13 +463,10 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
     this.fijarFicha(campo, siguiente);
   }
 
-  elegirTiempo(minutos: number) {
-    const actual = Number(this.formulario.controls.tiempoMinutos.value);
-    this.fijarFicha('tiempoMinutos', actual === minutos ? 0 : minutos);
-  }
-
-  tiempoElegido(minutos: number) {
-    return Number(this.formulario.controls.tiempoMinutos.value) === minutos;
+  private fijarFicha(campo: (typeof CAMPOS_FICHA)[number], valor: number) {
+    const control = this.formulario.controls[campo];
+    control.setValue(valor < 1 ? '' : String(Math.min(valor, LIMITES_FICHA[campo])));
+    control.markAsDirty();
   }
 
   etiquetaTiempo(minutos: number): string {
@@ -519,33 +483,6 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
   tiempoLegible(): string | null {
     const minutos = Number(this.formulario.controls.tiempoMinutos.value);
     return Number.isInteger(minutos) && minutos >= 60 ? this.etiquetaTiempo(minutos) : null;
-  }
-
-  private fijarFicha(campo: (typeof CAMPOS_FICHA)[number], valor: number) {
-    const control = this.formulario.controls[campo];
-    control.setValue(valor < 1 ? '' : String(Math.min(valor, LIMITES_FICHA[campo])));
-    control.markAsDirty();
-  }
-
-  ajustarCantidad(fila: FilaIngrediente, direccion: 1 | -1) {
-    const { cantidad, unidad } = fila.controls;
-    const siguiente = redondear((cantidad.value ?? 0) + direccion * PASO_CANTIDAD[unidad.value]);
-    cantidad.setValue(siguiente > 0 ? Math.min(siguiente, 100000) : null);
-    cantidad.markAsDirty();
-  }
-
-  sumarFraccion(fila: FilaIngrediente, fraccion: number) {
-    const { cantidad } = fila.controls;
-    const actual = cantidad.value ?? 0;
-    const entero = Math.floor(actual);
-    const yaTiene = redondear(actual - entero) === fraccion;
-    cantidad.setValue(yaTiene ? entero || null : entero + fraccion);
-    cantidad.markAsDirty();
-  }
-
-  tieneFraccion(fila: FilaIngrediente, fraccion: number) {
-    const actual = fila.controls.cantidad.value ?? 0;
-    return redondear(actual - Math.floor(actual)) === fraccion;
   }
 
   elegirCosto(nivel: number) {
@@ -615,8 +552,11 @@ export class NuevaPublicacion implements OnInit, OnDestroy {
     this.ingredientes.removeAt(posicion);
   }
 
-  elegirMedida(fila: FilaIngrediente, unidad: Unidad) {
-    fila.controls.unidad.setValue(unidad);
+  elegirMedida(fila: FilaIngrediente, unidad: string) {
+    if (!this.medidas.includes(unidad as Unidad)) {
+      return;
+    }
+    fila.controls.unidad.setValue(unidad as Unidad);
     this.alCambiarUnidad(fila);
   }
 

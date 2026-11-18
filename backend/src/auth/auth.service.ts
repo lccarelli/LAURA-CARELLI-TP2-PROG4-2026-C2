@@ -16,7 +16,7 @@ import {
   ContextLogger,
 } from '../logs/logs.factory.js';
 import { UsuariosService } from '../usuarios/usuarios.service.js';
-import { authConfig } from './auth.config.js';
+import { ALGORITMO_JWT, authConfig } from './auth.config.js';
 import { IngresarDto } from './dto/ingresar.dto.js';
 import { RegistroDto } from './dto/registro.dto.js';
 import { ClienteGoogle } from './cliente-google.js';
@@ -209,10 +209,9 @@ export class AuthService {
 
   verificarToken(token: string) {
     try {
-      const payload = jwt.verify(
-        token,
-        this.config.secretoJwt,
-      ) as jwt.JwtPayload;
+      const payload = jwt.verify(token, this.config.secretoJwt, {
+        algorithms: [ALGORITMO_JWT],
+      }) as jwt.JwtPayload;
       return {
         id: payload.sub as string,
         perfil: payload.perfil as string,
@@ -294,7 +293,7 @@ export class AuthService {
         inicio,
       },
       this.config.secretoJwt,
-      { expiresIn: this.config.expiraJwt },
+      { expiresIn: this.config.expiraJwt, algorithm: ALGORITMO_JWT },
     );
   }
 }

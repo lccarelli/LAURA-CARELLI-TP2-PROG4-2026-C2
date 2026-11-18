@@ -1,6 +1,9 @@
 import { INestApplication } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
+import { Usuario } from '../src/usuarios/schemas/usuario.schema.js';
 import { crearApp, limpiarBase } from './ayudas/app.js';
 import { registrarYObtenerSesion } from './ayudas/datos.js';
 
@@ -120,5 +123,118 @@ describe('POST /auth/refrescar', () => {
     await refrescar(firmar({}, { expiresIn: '10m' }, 'otro-secreto')).expect(
       401,
     );
+  });
+
+  describe('revalidación contra la base', () => {
+    const usuarios = () => app.get<Model<Usuario>>(getModelToken(Usuario.name));
+
+    it('[E] una cuenta deshabilitada no puede renovar: 401 USUARIO_NO_AUTORIZADO', async () => {
+      await usuarios().updateOne({ _id: usuarioId }, { habilitado: false });
+
+      const { body } = await refrescar().expect(401);
+
+      expect(body.codigo).toBe('USUARIO_NO_AUTORIZADO');
+      expect(body.token).toBeUndefined();
+    });
+
+    it('[E] una cuenta que ya no existe no puede renovar, aunque el token sea válido', async () => {
+      await usuarios().deleteOne({ _id: usuarioId });
+
+      const { body } = await refrescar().expect(401);
+
+      expect(body.codigo).toBe('USUARIO_NO_AUTORIZADO');
+    });
+
+    it('[E] un token válido con un id que no es de una persona real responde 401 y no 500', async () => {
+      const raro = firmar({ sub: 'no-es-un-id' });
+
+      const { body } = await refrescar(raro).expect(401);
+
+      expect(body.codigo).toBe('USUARIO_NO_AUTORIZADO');
+    });
+
+    it('[S] al renovar toma el perfil de la base: si le dieron el rol de administrador, el token nuevo ya lo trae', async () => {
+      await usuarios().updateOne(
+        { _id: usuarioId },
+        { perfil: 'administrador' },
+      );
+
+      const { body } = await refrescar().expect(200);
+
+      expect(decodificar(body.token).perfil).toBe('administrador');
+    });
+
+    it('[S] al renovar toma el perfil de la base: si le sacaron el rol de administrador, el token nuevo ya no lo trae', async () => {
+      await usuarios().updateOne(
+        { _id: usuarioId },
+        { perfil: 'administrador' },
+      );
+      const comoAdministrador = (await refrescar().expect(200)).body.token;
+      await usuarios().updateOne({ _id: usuarioId }, { perfil: 'usuario' });
+
+      const { body } = await refrescar(comoAdministrador).expect(200);
+
+      expect(decodificar(body.token).perfil).toBe('usuario');
+    });
+
+    it('[I] el rol que viaja en el token no se puede cambiar desde el cliente: un token firmado con otro secreto que diga administrador no sirve', async () => {
+      const falso = firmar(
+        { perfil: 'administrador' },
+        vigencia,
+        'otro-secreto',
+      );
+
+      await request(app.getHttpServer())
+        .get('/usuarios')
+        .set('Authorization', `Bearer ${falso}`)
+        .expect(401);
+    });
+
+    it('[I] el token que emite el servidor está firmado con HS256', async () => {
+      const { body } = await refrescar().expect(200);
+
+      expect(jwt.decode(body.token, { complete: true })!.header.alg).toBe(
+        'HS256',
+      );
+    });
+
+    it.each(['HS384', 'HS512'] as const)(
+      '[E] un token firmado con %s y el secreto correcto no sirve en ninguna ruta protegida',
+      async (algoritmo) => {
+        const otroAlgoritmo = firmar({}, { ...vigencia, algorithm: algoritmo });
+
+        const { body } = await request(app.getHttpServer())
+          .get('/publicaciones')
+          .set('Authorization', `Bearer ${otroAlgoritmo}`)
+          .expect(401);
+
+        expect(body.codigo).toBe('TOKEN_INVALIDO');
+        await refrescar(otroAlgoritmo).expect(401);
+      },
+    );
+
+    it('[E] un token sin firma (alg: none) que se declara administrador no sirve para la administración', async () => {
+      const aBase64 = (datos: object) =>
+        Buffer.from(JSON.stringify(datos)).toString('base64url');
+      const vence = Math.floor(Date.now() / 1000) + 300;
+      const sinFirma = `${aBase64({ alg: 'none', typ: 'JWT' })}.${aBase64({ sub: usuarioId, perfil: 'administrador', exp: vence })}.`;
+
+      const { body } = await request(app.getHttpServer())
+        .get('/usuarios')
+        .set('Authorization', `Bearer ${sinFirma}`)
+        .expect(401);
+
+      expect(body.codigo).toBe('TOKEN_INVALIDO');
+    });
+
+    it('[I] límite conocido: el guard sólo verifica el token, así que una baja no corta un token ya emitido hasta que vence (máximo 15 minutos), pero impide renovarlo', async () => {
+      await usuarios().updateOne({ _id: usuarioId }, { habilitado: false });
+
+      await request(app.getHttpServer())
+        .get('/publicaciones')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+      await refrescar().expect(401);
+    });
   });
 });
