@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { Aviso } from '../../componentes/aviso/aviso';
+import { BotonGoogle } from '../../componentes/boton-google/boton-google';
 import { FormularioUsuario } from '../../componentes/formulario-usuario/formulario-usuario';
 import { PanelPublicaciones } from '../../componentes/panel-publicaciones/panel-publicaciones';
 import { Instalacion } from '../../servicios/instalacion/instalacion';
@@ -10,7 +11,7 @@ import { Auth } from '../../servicios/auth/auth';
 import { mensajeDeApi } from '../../utilidades/errores';
 
 @Component({
-  imports: [RouterLink, Aviso, FormularioUsuario, PanelPublicaciones, TranslatePipe],
+  imports: [RouterLink, Aviso, BotonGoogle, FormularioUsuario, PanelPublicaciones, TranslatePipe],
   selector: 'app-registro',
   templateUrl: './registro.html',
 })

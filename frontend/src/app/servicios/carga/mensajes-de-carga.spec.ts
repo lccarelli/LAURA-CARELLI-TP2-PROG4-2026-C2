@@ -8,6 +8,7 @@ describe('mensajeParaSolicitud', () => {
   it.each([
     ['POST', '/auth/ingresar', 'carga.ingresando'],
     ['POST', '/auth/acceso-docente', 'carga.ingresando'],
+    ['POST', '/auth/google', 'carga.ingresando'],
     ['POST', '/auth/registro', 'carga.creando_cuenta'],
     ['POST', '/publicaciones', 'carga.publicando'],
     ['PUT', '/publicaciones/abc', 'carga.guardando_cambios'],

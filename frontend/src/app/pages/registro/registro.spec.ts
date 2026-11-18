@@ -6,6 +6,7 @@ import { Router, provideRouter } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { FormularioUsuario } from '../../componentes/formulario-usuario/formulario-usuario';
 import { Instalacion } from '../../servicios/instalacion/instalacion';
+import { BotonGoogle } from '../../componentes/boton-google/boton-google';
 import { Registro } from './registro';
 import { proveerIdiomaDePrueba } from '../../../testing/idioma';
 import { datosDelFormulario } from '../../../testing/usuario';
@@ -118,5 +119,16 @@ describe('Registro', () => {
     await enviar();
 
     expect(http.match(URL)).toHaveLength(1);
+  });
+
+  it('[O] también ofrece registrarse con Google, y el error se muestra en el mismo aviso', async () => {
+    const boton = fixture.debugElement.query(By.directive(BotonGoogle))
+      .componentInstance as BotonGoogle;
+
+    boton.fallo.emit('api.GOOGLE_NO_DISPONIBLE');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.mensajeError()).toBe('api.GOOGLE_NO_DISPONIBLE');
   });
 });

@@ -74,7 +74,8 @@
     "registrarme": "Registrarme",
     "error_titulo": "No se pudo ingresar",
     "sesion_cerrada_titulo": "Sesión cerrada",
-    "acceso_docente_titulo": "Acceso docente"
+    "acceso_docente_titulo": "Acceso docente",
+    "o": "o"
   },
   "registro": {
     "titulo": "Crear cuenta",
@@ -366,7 +367,10 @@
     "RANGO_DEMASIADO_LARGO": "El rango no puede superar 366 días.",
     "ACCESO_DOCENTE_NO_DISPONIBLE": "El acceso docente no está disponible.",
     "COMPARTIR_CON_UNO_MISMO": "No podés compartir una publicación con vos mismo.",
-    "VISITA_PROPIA": "No se registran las visitas a tu propio perfil."
+    "VISITA_PROPIA": "No se registran las visitas a tu propio perfil.",
+    "GOOGLE_NO_DISPONIBLE": "El ingreso con Google no está disponible por ahora.",
+    "GOOGLE_CREDENCIAL_INVALIDA": "No pudimos verificar tu cuenta de Google. Probá de nuevo.",
+    "GOOGLE_CORREO_NO_VERIFICADO": "El correo de tu cuenta de Google no está verificado."
   },
   "tipos": {
     "receta": "Receta",

@@ -1,7 +1,7 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { INestApplication } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import type { Cache } from 'cache-manager';
 import { Connection } from 'mongoose';
 import { AppModule } from '../../src/app.module.js';
@@ -32,7 +32,12 @@ export const webPushFalso = {
   enviar: vi.fn(async (_destino: object, _contenido: object) => undefined),
 };
 
-export async function crearApp(conLimites = false): Promise<INestApplication> {
+export async function crearApp(
+  conLimites = false,
+  personalizar: (constructor: TestingModuleBuilder) => TestingModuleBuilder = (
+    constructor,
+  ) => constructor,
+): Promise<INestApplication> {
   let constructor = Test.createTestingModule({
     imports: [AppModule],
   })
@@ -45,7 +50,7 @@ export async function crearApp(conLimites = false): Promise<INestApplication> {
       .overrideProvider(LimiteSolicitudesGuard)
       .useValue({ canActivate: () => true });
   }
-  const modulo = await constructor.compile();
+  const modulo = await personalizar(constructor).compile();
   const app = modulo.createNestApplication();
   aplicarValidacionGlobal(app);
   await app.init();

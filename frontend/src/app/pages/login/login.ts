@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CampoClave } from '../../componentes/campo-clave/campo-clave';
 import { Aviso } from '../../componentes/aviso/aviso';
+import { BotonGoogle } from '../../componentes/boton-google/boton-google';
 import { PanelPublicaciones } from '../../componentes/panel-publicaciones/panel-publicaciones';
 import { AutoFoco } from '../../directivas/auto-foco/auto-foco';
 import { Instalacion } from '../../servicios/instalacion/instalacion';
@@ -17,6 +18,7 @@ import { mensajeDeApi } from '../../utilidades/errores';
     ReactiveFormsModule,
     RouterLink,
     Aviso,
+    BotonGoogle,
     PanelPublicaciones,
     TranslatePipe,
     CampoClave,
@@ -63,12 +65,6 @@ export class Login {
     return null;
   }
 
-  private destinoAlIngresar() {
-    const destino = this.auth.volverA();
-    this.auth.volverA.set(null);
-    return destino?.startsWith('/') && !destino.startsWith('//') ? destino : '/home';
-  }
-
   enviar() {
     this.formulario.markAllAsTouched();
     if (this.formulario.invalid || this.enviando()) {
@@ -80,7 +76,7 @@ export class Login {
     this.auth.ingresar(identificador.trim(), clave).subscribe({
       next: () => {
         this.instalacion.ofrecerAlIngresar();
-        this.router.navigateByUrl(this.destinoAlIngresar());
+        this.router.navigateByUrl(this.auth.destinoAlIngresar());
       },
       error: (error: HttpErrorResponse) => {
         this.enviando.set(false);

@@ -5,8 +5,8 @@ export class Usuario {
   @Prop({ required: true })
   nombre: string;
 
-  @Prop({ required: true })
-  apellido: string;
+  @Prop()
+  apellido?: string;
 
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   correo: string;
@@ -17,11 +17,14 @@ export class Usuario {
   @Prop({ required: true, select: false })
   clave: string;
 
-  @Prop({ required: true })
-  fechaNacimiento: Date;
+  @Prop()
+  fechaNacimiento?: Date;
 
-  @Prop({ required: true })
-  descripcion: string;
+  @Prop()
+  descripcion?: string;
+
+  @Prop({ unique: true, sparse: true, select: false })
+  googleId?: string;
 
   @Prop()
   imagenPerfil?: string;

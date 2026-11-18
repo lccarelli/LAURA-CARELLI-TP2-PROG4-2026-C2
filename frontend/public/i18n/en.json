@@ -74,7 +74,8 @@
     "registrarme": "Sign up",
     "error_titulo": "Could not log in",
     "sesion_cerrada_titulo": "Signed out",
-    "acceso_docente_titulo": "Teacher access"
+    "acceso_docente_titulo": "Teacher access",
+    "o": "or"
   },
   "registro": {
     "titulo": "Create account",
@@ -366,7 +367,10 @@
     "RANGO_DEMASIADO_LARGO": "The range cannot exceed 366 days.",
     "ACCESO_DOCENTE_NO_DISPONIBLE": "Teacher access is not available.",
     "COMPARTIR_CON_UNO_MISMO": "You can't share a post with yourself.",
-    "VISITA_PROPIA": "Visits to your own profile are not recorded."
+    "VISITA_PROPIA": "Visits to your own profile are not recorded.",
+    "GOOGLE_NO_DISPONIBLE": "Signing in with Google is not available right now.",
+    "GOOGLE_CREDENCIAL_INVALIDA": "We couldn't verify your Google account. Please try again.",
+    "GOOGLE_CORREO_NO_VERIFICADO": "The email of your Google account is not verified."
   },
   "tipos": {
     "receta": "Recipe",

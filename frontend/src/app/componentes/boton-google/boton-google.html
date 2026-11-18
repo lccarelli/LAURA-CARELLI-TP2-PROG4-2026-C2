@@ -1,0 +1,8 @@
+@if (google.disponible) {
+  <div class="acceso-google" [class.oculto]="!visible()">
+    <p class="separador-o">
+      <span>{{ 'login.o' | translate }}</span>
+    </p>
+    <div #contenedor class="boton-google"></div>
+  </div>
+}

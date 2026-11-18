@@ -11,6 +11,9 @@ import bcrypt from 'bcrypt';
 import { Model, Types } from 'mongoose';
 import { authConfig } from '../auth/auth.config.js';
 import type { RegistroDto } from '../auth/dto/registro.dto.js';
+import { baseDeNombreDeUsuario, conSufijo } from '../auth/nombre-de-usuario.js';
+import type { PerfilGoogle } from '../auth/cliente-google.js';
+import { claveAleatoria } from './cuenta-docente.js';
 import { patronDePalabra } from '../common/busqueda.js';
 import { Destino } from '../imagenes/destinos.js';
 import { ImagenesService } from '../imagenes/imagenes.service.js';
@@ -26,6 +29,8 @@ import { Visita } from './schemas/visita.schema.js';
 
 const CAMPOS_DIRECTORIO = 'nombre apellido nombreUsuario imagenPerfil';
 const LIMITE_DIRECTORIO = 10;
+
+const INTENTOS_DE_NOMBRE_DE_USUARIO = 50;
 
 @Injectable()
 export class UsuariosService {
@@ -90,6 +95,79 @@ export class UsuariosService {
       perfil,
       imagenPerfil,
     });
+  }
+
+  buscarParaGoogle(googleId: string, correo: string) {
+    return this.usuarioModel
+      .findOne({ $or: [{ googleId }, { correo }] })
+      .select('+googleId')
+      .lean();
+  }
+
+  vincularGoogle(id: Types.ObjectId, googleId: string) {
+    return this.usuarioModel.updateOne({ _id: id }, { googleId });
+  }
+
+  async crearDesdeGoogle(
+    perfilGoogle: PerfilGoogle,
+    perfil: string,
+    foto?: Express.Multer.File | null,
+  ) {
+    const usuarioId = new Types.ObjectId();
+    const clave = await bcrypt.hash(claveAleatoria(), this.config.rondasBcrypt);
+    const base = baseDeNombreDeUsuario(perfilGoogle.correo);
+    const imagenPerfil = await this.copiarFotoDeGoogle(foto, usuarioId);
+    for (let intento = 0; intento < INTENTOS_DE_NOMBRE_DE_USUARIO; intento++) {
+      try {
+        return await this.crear({
+          _id: usuarioId,
+          nombre: perfilGoogle.nombre ?? base,
+          apellido: perfilGoogle.apellido,
+          correo: perfilGoogle.correo,
+          nombreUsuario: conSufijo(base, intento),
+          clave,
+          googleId: perfilGoogle.id,
+          perfil,
+          imagenPerfil,
+        });
+      } catch (error) {
+        const repetido =
+          error instanceof ConflictException &&
+          (error.getResponse() as { codigo?: string }).codigo ===
+            'USUARIO_REPETIDO';
+        if (!repetido) {
+          throw error;
+        }
+      }
+    }
+    throw new ConflictException({
+      message: 'No se pudo generar un nombre de usuario',
+      codigo: 'USUARIO_REPETIDO',
+    });
+  }
+
+  private async copiarFotoDeGoogle(
+    foto: Express.Multer.File | null | undefined,
+    usuarioId: Types.ObjectId,
+  ) {
+    if (!foto) {
+      return undefined;
+    }
+    try {
+      const guardada = await this.imagenesService.guardar(
+        foto,
+        Destino.PERFILES,
+        String(usuarioId),
+      );
+      return guardada.url;
+    } catch (error) {
+      this.logger.advertir(
+        EVENTOS_DE_LOG.FOTO_GOOGLE_NO_COPIADA,
+        'No se pudo copiar la foto de Google',
+        { id_usuario: String(usuarioId), motivo: (error as Error).message },
+      );
+      return undefined;
+    }
   }
 
   async perfilPublico(id: string) {

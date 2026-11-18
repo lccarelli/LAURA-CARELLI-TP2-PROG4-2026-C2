@@ -7,6 +7,7 @@ import { authConfig } from './auth.config.js';
 import { AuthGuard } from './auth.guard.js';
 import type { Model } from 'mongoose';
 import type { Ingreso } from './schemas/ingreso.schema.js';
+import type { ClienteGoogle } from './cliente-google.js';
 import { AuthService } from './auth.service.js';
 
 const SECRETO = 'secreto-de-pruebas';
@@ -30,6 +31,7 @@ describe('AuthGuard', () => {
     config,
     {} as UsuariosService,
     {} as Model<Ingreso>,
+    {} as ClienteGoogle,
     loggerFactory,
   );
   const guard = new AuthGuard(authService, loggerFactory);

@@ -20,6 +20,8 @@
         (guardar)="registrar($event)"
       />
 
+      <app-boton-google (fallo)="mensajeError.set($event)" />
+
       <p class="pie-formulario">
         {{ 'registro.con_cuenta' | translate }}
         <a class="enlace" routerLink="/login">{{ 'registro.ingresar' | translate }}</a>

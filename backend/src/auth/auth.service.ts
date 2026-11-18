@@ -19,6 +19,9 @@ import { UsuariosService } from '../usuarios/usuarios.service.js';
 import { authConfig } from './auth.config.js';
 import { IngresarDto } from './dto/ingresar.dto.js';
 import { RegistroDto } from './dto/registro.dto.js';
+import { ClienteGoogle } from './cliente-google.js';
+import type { PerfilGoogle } from './cliente-google.js';
+import { GoogleDto } from './dto/google.dto.js';
 import { Ingreso } from './schemas/ingreso.schema.js';
 
 @Injectable()
@@ -31,6 +34,7 @@ export class AuthService {
     private readonly usuariosService: UsuariosService,
     @InjectModel(Ingreso.name)
     private readonly ingresoModel: Model<Ingreso>,
+    private readonly clienteGoogle: ClienteGoogle,
     loggerFactory: LoggerFactory,
   ) {
     this.logger = loggerFactory.crear(AuthService.name);
@@ -90,6 +94,85 @@ export class AuthService {
     await this.registrarIngreso(encontrado._id);
     const { clave: _clave, ...usuario } = encontrado;
     return { token: this.generarToken(usuario), usuario };
+  }
+
+  async google({ credencial }: GoogleDto) {
+    if (!this.clienteGoogle.habilitado) {
+      throw new NotFoundException({
+        message: 'El ingreso con Google no está disponible',
+        codigo: 'GOOGLE_NO_DISPONIBLE',
+      });
+    }
+    const perfilGoogle = await this.clienteGoogle.verificar(credencial);
+    if (!perfilGoogle) {
+      this.logger.advertir(
+        EVENTOS_DE_LOG.INGRESO_FALLIDO,
+        'Ingreso con Google fallido: credencial inválida',
+      );
+      throw new UnauthorizedException({
+        message: 'La credencial de Google no es válida',
+        codigo: 'GOOGLE_CREDENCIAL_INVALIDA',
+      });
+    }
+    if (!perfilGoogle.correoVerificado) {
+      throw new UnauthorizedException({
+        message: 'El correo de Google no está verificado',
+        codigo: 'GOOGLE_CORREO_NO_VERIFICADO',
+      });
+    }
+
+    let encontrado = await this.usuariosService.buscarParaGoogle(
+      perfilGoogle.id,
+      perfilGoogle.correo,
+    );
+    if (!encontrado) {
+      encontrado = await this.crearCuentaDeGoogle(perfilGoogle);
+    } else if (!encontrado.googleId) {
+      await this.usuariosService.vincularGoogle(
+        encontrado._id,
+        perfilGoogle.id,
+      );
+      this.logger.info(
+        EVENTOS_DE_LOG.CUENTA_GOOGLE_VINCULADA,
+        'Cuenta existente vinculada con Google',
+        { id_usuario: String(encontrado._id) },
+      );
+    }
+    if (!encontrado.habilitado) {
+      throw new ForbiddenException({
+        message: 'Usuario deshabilitado',
+        codigo: 'USUARIO_DESHABILITADO',
+      });
+    }
+    this.logger.info(EVENTOS_DE_LOG.INGRESO_GOOGLE, 'Ingreso con Google', {
+      id_usuario: String(encontrado._id),
+      nombre_usuario: encontrado.nombreUsuario,
+    });
+    await this.registrarIngreso(encontrado._id);
+    const { googleId: _googleId, ...usuario } = encontrado;
+    return { token: this.generarToken(usuario), usuario };
+  }
+
+  private async crearCuentaDeGoogle(perfilGoogle: PerfilGoogle) {
+    const perfil =
+      perfilGoogle.correo === this.config.correoAdmin
+        ? 'administrador'
+        : 'usuario';
+    const foto = await this.clienteGoogle.descargarFoto(perfilGoogle.foto);
+    const creado = await this.usuariosService.crearDesdeGoogle(
+      perfilGoogle,
+      perfil,
+      foto,
+    );
+    this.logger.info(
+      EVENTOS_DE_LOG.CUENTA_GOOGLE_CREADA,
+      'Cuenta creada con Google',
+      {
+        id_usuario: String(creado!._id),
+        nombre_usuario: creado!.nombreUsuario,
+      },
+    );
+    return { ...creado!, googleId: perfilGoogle.id };
   }
 
   async accesoDocente() {

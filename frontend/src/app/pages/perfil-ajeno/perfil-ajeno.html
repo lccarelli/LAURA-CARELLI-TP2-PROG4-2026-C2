@@ -22,7 +22,9 @@
       </div>
     </header>
 
-    <p class="nota whitespace-pre-line">{{ persona.descripcion }}</p>
+    @if (persona.descripcion) {
+      <p class="nota whitespace-pre-line">{{ persona.descripcion }}</p>
+    }
 
     <h2 class="pestana">{{ 'perfil.ultimas_de_otra' | translate }}</h2>
 
