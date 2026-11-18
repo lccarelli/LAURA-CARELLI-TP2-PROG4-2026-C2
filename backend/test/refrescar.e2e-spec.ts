@@ -190,6 +190,43 @@ describe('POST /auth/refrescar', () => {
         .expect(401);
     });
 
+    it('[I] el token que emite el servidor está firmado con HS256', async () => {
+      const { body } = await refrescar().expect(200);
+
+      expect(jwt.decode(body.token, { complete: true })!.header.alg).toBe(
+        'HS256',
+      );
+    });
+
+    it.each(['HS384', 'HS512'] as const)(
+      '[E] un token firmado con %s y el secreto correcto no sirve en ninguna ruta protegida',
+      async (algoritmo) => {
+        const otroAlgoritmo = firmar({}, { ...vigencia, algorithm: algoritmo });
+
+        const { body } = await request(app.getHttpServer())
+          .get('/publicaciones')
+          .set('Authorization', `Bearer ${otroAlgoritmo}`)
+          .expect(401);
+
+        expect(body.codigo).toBe('TOKEN_INVALIDO');
+        await refrescar(otroAlgoritmo).expect(401);
+      },
+    );
+
+    it('[E] un token sin firma (alg: none) que se declara administrador no sirve para la administración', async () => {
+      const aBase64 = (datos: object) =>
+        Buffer.from(JSON.stringify(datos)).toString('base64url');
+      const vence = Math.floor(Date.now() / 1000) + 300;
+      const sinFirma = `${aBase64({ alg: 'none', typ: 'JWT' })}.${aBase64({ sub: usuarioId, perfil: 'administrador', exp: vence })}.`;
+
+      const { body } = await request(app.getHttpServer())
+        .get('/usuarios')
+        .set('Authorization', `Bearer ${sinFirma}`)
+        .expect(401);
+
+      expect(body.codigo).toBe('TOKEN_INVALIDO');
+    });
+
     it('[I] límite conocido: el guard sólo verifica el token, así que una baja no corta un token ya emitido hasta que vence (máximo 15 minutos), pero impide renovarlo', async () => {
       await usuarios().updateOne({ _id: usuarioId }, { habilitado: false });
 
