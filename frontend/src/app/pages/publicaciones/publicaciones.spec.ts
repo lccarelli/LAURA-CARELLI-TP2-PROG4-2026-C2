@@ -68,6 +68,17 @@ describe('Publicaciones', () => {
     await fixture.whenStable();
   });
 
+  it('[O] tiene un título visible, igual que el resto de las pantallas', () => {
+    pedir(0).flush(pagina(1, 0, false));
+    fixture.detectChanges();
+
+    const titulo = fixture.nativeElement.querySelector('h1') as HTMLElement;
+
+    expect(titulo.textContent?.trim()).toBe('Publicaciones');
+    expect(titulo.classList).toContain('titulo');
+    expect(titulo.classList).not.toContain('texto-oculto');
+  });
+
   it('[I] la primera carga pide offset 0 y limit 10', () => {
     const solicitud = pedir(0);
 
