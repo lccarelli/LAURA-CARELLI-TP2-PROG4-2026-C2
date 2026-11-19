@@ -127,6 +127,20 @@ describe('LoggerGlobal', () => {
     expect(primera().mensaje).toBe('{"a":1}');
   });
 
+  it('[E] un error recibido como objeto muestra su mensaje y su pila, no {}', () => {
+    const fallo = new Error(
+      'JWT_EXPIRA debe ser un número seguido de s, m o h',
+    );
+
+    logger.error(fallo);
+
+    expect(primera()).toMatchObject({
+      nivel: 'error',
+      mensaje: 'JWT_EXPIRA debe ser un número seguido de s, m o h',
+    });
+    expect(primera().pila).toContain('JWT_EXPIRA');
+  });
+
   it('[E] un fatal se registra como error', () => {
     logger.fatal('se cayó', 'Modulo');
 
