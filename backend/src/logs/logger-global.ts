@@ -30,6 +30,13 @@ export function emitirLog(entrada: NuevoLog) {
   process.stdout.write(`${crearLog(entrada)}\n`);
 }
 
+function textoDe(mensaje: unknown) {
+  if (mensaje instanceof Error) {
+    return mensaje.message;
+  }
+  return typeof mensaje === 'string' ? mensaje : JSON.stringify(mensaje);
+}
+
 export class LoggerGlobal implements LoggerService {
   log(mensaje: unknown, ...parametros: unknown[]) {
     this.emitir('info', mensaje, parametros);
@@ -50,12 +57,13 @@ export class LoggerGlobal implements LoggerService {
   private emitir(nivel: Nivel, mensaje: unknown, parametros: unknown[]) {
     const ultimo = parametros.at(-1);
     const modulo = typeof ultimo === 'string' ? ultimo : 'Nest';
-    const pila = parametros.length > 1 ? parametros[0] : undefined;
+    const pilaExplicita = parametros.length > 1 ? parametros[0] : undefined;
+    const pila = mensaje instanceof Error ? mensaje.stack : pilaExplicita;
     emitirLog({
       nivel,
       modulo,
       evento: 'sistema',
-      mensaje: typeof mensaje === 'string' ? mensaje : JSON.stringify(mensaje),
+      mensaje: textoDe(mensaje),
       campos: typeof pila === 'string' ? { pila } : undefined,
     });
   }
