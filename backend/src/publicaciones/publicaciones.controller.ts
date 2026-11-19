@@ -104,7 +104,9 @@ export class PublicacionesController {
     return this.publicacionesService.obtener(id, solicitud.usuario.id);
   }
 
-  @ApiOperation({ summary: 'Eliminar una publicación (dueño o administrador)' })
+  @ApiOperation({
+    summary: 'Eliminar una publicación (quien la publicó o un administrador)',
+  })
   @Delete(':id')
   @HttpCode(204)
   eliminar(

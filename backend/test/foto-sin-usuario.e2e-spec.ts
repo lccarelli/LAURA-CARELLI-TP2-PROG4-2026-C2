@@ -16,7 +16,7 @@ import {
 import { capturarLogs } from './ayudas/logs.js';
 import { tokenDeAdministrador } from './ayudas/sesiones.js';
 
-describe('la foto de un alta que falla no queda sin dueño', () => {
+describe('la foto de un alta que falla no queda sin usuario', () => {
   let app: INestApplication;
   let imagenes: Model<Imagen>;
   let usuarios: Model<Usuario>;
