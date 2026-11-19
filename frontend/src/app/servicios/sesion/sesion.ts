@@ -28,9 +28,14 @@ export class Sesion {
       : Math.max(0, Math.ceil((vencimiento - this.ahora()) / 1000));
   });
 
+  readonly segundosDeAviso = computed(() => {
+    const duracion = this.auth.duracion();
+    return duracion === null ? SEGUNDOS_DE_AVISO : duracion / 3;
+  });
+
   readonly avisando = computed(() => {
     const segundos = this.segundosRestantes();
-    return segundos !== null && segundos > 0 && segundos <= SEGUNDOS_DE_AVISO;
+    return segundos !== null && segundos > 0 && segundos <= this.segundosDeAviso();
   });
 
   iniciar() {
@@ -103,7 +108,7 @@ export class Sesion {
   private hayActividadReciente() {
     return (
       this.ultimaActividad !== null &&
-      this.ahora() - this.ultimaActividad < SEGUNDOS_DE_AVISO * 1000
+      this.ahora() - this.ultimaActividad < this.segundosDeAviso() * 1000
     );
   }
 

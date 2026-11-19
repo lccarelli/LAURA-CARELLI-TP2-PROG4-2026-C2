@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
 import { Sesion } from '../../interfaces/sesion';
-import { tokenQueVenceEn } from '../../../testing/token';
+import { tokenConDuracion, tokenQueVenceEn } from '../../../testing/token';
 import { Auth } from './auth';
 
 const sesion: Sesion = {
@@ -379,6 +379,25 @@ describe('Auth', () => {
       auth.token.set(tokenQueVenceEn(900));
 
       expect(auth.vencimiento()).toBeGreaterThan(primero ?? 0);
+    });
+
+    it('[O] la duración del token es la diferencia entre su emisión y su vencimiento', () => {
+      const { auth } = crearAuth();
+
+      auth.token.set(tokenConDuracion(120));
+
+      expect(auth.duracion()).toBe(120);
+    });
+
+    it.each([
+      ['sin token', null],
+      ['sin fecha de emisión', tokenQueVenceEn(900)],
+    ])('[Z] %s no hay duración', (_caso, token) => {
+      const { auth } = crearAuth();
+
+      auth.token.set(token);
+
+      expect(auth.duracion()).toBeNull();
     });
 
     it('[S] al salir ya no hay vencimiento', () => {

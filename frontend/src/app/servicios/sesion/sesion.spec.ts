@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { sesionVencidaInterceptor } from '../../interceptores/sesion-vencida-interceptor';
 import { tokenInterceptor } from '../../interceptores/token-interceptor';
-import { tokenQueVenceEn } from '../../../testing/token';
+import { tokenConDuracion, tokenQueVenceEn } from '../../../testing/token';
 import { Auth } from '../auth/auth';
 import { SEGUNDOS_DE_AVISO, Sesion } from './sesion';
 
@@ -19,8 +19,14 @@ describe('Sesion: vencimiento del token', () => {
   let sesion: Sesion;
   let irA: ReturnType<typeof vi.spyOn>;
 
-  const iniciarConToken = (segundos: number | null) => {
-    const token = segundos === null ? null : tokenQueVenceEn(segundos);
+  const crearToken = (segundos: number | null, duracion?: number) => {
+    if (segundos === null) {
+      return null;
+    }
+    return duracion ? tokenConDuracion(duracion) : tokenQueVenceEn(segundos);
+  };
+  const iniciarConToken = (segundos: number | null, duracion?: number) => {
+    const token = crearToken(segundos, duracion);
     if (token) {
       localStorage.setItem('token', token);
     }
@@ -75,6 +81,51 @@ describe('Sesion: vencimiento del token', () => {
     avanzar(SEGUNDO);
     expect(sesion.avisando()).toBe(true);
     expect(sesion.segundosRestantes()).toBe(SEGUNDOS_DE_AVISO);
+  });
+
+  describe('con un token de otra duración (JWT_EXPIRA)', () => {
+    it('[O] un token de 2 minutos avisa cuando falta un tercio, a los 80 segundos', () => {
+      iniciarConToken(120, 120);
+
+      avanzar(79 * SEGUNDO);
+      expect(sesion.avisando()).toBe(false);
+
+      avanzar(SEGUNDO);
+      expect(sesion.avisando()).toBe(true);
+      expect(sesion.segundosDeAviso()).toBe(40);
+    });
+
+    it('[O] con actividad en el último tercio renueva solo', () => {
+      iniciarConToken(120, 120);
+      avanzar(79 * SEGUNDO);
+      document.dispatchEvent(new Event('pointerdown'));
+
+      avanzar(SEGUNDO);
+
+      expect(pedidos()).toHaveLength(1);
+    });
+
+    it('[S] la actividad de hace más de un tercio no cuenta: el aviso espera a la persona', () => {
+      iniciarConToken(120, 120);
+      document.dispatchEvent(new Event('pointerdown'));
+
+      avanzar(100 * SEGUNDO);
+
+      expect(sesion.avisando()).toBe(true);
+      expect(pedidos()).toHaveLength(0);
+    });
+
+    it('[B] sin fecha de emisión en el token mantiene los 5 minutos de siempre', () => {
+      iniciarConToken(15 * 60);
+
+      expect(sesion.segundosDeAviso()).toBe(SEGUNDOS_DE_AVISO);
+    });
+
+    it('[B] un token de 15 minutos con fecha de emisión avisa a los 5 minutos', () => {
+      iniciarConToken(15 * 60, 15 * 60);
+
+      expect(sesion.segundosDeAviso()).toBe(SEGUNDOS_DE_AVISO);
+    });
   });
 
   it('[S] sin actividad reciente el aviso no pide nada solo', () => {

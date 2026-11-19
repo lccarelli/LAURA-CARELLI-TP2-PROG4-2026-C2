@@ -18,6 +18,30 @@ describe('authConfig', () => {
     });
   });
 
+  it('[O] JWT_EXPIRA cambia la duración del token', () => {
+    vi.stubEnv('JWT_SECRET', 'secreto');
+    vi.stubEnv('JWT_EXPIRA', '2m');
+
+    expect(authConfig().expiraJwt).toBe('2m');
+  });
+
+  it('[B] JWT_EXPIRA vacía usa 15 minutos', () => {
+    vi.stubEnv('JWT_SECRET', 'secreto');
+    vi.stubEnv('JWT_EXPIRA', '');
+
+    expect(authConfig().expiraJwt).toBe('15m');
+  });
+
+  it.each(['2', 'm', '0m', '-5m', '1.5m', '2 m', '2d', 'dos minutos'])(
+    '[E] JWT_EXPIRA «%s» no arranca',
+    (valor) => {
+      vi.stubEnv('JWT_SECRET', 'secreto');
+      vi.stubEnv('JWT_EXPIRA', valor);
+
+      expect(() => authConfig()).toThrow('JWT_EXPIRA');
+    },
+  );
+
   it('[B] sin ADMIN_EMAIL no hay administrador', () => {
     vi.stubEnv('JWT_SECRET', 'secreto');
     vi.stubEnv('ADMIN_EMAIL', '');
